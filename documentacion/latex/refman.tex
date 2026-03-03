@@ -1,0 +1,656 @@
+  % Handle batch mode
+  % to overcome problems with too many open files
+  \let\mypdfximage\pdfximage\def\pdfximage{\immediate\mypdfximage}
+  \RequirePackage{iftex}
+  \ifLuaTeX
+    \directlua{pdf.setminorversion(7)}
+  \fi
+  \ifXeTeX
+    \special{pdf:minorversion 7}
+  \fi
+  \ifPDFTeX
+    \pdfminorversion=7
+  \fi
+  % Set document class depending on configuration
+  \documentclass[twoside]{book}
+  % Packages required by doxygen
+  \makeatletter
+  \providecommand\IfFormatAtLeastTF{\@ifl@t@r\fmtversion}
+  % suppress package identification of infwarerr as it contains the word "warning"
+  \let\@@protected@wlog\protected@wlog
+  \def\protected@wlog#1{\wlog{package info suppressed}}
+  \RequirePackage{infwarerr}
+  \let\protected@wlog\@@protected@wlog
+  \makeatother
+  \IfFormatAtLeastTF{2016/01/01}{}{\usepackage{fixltx2e}} % for \textsubscript
+  \ifPDFTeX
+    \IfFormatAtLeastTF{2015/01/01}{\pdfsuppresswarningpagegroup=1}{}
+  \fi
+  \usepackage{doxygen}
+  \usepackage{graphicx}
+  \iftutex
+    \usepackage{fontspec}
+    \defaultfontfeatures{Ligatures={TeX}}
+    \usepackage{unicode-math}
+  \else
+    \usepackage[utf8]{inputenc}
+  \fi
+  \usepackage{makeidx}
+  \PassOptionsToPackage{warn}{textcomp}
+  \usepackage{textcomp}
+  \usepackage[nointegrals]{wasysym}
+  \usepackage{ifxetex}
+  % NLS support packages
+  \usepackage[spanish, es-noshorthands, shorthands=off]{babel}
+  % Define default fonts
+  % Font selection
+  \iftutex
+  \else
+    \usepackage[T1]{fontenc}
+  \fi
+  % set main and monospaced font
+  \usepackage[scaled=.90]{helvet}
+\usepackage{courier}
+\renewcommand{\familydefault}{\sfdefault}
+  \doxyallsectionsfont{%
+    \fontseries{bc}\selectfont%
+    \color{darkgray}%
+  }
+  \renewcommand{\DoxyLabelFont}{%
+    \fontseries{bc}\selectfont%
+    \color{darkgray}%
+  }
+  \newcommand{\+}{\discretionary{\mbox{\scriptsize$\hookleftarrow$}}{}{}}
+   % Arguments of doxygenemoji:
+   % 1) ':<text>:' form of the emoji, already LaTeX-escaped
+   % 2) file with the name of the emoji without the .png extension
+   % in case image exist use this otherwise use the ':<text>:' form
+   \newcommand{\doxygenemoji}[2]{%
+     \IfFileExists{./#2.png}{\raisebox{-0.1em}{\includegraphics[height=0.9em]{./#2.png}}}{#1}%
+   }
+  % Page & text layout
+  \usepackage{geometry}
+  \geometry{%
+    a4paper,%
+    top=2.5cm,%
+    bottom=2.5cm,%
+    left=2.5cm,%
+    right=2.5cm%
+  }
+  \usepackage{changepage}
+  % Allow a bit of overflow to go unnoticed by other means
+  \tolerance=750
+  \hfuzz=15pt
+  \hbadness=750
+  \setlength{\emergencystretch}{15pt}
+  \setlength{\parindent}{0cm}
+  \newcommand{\doxynormalparskip}{\setlength{\parskip}{3ex plus 2ex minus 2ex}}
+  \newcommand{\doxytocparskip}{\setlength{\parskip}{1ex plus 0ex minus 0ex}}
+  \doxynormalparskip
+  % Redefine paragraph/subparagraph environments, using sectsty fonts
+  \makeatletter
+  \renewcommand{\paragraph}{%
+    \@startsection{paragraph}{4}{0ex}{-1.0ex}{1.0ex}{%
+      \normalfont\normalsize\bfseries\SS@parafont%
+    }%
+  }
+  \renewcommand{\subparagraph}{%
+    \@startsection{subparagraph}{5}{0ex}{-1.0ex}{1.0ex}{%
+      \normalfont\normalsize\bfseries\SS@subparafont%
+    }%
+  }
+  \makeatother
+  \makeatletter
+  \newcommand\hrulefilll{\leavevmode\leaders\hrule\hskip 0pt plus 1filll\kern\z@}
+  \makeatother
+  % Headers & footers
+  \usepackage{fancyhdr}
+  \pagestyle{fancyplain}
+  \renewcommand{\footrulewidth}{0.4pt}
+  \fancypagestyle{fancyplain}{
+    \fancyhf{}
+    \fancyhead[LE, RO]{\bfseries\thepage}
+    \fancyhead[LO]{\bfseries\rightmark}
+    \fancyhead[RE]{\bfseries\leftmark}
+    \fancyfoot[LO, RE]{\bfseries\scriptsize Generado por Doxygen }
+  }
+  \fancypagestyle{plain}{
+    \fancyhf{}
+    \fancyfoot[LO, RE]{\bfseries\scriptsize Generado por Doxygen }
+    \renewcommand{\headrulewidth}{0pt}
+  }
+  \pagestyle{fancyplain}
+  \renewcommand{\chaptermark}[1]{%
+    \markboth{#1}{}%
+  }
+  \renewcommand{\sectionmark}[1]{%
+    \markright{\thesection\ #1}%
+  }
+  % ToC, LoF, LoT, bibliography, and index
+  % Indices & bibliography
+  \usepackage[numbers]{natbib}
+  \usepackage[titles]{tocloft}
+  \setcounter{tocdepth}{3}
+  \setcounter{secnumdepth}{5}
+  % creating indexes
+  \makeindex
+  \ifPDFTeX
+\usepackage{newunicodechar}
+  \makeatletter
+    \def\doxynewunicodechar#1#2{%
+    \@tempswafalse
+    \edef\nuc@tempa{\detokenize{#1}}%
+    \if\relax\nuc@tempa\relax
+      \nuc@emptyargerr
+    \else
+      \edef\@tempb{\expandafter\@car\nuc@tempa\@nil}%
+      \nuc@check
+      \if@tempswa
+        \@namedef{u8:\nuc@tempa}{#2}%
+      \fi
+    \fi
+  }
+  \makeatother
+  \doxynewunicodechar{⁻}{${}^{-}$}% Superscript minus
+  \doxynewunicodechar{²}{${}^{2}$}% Superscript two
+  \doxynewunicodechar{³}{${}^{3}$}% Superscript three
+\fi
+  % Hyperlinks
+    % Hyperlinks (required, but should be loaded last)
+    \ifPDFTeX
+      \usepackage[pdftex,pagebackref=true]{hyperref}
+    \else
+      \ifXeTeX
+        \usepackage[xetex,pagebackref=true]{hyperref}
+      \else
+        \ifLuaTeX
+          \usepackage[luatex,pagebackref=true]{hyperref}
+        \else
+          \usepackage[ps2pdf,pagebackref=true]{hyperref}
+        \fi
+      \fi
+    \fi
+    \hypersetup{%
+      colorlinks=true,%
+      linkcolor=blue,%
+      citecolor=blue,%
+      unicode,%
+      pdftitle={Cima\+Engine3v},%
+      pdfsubject={}%
+    }
+  % Custom commands used by the header
+  % Custom commands
+  \newcommand{\clearemptydoublepage}{%
+    \newpage{\pagestyle{empty}\cleardoublepage}%
+  }
+  % caption style definition
+  \usepackage{caption}
+  \captionsetup{labelsep=space,justification=centering,font={bf},singlelinecheck=off,skip=4pt,position=top}
+  % in page table of contents
+  \IfFormatAtLeastTF{2023/05/01}{\usepackage[deeplevels]{etoc}}{\usepackage[deeplevels]{etoc_doxygen}}
+  \etocsettocstyle{\doxytocparskip}{\doxynormalparskip}
+  \etocsetlevel{subsubsubsection}{4}
+  \etocsetlevel{subsubsubsubsection}{5}
+  \etocsetlevel{subsubsubsubsubsection}{6}
+  \etocsetlevel{subsubsubsubsubsubsection}{7}
+  \etocsetlevel{paragraph}{8}
+  \etocsetlevel{subparagraph}{9}
+  % prevent numbers overlap the titles in toc
+  \renewcommand{\numberline}[1]{#1~}
+% End of preamble, now comes the document contents
+%===== C O N T E N T S =====
+\begin{document}
+  \raggedbottom
+  % Titlepage & ToC
+    % To avoid duplicate page anchors due to reuse of same numbers for
+    % the index (be it as roman numbers)
+    \hypersetup{pageanchor=false,
+                bookmarksnumbered=true,
+                pdfencoding=unicode
+               }
+  \pagenumbering{alph}
+  \begin{titlepage}
+  \vspace*{7cm}
+  \begin{center}%
+  {\Large Cima\+Engine3v}\\
+  \vspace*{1cm}
+  {\large Generado por Doxygen 1.16.1}\\
+  \end{center}
+  \end{titlepage}
+  \clearemptydoublepage
+  \pagenumbering{roman}
+  \tableofcontents
+  \clearemptydoublepage
+  \pagenumbering{arabic}
+  % re-enable anchors again
+  \hypersetup{pageanchor=true}
+%--- Begin generated contents ---
+\input{de/d45/md_build_2__deps_2imgui-src_2docs_2BACKENDS}
+\input{d7/d7a/md_build_2__deps_2imgui-src_2docs_2CONTRIBUTING}
+\input{df/df8/md_build_2__deps_2imgui-src_2docs_2EXAMPLES}
+\input{d7/d6f/md_build_2__deps_2imgui-src_2docs_2FAQ}
+\input{d0/d46/md_build_2__deps_2imgui-src_2docs_2FONTS}
+\input{d0/d30/md_README}
+\chapter{Topic Index}
+\input{topics}
+\chapter{Jerarquía de directorios}
+\input{dirs}
+\chapter{Índice jerárquico}
+\input{hierarchy}
+\chapter{Índice de clases}
+\input{annotated}
+\chapter{Índice de archivos}
+\input{files}
+\chapter{Topic Documentation}
+\input{d4/dac/group__context}
+\input{db/de0/group__vulkan}
+\input{d9/d54/group__init}
+\input{dc/df1/group__input}
+\input{d6/d18/group__monitor}
+\input{d2/df3/group__window}
+\input{d8/dba/group__native}
+\chapter{Documentación de directorios}
+\input{dir_b5fd01b70b8887ff731c5516bbbda194}
+\input{dir_dc92dd9a292455da7374af48c96d83c7}
+\input{dir_56baed6dcab2f0da4ebff02bd05bccdb}
+\input{dir_df16b9cf2b6cba61bcfd0c004a197950}
+\input{dir_11d10c1281c5999bede9432551552dde}
+\input{dir_8b68a0713bfda8cb2375ff7049bc9ecd}
+\input{dir_1c82c3e17c6ccb6e908cd5ec3a76f49b}
+\input{dir_4f636e46b298919a819a900db95bee8e}
+\input{dir_86f64a97f091f3ad21a621c3d810792e}
+\input{dir_45359432c8268bf56bca676685b35f56}
+\chapter{Documentación de clases}
+\input{db/d0a/interfaceAppDelegate}
+\input{d2/d62/interfaceAppView}
+\input{df/dbf/interfaceAppViewController}
+\input{dc/d85/categoryAppViewController_07_08}
+\input{da/db3/classCE_1_1Botones}
+\input{d9/ded/classCE_1_1Camara}
+\input{dc/d78/classCE_1_1CamaraCuadro}
+\input{d7/d68/classCE_1_1CamaraLERP}
+\input{da/ded/structCUSTOMVERTEX}
+\input{d3/d14/classIVJ_1_1Entidad}
+\input{d5/d38/classCE_1_1Escena}
+\input{d9/d2e/classIVJ_1_1Escena__Prueba}
+\input{d6/d34/structExampleAppConsole}
+\input{dd/d29/structExampleAppDocuments}
+\input{d7/d2e/structExampleAppLog}
+\input{d7/d76/structExampleAppPropertyEditor}
+\input{dd/d6d/structExampleAsset}
+\input{d1/df9/structExampleAssetsBrowser}
+\input{dc/d30/structExampleDescriptorHeapAllocator}
+\input{d9/d51/structExampleDualListBox}
+\input{d2/d28/structExampleMemberInfo}
+\input{d9/de9/structExampleSelectionWithDeletion}
+\input{d8/d08/structExampleTreeNode}
+\input{df/d5b/classIVJ_1_1Figuras}
+\input{d0/dab/interfaceFramebufferDescriptor}
+\input{de/d3b/structFrameContext}
+\input{d9/d1f/structFrameResources}
+\input{d3/d53/classIVJ_1_1FSM}
+\input{d6/d34/classCE_1_1GameLayer}
+\input{d2/d5d/classCE_1_1GDock}
+\input{d6/deb/classCE_1_1GestorAssets}
+\input{d1/dcf/classCE_1_1GestorCamaras}
+\input{d3/d91/classCE_1_1GestorEscenas}
+\input{de/d02/classCE_1_1GLayer}
+\input{d9/d43/structGLFWgammaramp}
+\input{d9/d32/structGLFWimage}
+\input{d8/d33/structGLFWvidmode}
+\input{da/df6/classCE_1_1GListaObjetos}
+\input{da/dbd/classCE_1_1GLogger}
+\input{d8/db9/classCE_1_1GPaths}
+\input{da/df3/classCE_1_1GPropiedades}
+\input{d7/dd8/classCE_1_1GViewport}
+\input{da/d5e/classCE_1_1IBoundingBox}
+\input{d8/d82/classCE_1_1IComponentes}
+\input{de/d09/classCE_1_1IControl}
+\input{d9/db3/classIVJ_1_1IDialogo}
+\input{d0/dd9/classIVJ_1_1IIndicador}
+\input{db/dd6/classIVJ_1_1IInteractuable}
+\input{d4/dda/classCE_1_1IIterador}
+\input{d9/d04/classCE_1_1IManipularDatos}
+\input{d3/d79/classIVJ_1_1IMaquinaEstado}
+\input{d5/d97/structImBitArray}
+\input{d4/d9b/structImBitVector}
+\input{d0/d22/structImChunkStream}
+\input{dc/d86/structImColor}
+\input{d7/d3a/structImDrawChannel}
+\input{d9/de6/structImDrawCmd}
+\input{d3/d79/structImDrawCmdHeader}
+\input{d9/d41/structImDrawData}
+\input{dd/dff/structImDrawDataBuilder}
+\input{d2/d31/structImDrawList}
+\input{d2/d89/structImDrawListSharedData}
+\input{d5/dfd/structImDrawListSplitter}
+\input{d3/dfa/structImDrawVert}
+\input{d4/d51/structImDrawVertAllegro}
+\input{dd/d61/structImFont}
+\input{dc/d21/structImFontAtlas}
+\input{d8/d8f/structImFontAtlasCustomRect}
+\input{d7/d51/structImFontBuildDstData}
+\input{dc/d11/structImFontBuildDstDataFT}
+\input{d8/d39/structImFontBuilderIO}
+\input{dd/d86/structImFontBuildSrcData}
+\input{d2/dc8/structImFontBuildSrcDataFT}
+\input{df/d30/structImFontBuildSrcGlyphFT}
+\input{df/d67/structImFontConfig}
+\input{d3/db9/structImFontGlyph}
+\input{db/d52/structImFontGlyphRangesBuilder}
+\input{d8/db6/unionImGL3WProcs}
+\input{d2/d91/structImGui__ImplAllegro5__Data}
+\input{d2/d91/structImGui__ImplDX10__Data}
+\input{d5/d49/structImGui__ImplDX10__RenderState}
+\input{d6/d2a/structImGui__ImplDX10__ViewportData}
+\input{db/d1f/structImGui__ImplDX11__Data}
+\input{d9/d98/structImGui__ImplDX11__RenderState}
+\input{db/daf/structImGui__ImplDX11__ViewportData}
+\input{d4/d75/structImGui__ImplDX12__Data}
+\input{d3/da4/structImGui__ImplDX12__FrameContext}
+\input{d1/d06/structImGui__ImplDX12__InitInfo}
+\input{d5/dfb/structImGui__ImplDX12__RenderBuffers}
+\input{d8/dd5/structImGui__ImplDX12__RenderState}
+\input{d0/dbb/structImGui__ImplDX12__Texture}
+\input{da/dce/structImGui__ImplDX12__ViewportData}
+\input{da/dc9/structImGui__ImplDX9__Data}
+\input{d5/def/structImGui__ImplDX9__ViewportData}
+\input{d1/d89/structImGui__ImplGlfw__Data}
+\input{d0/d7b/structImGui__ImplGlfw__ViewportData}
+\input{d7/dda/structImGui__ImplMetal__Data}
+\input{da/d32/structImGui__ImplOpenGL2__Data}
+\input{d4/d46/structImGui__ImplOpenGL3__Data}
+\input{d5/d43/structImGui__ImplOSX__Data}
+\input{d0/d92/interfaceImGui__ImplOSX__Window}
+\input{d4/d75/structImGui__ImplSDL2__Data}
+\input{d9/d69/structImGui__ImplSDL2__ViewportData}
+\input{d2/d15/structImGui__ImplSDL3__Data}
+\input{d2/d8f/structImGui__ImplSDL3__ViewportData}
+\input{d7/dbb/structImGui__ImplSDLGPU3__Data}
+\input{d3/d88/structImGui__ImplSDLGPU3__FrameData}
+\input{d4/df5/structImGui__ImplSDLGPU3__InitInfo}
+\input{d4/d69/structImGui__ImplSDLRenderer2__Data}
+\input{d3/ddf/structImGui__ImplSDLRenderer2__RenderState}
+\input{d8/d85/structImGui__ImplSDLRenderer3__Data}
+\input{d0/d9d/structImGui__ImplSDLRenderer3__RenderState}
+\input{de/dfc/structImGui__ImplVulkan__Data}
+\input{d1/d4f/structImGui__ImplVulkan__FrameRenderBuffers}
+\input{d2/dbb/structImGui__ImplVulkan__InitInfo}
+\input{d5/da1/structImGui__ImplVulkan__RenderState}
+\input{d4/de1/structImGui__ImplVulkan__Texture}
+\input{d6/dd1/structImGui__ImplVulkan__ViewportData}
+\input{d3/d97/structImGui__ImplVulkan__WindowRenderBuffers}
+\input{dd/d41/structImGui__ImplVulkanH__Frame}
+\input{dd/ddd/structImGui__ImplVulkanH__FrameSemaphores}
+\input{d5/d7a/structImGui__ImplVulkanH__Window}
+\input{d9/d80/structImGui__ImplWGPU__Data}
+\input{d8/daf/structImGui__ImplWGPU__InitInfo}
+\input{da/d60/structImGui__ImplWGPU__RenderState}
+\input{d6/d89/structImGui__ImplWin32__Data}
+\input{de/db9/structImGui__ImplWin32__ViewportData}
+\input{db/d1f/structImGuiBoxSelectState}
+\input{d5/d92/structImGuiColorMod}
+\input{db/d4e/structImGuiComboPreviewData}
+\input{d3/df1/structImGuiContext}
+\input{da/d0e/structImGuiContextHook}
+\input{d6/d25/structImGuiDataTypeInfo}
+\input{d7/d03/structImGuiDataTypeStorage}
+\input{d9/df6/structImGuiDeactivatedItemData}
+\input{d3/d2d/structImGuiDebugAllocEntry}
+\input{d8/df4/structImGuiDebugAllocInfo}
+\input{d4/d4a/structImGuiDemoWindowData}
+\input{d4/def/structImGuiDockContext}
+\input{de/d67/structImGuiDockContextPruneNodeData}
+\input{d6/df3/structImGuiDockNode}
+\input{df/df4/structImGuiDockNodeSettings}
+\input{dc/d80/structImGuiDockNodeTreeInfo}
+\input{db/d25/structImGuiDockPreviewData}
+\input{d6/db3/structImGuiDockRequest}
+\input{d7/dda/structImGuiErrorRecoveryState}
+\input{db/dda/structImGuiFocusScopeData}
+\input{da/d80/structImGuiGetNameFromIndexOldToNewCallbackData}
+\input{d0/dea/structImGuiGroupData}
+\input{d7/d96/structImGuiIDStackTool}
+\input{d5/db6/structImGuiInputEvent}
+\input{d1/d86/structImGuiInputEventAppFocused}
+\input{da/df4/structImGuiInputEventKey}
+\input{d6/d5a/structImGuiInputEventMouseButton}
+\input{db/d1e/structImGuiInputEventMousePos}
+\input{dc/df8/structImGuiInputEventMouseViewport}
+\input{d1/d66/structImGuiInputEventMouseWheel}
+\input{d8/db2/structImGuiInputEventText}
+\input{db/d94/structImGuiInputTextCallbackData}
+\input{d1/d57/structImGuiInputTextDeactivatedState}
+\input{d0/d3f/structImGuiInputTextState}
+\input{df/d8f/structImGuiIO}
+\input{d5/dcf/structImGuiKeyData}
+\input{d7/d5f/structImGuiKeyOwnerData}
+\input{d5/d36/structImGuiKeyRoutingData}
+\input{d0/d2e/structImGuiKeyRoutingTable}
+\input{d9/d87/structImGuiLastItemData}
+\input{d3/d32/structImGuiListClipper}
+\input{d3/d87/structImGuiListClipperData}
+\input{da/dde/structImGuiListClipperRange}
+\input{d3/d0a/structImGuiLocEntry}
+\input{d4/d27/structImGuiMenuColumns}
+\input{df/d37/structImGuiMetricsConfig}
+\input{da/dcb/structImGuiMultiSelectIO}
+\input{d0/de8/structImGuiMultiSelectState}
+\input{d5/d97/structImGuiMultiSelectTempData}
+\input{d5/d66/structImGuiNavItemData}
+\input{d7/d91/structImGuiNextItemData}
+\input{d4/d21/structImGuiNextWindowData}
+\input{d8/da4/interfaceImGuiObserver}
+\input{da/d28/structImGuiOldColumnData}
+\input{d6/dc1/structImGuiOldColumns}
+\input{d3/d41/structImGuiOnceUponAFrame}
+\input{d7/daa/structImGuiPayload}
+\input{d0/df9/structImGuiPlatformImeData}
+\input{d5/de2/structImGuiPlatformIO}
+\input{da/ddb/structImGuiPlatformMonitor}
+\input{d2/d67/structImGuiPlotArrayGetterData}
+\input{d2/d01/structImGuiPopupData}
+\input{da/d87/structImGuiPtrOrIndex}
+\input{d2/d4a/structImGuiResizeBorderDef}
+\input{d3/df1/structImGuiResizeGripDef}
+\input{d1/d07/structImGuiSelectionBasicStorage}
+\input{dc/d42/structImGuiSelectionExternalStorage}
+\input{d3/ddc/structImGuiSelectionRequest}
+\input{d5/d13/structImGuiSettingsHandler}
+\input{dd/d61/structImGuiShrinkWidthItem}
+\input{d0/d9c/structImGuiSizeCallbackData}
+\input{d2/da7/structImGuiStackLevelInfo}
+\input{d5/d44/structImGuiStorage}
+\input{db/d36/structImGuiStoragePair}
+\input{d8/d89/structImGuiStyle}
+\input{d3/dbe/structImGuiStyleMod}
+\input{d3/d4f/structImGuiStyleVarInfo}
+\input{dd/df2/structImGuiTabBar}
+\input{dd/d1e/structImGuiTabBarSection}
+\input{d9/d99/structImGuiTabItem}
+\input{de/d8f/structImGuiTable}
+\input{db/d70/structImGuiTableCellData}
+\input{d6/d19/structImGuiTableColumn}
+\input{d2/d08/structImGuiTableColumnSettings}
+\input{db/db2/structImGuiTableColumnSortSpecs}
+\input{d1/d06/structImGuiTableHeaderData}
+\input{d8/ddd/structImGuiTableInstanceData}
+\input{dc/d18/structImGuiTableSettings}
+\input{d0/ddc/structImGuiTableSortSpecs}
+\input{d9/d14/structImGuiTableTempData}
+\input{d2/d1d/structImGuiTextBuffer}
+\input{da/de6/structImGuiTextFilter}
+\input{d2/d65/structImGuiTextIndex}
+\input{d7/db6/structImGuiTextFilter_1_1ImGuiTextRange}
+\input{d5/ded/structImGuiTreeNodeStackData}
+\input{d3/deb/structImGuiTypingSelectRequest}
+\input{d1/dc0/structImGuiTypingSelectState}
+\input{d9/d9a/structImGuiViewport}
+\input{da/dbb/structImGuiViewportDataMetal}
+\input{da/dcb/structImGuiViewportDataOSX}
+\input{d3/d20/structImGuiViewportP}
+\input{df/d95/structImGuiWindow}
+\input{dc/d47/structImGuiWindowClass}
+\input{d8/d66/structImGuiWindowDockStyle}
+\input{d8/d81/structImGuiWindowSettings}
+\input{db/de1/structImGuiWindowStackData}
+\input{dd/db7/structImGuiWindowTempData}
+\input{d8/dde/structImNewWrapper}
+\input{d8/d7d/structImPool}
+\input{de/d50/structImRect}
+\input{da/df1/structImSpan}
+\input{da/dbe/structImSpanAllocator}
+\input{dd/dca/structImTriangulator}
+\input{d0/d62/structImTriangulatorNode}
+\input{dc/d57/structImTriangulatorNodeSpan}
+\input{d7/d7a/structImVec1}
+\input{d3/dc2/structImVec2}
+\input{db/dd5/structImVec2ih}
+\input{dc/dee/structImVec4}
+\input{d6/d97/structImVector}
+\input{dc/d68/classCE_1_1INombre}
+\input{dc/dfa/classCE_1_1InputBuffer}
+\input{d8/dd1/structInputTextCallback__UserData}
+\input{da/dd7/classCE_1_1IPaths}
+\input{df/db6/classIVJ_1_1IRayo}
+\input{d8/daa/classCE_1_1IRespawn}
+\input{df/d69/classCE_1_1IShader}
+\input{d6/da3/classCE_1_1ISprite}
+\input{dd/ddd/classCE_1_1IStats}
+\input{d7/d95/classCE_1_1ITexto}
+\input{d4/d0b/classCE_1_1ITimer}
+\input{d1/d52/classCE_1_1ITransform}
+\input{d7/d8d/classIVJ_1_1Juego}
+\input{de/de6/interfaceKeyEventResponder}
+\input{dc/da4/classCE_1_1Lista}
+\input{d6/db9/interfaceMetalBuffer}
+\input{da/d6a/interfaceMetalContext}
+\input{d1/d5b/classCE_1_1Motor}
+\input{d0/d4a/structCE_1_1MotorConfig}
+\input{d4/d34/structMyDocument}
+\input{d1/db4/classCE_1_1Nodo}
+\input{d6/d05/categoryNSCursor_07_08}
+\input{d4/dd1/classCE_1_1Objeto}
+\input{df/d9f/classCE_1_1Pool}
+\input{d4/db2/classIVJ_1_1Rectangulo}
+\input{d7/da1/classCE_1_1Render}
+\input{d1/d8b/structRenderResources}
+\input{dc/df9/structImStb_1_1STB__TexteditState}
+\input{dc/dc6/structSTB__TexteditState}
+\input{df/d9c/structImStb_1_1StbFindState}
+\input{d7/dc7/structstbrp__context}
+\input{d0/dbb/structstbrp__node}
+\input{d5/d50/structstbrp__rect}
+\input{d8/d1b/structImStb_1_1StbTexteditRow}
+\input{d1/dfe/structStbTexteditRow}
+\input{d6/d7d/structstbtt____bitmap}
+\input{dd/d25/structstbtt____buf}
+\input{d9/d0c/structstbtt__aligned__quad}
+\input{d7/d70/structstbtt__bakedchar}
+\input{d1/d3f/structstbtt__fontinfo}
+\input{dc/df5/structstbtt__kerningentry}
+\input{d6/dc9/structstbtt__pack__context}
+\input{d9/d46/structstbtt__pack__range}
+\input{d2/d0c/structstbtt__packedchar}
+\input{d4/d8d/structstbtt__vertex}
+\input{de/d40/structImStb_1_1StbUndoRecord}
+\input{da/d11/structStbUndoRecord}
+\input{d1/d6e/structImStb_1_1StbUndoState}
+\input{da/d59/structStbUndoState}
+\input{d8/dc8/classIVJ_1_1Texto}
+\input{da/dd8/classIVJ_1_1TileMap}
+\input{de/d97/structUniforms}
+\input{d8/db3/structuSynergyContext}
+\input{d1/dff/structuSynergyCookie}
+\input{d2/de2/classCE_1_1Vector2D}
+\input{dd/def/structVERTEX__CONSTANT__BUFFER__DX10}
+\input{d5/d8a/structVERTEX__CONSTANT__BUFFER__DX11}
+\input{d5/dae/structVERTEX__CONSTANT__BUFFER__DX12}
+\input{d8/d93/structWGL__WindowData}
+\chapter{Documentación de archivos}
+\input{de/d12/imconfig-SFML_8h_source}
+\input{d5/d28/imgui-SFML_8h_source}
+\input{d4/d1b/imgui-SFML__export_8h_source}
+\input{d8/d72/imgui__impl__allegro5_8h_source}
+\input{d6/d3d/imgui__impl__android_8h_source}
+\input{dd/d85/imgui__impl__dx10_8h_source}
+\input{dc/d5f/imgui__impl__dx11_8h_source}
+\input{d7/d53/imgui__impl__dx12_8h_source}
+\input{d9/dd4/imgui__impl__dx9_8h_source}
+\input{db/d8b/imgui__impl__glfw_8h_source}
+\input{d9/dec/imgui__impl__glut_8h_source}
+\input{d5/d22/imgui__impl__metal_8h_source}
+\input{d1/d5d/imgui__impl__opengl2_8h_source}
+\input{d1/dea/imgui__impl__opengl3_8h_source}
+\input{df/d5f/imgui__impl__opengl3__loader_8h_source}
+\input{d6/da5/imgui__impl__osx_8h_source}
+\input{da/d87/imgui__impl__sdl2_8h_source}
+\input{d2/dd4/imgui__impl__sdl3_8h_source}
+\input{da/d60/imgui__impl__sdlgpu3_8h_source}
+\input{d8/d4d/imgui__impl__sdlgpu3__shaders_8h_source}
+\input{df/de6/imgui__impl__sdlrenderer2_8h_source}
+\input{d2/d5e/imgui__impl__sdlrenderer3_8h_source}
+\input{d9/db6/imgui__impl__vulkan_8h_source}
+\input{d5/d19/imgui__impl__wgpu_8h_source}
+\input{da/d46/imgui__impl__win32_8h_source}
+\input{d3/df1/imconfig__allegro5_8h_source}
+\input{d7/dd2/emscripten__mainloop__stub_8h_source}
+\input{de/dc4/glfw3_8h}
+\input{de/dc4/glfw3_8h_source}
+\input{d0/d39/glfw3native_8h}
+\input{d0/d39/glfw3native_8h_source}
+\input{da/d12/uSynergy_8h_source}
+\input{dc/dad/imconfig_8h_source}
+\input{db/d19/imgui_8h_source}
+\input{d1/da2/imgui__internal_8h_source}
+\input{d3/d9c/imstb__rectpack_8h_source}
+\input{d7/df0/imstb__textedit_8h_source}
+\input{d3/dab/imstb__truetype_8h_source}
+\input{d8/d71/imgui__stdlib_8h_source}
+\input{d8/d19/imgui__freetype_8h_source}
+\input{d9/d09/imgui__single__file_8h_source}
+\input{db/df9/IJComponentes_8hpp_source}
+\input{dc/df9/Escena__Prueba_8hpp_source}
+\input{db/d82/Figuras_8hpp_source}
+\input{d5/df6/Juego_8hpp_source}
+\input{d4/d18/FSM_8hpp_source}
+\input{df/df6/Entidad_8hpp_source}
+\input{d9/d9b/Texto_8hpp_source}
+\input{de/d03/TileMap_8hpp_source}
+\input{de/d2d/Sistemas_8hpp_source}
+\input{d1/d3d/ALayer_8hpp_source}
+\input{d1/d05/Camaras_8hpp_source}
+\input{de/dea/CamarasGestor_8hpp_source}
+\input{d9/d00/IComponentes_8hpp_source}
+\input{d3/df5/GDock_8hpp_source}
+\input{d2/d02/GLayer_8hpp_source}
+\input{d6/dec/GListaObjetos_8hpp_source}
+\input{dc/da9/GLogger_8hpp_source}
+\input{de/db5/GPaths_8hpp_source}
+\input{d2/dcb/GPropiedades_8hpp_source}
+\input{d4/dc0/GViewport_8hpp_source}
+\input{da/dac/Botones_8hpp_source}
+\input{d4/dd9/InputBuffer_8hpp_source}
+\input{d4/d51/Motor_8hpp_source}
+\input{de/dc7/CEPool_8hpp_source}
+\input{d3/d3c/Escena_8hpp_source}
+\input{d7/d8c/GestorAssets_8hpp_source}
+\input{db/d93/GestorEscenas_8hpp_source}
+\input{d3/d5c/Objetos_8hpp_source}
+\input{df/d20/Render_8hpp_source}
+\input{de/dda/CEInterfaces_8hpp_source}
+\input{d7/df7/Lerp_8hpp_source}
+\input{d3/d6c/Lista_8hpp_source}
+\input{d0/d87/Nodo_8hpp_source}
+\input{d7/d09/Utils_8hpp_source}
+\input{d8/d1e/Vector2D_8hpp_source}
+%--- End generated contents ---
+% Index
+  \backmatter
+  \newpage
+  \phantomsection
+  \clearemptydoublepage
+  \addcontentsline{toc}{chapter}{\indexname}
+  \printindex
+% Required for some languages (in combination with latexdocumentpre from the header)
+\end{document}

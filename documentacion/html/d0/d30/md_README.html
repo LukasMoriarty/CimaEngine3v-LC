@@ -1,0 +1,138 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.16.1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>CimaEngine3v: CimaEngine3v</title>
+<link href="../../tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="../../jquery.js"></script>
+<script type="text/javascript" src="../../dynsections.js"></script>
+<script type="text/javascript" src="../../clipboard.js"></script>
+<link href="../../navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="../../navtreedata.js"></script>
+<script type="text/javascript" src="../../navtree.js"></script>
+<script type="text/javascript" src="../../cookie.js"></script>
+<link href="../../search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="../../search/searchdata.js"></script>
+<script type="text/javascript" src="../../search/search.js"></script>
+<link href="../../doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr id="projectrow">
+  <td id="projectalign">
+   <div id="projectname">CimaEngine3v
+   </div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Generado por Doxygen 1.16.1 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "../../search/",'.html');
+</script>
+<script type="text/javascript">
+$(function() { codefold.init(); });
+</script>
+<script type="text/javascript" src="../../menudata.js"></script>
+<script type="text/javascript" src="../../menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('../../',true,false,'search.php','Buscar',true);
+  $(function() { init_search(); });
+});
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(function(){initNavTree('d0/d30/md_README.html','../../',''); });
+</script>
+<div id="container">
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Cargando...</div>
+<div class="SRStatus" id="Searching">Buscando...</div>
+<div class="SRStatus" id="NoMatches">Nada coincide</div>
+</div>
+</div>
+</div>
+</div>
+
+<div><div class="header">
+  <div class="headertitle"><div class="title">CimaEngine3v </div></div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><p><a class="anchor" id="autotoc_md223"></a></p>
+<p><a href="https://github.com/Omar-z/CimaEngine3v/actions/workflows/build.yml"><img src="https://github.com/Omar-z/CimaEngine3v/actions/workflows/build.yml/badge.svg" alt="Build" style="pointer-events: none;" class="inline"/></a></p>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md224"></a>
+Como compilar y ejecutar</h1>
+<p>1.- crear un folder build y moverse en consola a el</p>
+<div class="fragment"><div class="line">mkdir build &amp;&amp; cd build</div>
+</div><!-- fragment --><p>2.- en la consola dentro del folder build</p>
+<div class="fragment"><div class="line">#para el build de Debug , en consola ir a CimaEngine/build/ </div>
+<div class="line">cmake .. -DCMAKE_BUILD_TYPE=Debug</div>
+<div class="line"> </div>
+<div class="line"># para el build de Release , en consola ir a CimaEngine/build/ </div>
+<div class="line">cmake .. -DCMAKE_BUILD_TYPE=Release</div>
+<div class="line"> </div>
+<div class="line"># Especificar si quiere usar un toolchain diferente</div>
+<div class="line"> </div>
+<div class="line">cmake -G&quot;MinGW Makefiles&quot; .. -DCMAKE_BUILD_TYPE=Debug</div>
+</div><!-- fragment --><p> 1 copiar el archivo <span class="tt">compiler_commands.json</span> generado en el folder <span class="tt">build</span> al folder raíz, este archivo le ayuda a tu IDE a autocompletar mejor y encontrar los paths</p>
+<p>3.- Después de crear el build, compilamos</p>
+<div class="fragment"><div class="line"># estando en el folder de `build` </div>
+<div class="line">cmake --build . --target CimaEngine3v -- -j 8</div>
+</div><!-- fragment --><p>4.- el ejecutable se crea en <span class="tt">CimaEngine3v/bin/&lt;perfil&gt;/CimaEngine3v.exe</span></p>
+<div class="fragment"><div class="line"># si se hizo un build de Debug</div>
+<div class="line">CimaEngine3v/bin/Debug/CimaEngine3v.exe</div>
+<div class="line"> </div>
+<div class="line"># si se hizo un build de Release</div>
+<div class="line">CimaEngine3v/bin/Release/CimaEngine3v.exe</div>
+</div><!-- fragment --> </div></div><!-- contents -->
+</div><!-- PageDoc -->
+</div><!-- doc-content -->
+<div id="page-nav" class="page-nav-panel">
+<div id="page-nav-resize-handle"></div>
+<div id="page-nav-tree">
+<div id="page-nav-contents">
+</div><!-- page-nav-contents -->
+</div><!-- page-nav-tree -->
+</div><!-- page-nav -->
+</div><!-- container -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="footer">Generado por <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.16.1 </li>
+  </ul>
+</div>
+</body>
+</html>

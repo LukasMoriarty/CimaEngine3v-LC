@@ -1,0 +1,102 @@
+\doxysection{Referencia de la clase CE::\+IPaths}
+\hypertarget{classCE_1_1IPaths}{}\label{classCE_1_1IPaths}\index{CE::IPaths@{CE::IPaths}}
+
+
+Componente para seguimiento de trayectorias usando curvas Bézier.  
+
+
+
+
+{\ttfamily \+\#include $<$IComponentes.\+hpp$>$}
+
+Diagrama de herencia de CE::\+IPaths\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{da/dd7/classCE_1_1IPaths}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Métodos públicos}
+\begin{DoxyCompactItemize}
+\item 
+\doxymbox{\hyperlink{classCE_1_1IPaths_acfd49ca856c5bc05e07f35ec73899236}{IPaths}} (int total\+\_\+frames)
+\begin{DoxyCompactList}\small\item\em Constructor del componente de trayectorias. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{classCE_1_1IPaths_a37d8ae5763deab76a3321b80b16976e7}{add\+Curva}} (\doxymbox{\hyperlink{classCE_1_1Vector2D}{Vector2D}} p1, \doxymbox{\hyperlink{classCE_1_1Vector2D}{Vector2D}} p2, \doxymbox{\hyperlink{classCE_1_1Vector2D}{Vector2D}} p3)
+\begin{DoxyCompactList}\small\item\em Agrega una curva Bézier cuadrática a la trayectoria. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Métodos públicos heredados de \doxymbox{\hyperlink{classCE_1_1IComponentes}{CE::\+\+IComponentes}}}
+\begin{DoxyCompactItemize}
+\item 
+virtual {\bfseries \texorpdfstring{$\sim$}{\string~}\+IComponentes} ()=default
+\begin{DoxyCompactList}\small\item\em Destructor virtual por defecto. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Atributos públicos}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classCE_1_1IPaths_ae9345257c8063204b771520caadb241a}\label{classCE_1_1IPaths_ae9345257c8063204b771520caadb241a} 
+std::\+vector$<$ \doxymbox{\hyperlink{classCE_1_1Vector2D}{Vector2D}} $>$ {\bfseries puntos}
+\begin{DoxyCompactList}\small\item\em \doxylink{classCE_1_1Lista}{Lista} de puntos que forman la trayectoria. \end{DoxyCompactList}\item 
+\Hypertarget{classCE_1_1IPaths_a0403a15b89b264564e69534d7d5d7dc1}\label{classCE_1_1IPaths_a0403a15b89b264564e69534d7d5d7dc1} 
+int {\bfseries offset}
+\begin{DoxyCompactList}\small\item\em Desplazamiento en la lista de puntos. \end{DoxyCompactList}\item 
+\Hypertarget{classCE_1_1IPaths_a9b1dfa8095cc502dc173b0151093586a}\label{classCE_1_1IPaths_a9b1dfa8095cc502dc173b0151093586a} 
+int {\bfseries id\+\_\+curva}
+\begin{DoxyCompactList}\small\item\em ID de la curva actual siendo seguida. \end{DoxyCompactList}\item 
+\Hypertarget{classCE_1_1IPaths_ad18c4440724fa8f28cfe708156f3f5f8}\label{classCE_1_1IPaths_ad18c4440724fa8f28cfe708156f3f5f8} 
+int {\bfseries frame\+\_\+total\+\_\+curva}
+\begin{DoxyCompactList}\small\item\em Total de frames de la curva actual. \end{DoxyCompactList}\item 
+\Hypertarget{classCE_1_1IPaths_a4c09091c87b34491c2d4ce56797ffdf3}\label{classCE_1_1IPaths_a4c09091c87b34491c2d4ce56797ffdf3} 
+int {\bfseries frame\+\_\+actual\+\_\+curva}
+\begin{DoxyCompactList}\small\item\em Frame actual dentro de la curva. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Descripción detallada}
+Componente para seguimiento de trayectorias usando curvas Bézier. 
+
+Permite que una entidad siga una ruta predefinida usando curvas Bézier cuadráticas. Almacena puntos de control y rastrea la posición actual en la trayectoria. 
+
+\label{doc-constructors}
+\Hypertarget{classCE_1_1IPaths_doc-constructors}
+\doxysubsection{Documentación de constructores y destructores}
+\Hypertarget{classCE_1_1IPaths_acfd49ca856c5bc05e07f35ec73899236}\index{CE::IPaths@{CE::IPaths}!IPaths@{IPaths}}
+\index{IPaths@{IPaths}!CE::IPaths@{CE::IPaths}}
+\doxysubsubsection{\texorpdfstring{IPaths()}{IPaths()}}
+{\footnotesize\ttfamily \label{classCE_1_1IPaths_acfd49ca856c5bc05e07f35ec73899236} 
+CE::\+\+IPaths::\+\+IPaths (\begin{DoxyParamCaption}\item[{int}]{total\+\_\+frames}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [explicit]}}
+
+
+
+Constructor del componente de trayectorias. 
+
+
+\begin{DoxyParams}{Parámetros}
+{\em total\+\_\+frames} & Número total de frames de la trayectoria completa \\
+\hline
+\end{DoxyParams}
+
+
+\label{doc-func-members}
+\Hypertarget{classCE_1_1IPaths_doc-func-members}
+\doxysubsection{Documentación de funciones miembro}
+\Hypertarget{classCE_1_1IPaths_a37d8ae5763deab76a3321b80b16976e7}\index{CE::IPaths@{CE::IPaths}!addCurva@{addCurva}}
+\index{addCurva@{addCurva}!CE::IPaths@{CE::IPaths}}
+\doxysubsubsection{\texorpdfstring{addCurva()}{addCurva()}}
+{\footnotesize\ttfamily \label{classCE_1_1IPaths_a37d8ae5763deab76a3321b80b16976e7} 
+void CE::\+\+IPaths::\+add\+Curva (\begin{DoxyParamCaption}\item[{\doxymbox{\hyperlink{classCE_1_1Vector2D}{Vector2D}}}]{p1}{, }\item[{\doxymbox{\hyperlink{classCE_1_1Vector2D}{Vector2D}}}]{p2}{, }\item[{\doxymbox{\hyperlink{classCE_1_1Vector2D}{Vector2D}}}]{p3}{}\end{DoxyParamCaption})}
+
+
+
+Agrega una curva Bézier cuadrática a la trayectoria. 
+
+
+\begin{DoxyParams}{Parámetros}
+{\em p1} & Primer punto de control \\
+\hline
+{\em p2} & Punto de control central \\
+\hline
+{\em p3} & Tercer punto de control \\
+\hline
+\end{DoxyParams}
+
+
+La documentación de esta clase está generada de los siguientes archivos:\+\begin{DoxyCompactItemize}
+\item 
+src/\+\+Motor/\+\+Componentes/\+IComponentes.\+hpp\item 
+src/\+\+Motor/\+\+Componentes/\+IComponentes.\+cpp\end{DoxyCompactItemize}

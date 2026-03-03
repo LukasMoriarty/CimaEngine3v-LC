@@ -1,0 +1,51 @@
+\doxysection{Referencia de la clase CE::\+ITimer}
+\hypertarget{classCE_1_1ITimer}{}\label{classCE_1_1ITimer}\index{CE::ITimer@{CE::ITimer}}
+
+
+Componente de temporizador para animaciones y timing de eventos.  
+
+
+
+
+{\ttfamily \+\#include $<$IComponentes.\+hpp$>$}
+
+Diagrama de herencia de CE::\+ITimer\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{d4/d0b/classCE_1_1ITimer}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Métodos públicos}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classCE_1_1ITimer_aa5531563ae10f800a3d32c0ce95b0f0c}\label{classCE_1_1ITimer_aa5531563ae10f800a3d32c0ce95b0f0c} 
+{\bfseries ITimer} ()
+\begin{DoxyCompactList}\small\item\em Constructor inicializa timer en 0. \end{DoxyCompactList}\item 
+\Hypertarget{classCE_1_1ITimer_a9dc1125dffd0e6c5479664d160da98f2}\label{classCE_1_1ITimer_a9dc1125dffd0e6c5479664d160da98f2} 
+{\bfseries \texorpdfstring{$\sim$}{\string~}\+ITimer} () override
+\begin{DoxyCompactList}\small\item\em Destructor virtual. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Métodos públicos heredados de \doxymbox{\hyperlink{classCE_1_1IComponentes}{CE::\+\+IComponentes}}}
+\begin{DoxyCompactItemize}
+\item 
+virtual {\bfseries \texorpdfstring{$\sim$}{\string~}\+IComponentes} ()=default
+\begin{DoxyCompactList}\small\item\em Destructor virtual por defecto. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Atributos públicos}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classCE_1_1ITimer_acdf55ea7e0b3605df4c2de7d3fb52950}\label{classCE_1_1ITimer_acdf55ea7e0b3605df4c2de7d3fb52950} 
+int {\bfseries frame\+\_\+actual}
+\begin{DoxyCompactList}\small\item\em Frame actual de la animación. \end{DoxyCompactList}\item 
+\Hypertarget{classCE_1_1ITimer_a8f7b42101be16ac7c0d08b1555b3132f}\label{classCE_1_1ITimer_a8f7b42101be16ac7c0d08b1555b3132f} 
+float {\bfseries frac\+\_\+actual}
+\begin{DoxyCompactList}\small\item\em Fracción decimal del frame (0.\+0 a 1.\+0) para interpolación. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Descripción detallada}
+Componente de temporizador para animaciones y timing de eventos. 
+
+Rastrea el frame actual y la fracción de frame para animaciones sincronizadas y efectos basados en tiempo. 
+
+La documentación de esta clase está generada de los siguientes archivos:\+\begin{DoxyCompactItemize}
+\item 
+src/\+\+Motor/\+\+Componentes/\+IComponentes.\+hpp\item 
+src/\+\+Motor/\+\+Componentes/\+IComponentes.\+cpp\end{DoxyCompactItemize}

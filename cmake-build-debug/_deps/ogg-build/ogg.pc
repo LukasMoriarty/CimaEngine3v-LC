@@ -1,0 +1,14 @@
+# ogg pkg-config file
+
+prefix=C:/Program Files (x86)/CimaEngine3v
+exec_prefix=C:/Program Files (x86)/CimaEngine3v/bin
+libdir=C:/Program Files (x86)/CimaEngine3v/lib
+includedir=C:/Program Files (x86)/CimaEngine3v/include
+
+Name: ogg
+Description: ogg is a library for manipulating ogg bitstreams
+Version: 1.3.5
+Requires:
+Conflicts:
+Libs: -L${libdir} -logg
+Cflags: -I${includedir}

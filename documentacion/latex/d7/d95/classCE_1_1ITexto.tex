@@ -1,0 +1,69 @@
+\doxysection{Referencia de la clase CE::\+ITexto}
+\hypertarget{classCE_1_1ITexto}{}\label{classCE_1_1ITexto}\index{CE::ITexto@{CE::ITexto}}
+
+
+Componente para renderizar texto en la entidad.  
+
+
+
+
+{\ttfamily \+\#include $<$IComponentes.\+hpp$>$}
+
+Diagrama de herencia de CE::\+ITexto\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{d7/d95/classCE_1_1ITexto}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Métodos públicos}
+\begin{DoxyCompactItemize}
+\item 
+\doxymbox{\hyperlink{classCE_1_1ITexto_a8b39a373bd37c5c8efd488d17e8a8137}{ITexto}} (const sf::\+\+Font \&font, const std::\+string \&texto)
+\begin{DoxyCompactList}\small\item\em Constructor del componente texto. \end{DoxyCompactList}\item 
+\Hypertarget{classCE_1_1ITexto_a373648b743ddf24f02b6913b54a61f76}\label{classCE_1_1ITexto_a373648b743ddf24f02b6913b54a61f76} 
+{\bfseries \texorpdfstring{$\sim$}{\string~}\+ITexto} () override
+\begin{DoxyCompactList}\small\item\em Destructor virtual. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Métodos públicos heredados de \doxymbox{\hyperlink{classCE_1_1IComponentes}{CE::\+\+IComponentes}}}
+\begin{DoxyCompactItemize}
+\item 
+virtual {\bfseries \texorpdfstring{$\sim$}{\string~}\+IComponentes} ()=default
+\begin{DoxyCompactList}\small\item\em Destructor virtual por defecto. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Atributos públicos}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classCE_1_1ITexto_a7a6f4a892507869f022b16bff96577a3}\label{classCE_1_1ITexto_a7a6f4a892507869f022b16bff96577a3} 
+sf::\+\+Text {\bfseries m\+\_\+texto}
+\begin{DoxyCompactList}\small\item\em \doxylink{classCE_1_1Objeto}{Objeto} de texto SFML que se renderiza. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Descripción detallada}
+Componente para renderizar texto en la entidad. 
+
+Contiene un objeto sf::\+\+Text de SFML para mostrar texto renderizado en la posición de la entidad con la fuente especificada. 
+
+\label{doc-constructors}
+\Hypertarget{classCE_1_1ITexto_doc-constructors}
+\doxysubsection{Documentación de constructores y destructores}
+\Hypertarget{classCE_1_1ITexto_a8b39a373bd37c5c8efd488d17e8a8137}\index{CE::ITexto@{CE::ITexto}!ITexto@{ITexto}}
+\index{ITexto@{ITexto}!CE::ITexto@{CE::ITexto}}
+\doxysubsubsection{\texorpdfstring{ITexto()}{ITexto()}}
+{\footnotesize\ttfamily \label{classCE_1_1ITexto_a8b39a373bd37c5c8efd488d17e8a8137} 
+CE::\+\+ITexto::\+\+ITexto (\begin{DoxyParamCaption}\item[{const sf::\+\+Font \&}]{font}{, }\item[{const std::\+string \&}]{texto}{}\end{DoxyParamCaption})}
+
+
+
+Constructor del componente texto. 
+
+
+\begin{DoxyParams}{Parámetros}
+{\em font} & Referencia a la fuente de SFML a usar \\
+\hline
+{\em texto} & Contenido textual inicial \\
+\hline
+\end{DoxyParams}
+
+
+La documentación de esta clase está generada de los siguientes archivos:\+\begin{DoxyCompactItemize}
+\item 
+src/\+\+Motor/\+\+Componentes/\+IComponentes.\+hpp\item 
+src/\+\+Motor/\+\+Componentes/\+IComponentes.\+cpp\end{DoxyCompactItemize}

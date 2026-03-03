@@ -1,0 +1,55 @@
+\doxysection{Referencia de la estructura Example\+Selection\+With\+Deletion}
+\hypertarget{structExampleSelectionWithDeletion}{}\label{structExampleSelectionWithDeletion}\index{ExampleSelectionWithDeletion@{ExampleSelectionWithDeletion}}
+Diagrama de herencia de Example\+Selection\+With\+Deletion\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{d9/de9/structExampleSelectionWithDeletion}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Métodos públicos}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{structExampleSelectionWithDeletion_a741d9367a06463991c3171a06c0924c8}\label{structExampleSelectionWithDeletion_a741d9367a06463991c3171a06c0924c8} 
+int {\bfseries Apply\+Deletion\+Pre\+Loop} (\doxymbox{\hyperlink{structImGuiMultiSelectIO}{Im\+Gui\+Multi\+Select\+IO}} \texorpdfstring{$\ast$}{*}ms\+\_\+io, int items\+\_\+count)
+\item 
+\Hypertarget{structExampleSelectionWithDeletion_aa040ee356abd37ae15d34eaae8b53822}\label{structExampleSelectionWithDeletion_aa040ee356abd37ae15d34eaae8b53822} 
+{\footnotesize template$<$typename ITEM\+\_\+\+TYPE$>$ }\\void {\bfseries Apply\+Deletion\+Post\+Loop} (\doxymbox{\hyperlink{structImGuiMultiSelectIO}{Im\+Gui\+Multi\+Select\+IO}} \texorpdfstring{$\ast$}{*}ms\+\_\+io, \doxymbox{\hyperlink{structImVector}{Im\+Vector}}$<$ ITEM\+\_\+\+TYPE $>$ \&items, int item\+\_\+curr\+\_\+idx\+\_\+to\+\_\+select)
+\end{DoxyCompactItemize}
+\doxysubsection*{Métodos públicos heredados de \doxymbox{\hyperlink{structImGuiSelectionBasicStorage}{Im\+Gui\+Selection\+Basic\+Storage}}}
+\begin{DoxyCompactItemize}
+\item 
+IMGUI\+\_\+\+API void {\bfseries Apply\+Requests} (\doxymbox{\hyperlink{structImGuiMultiSelectIO}{Im\+Gui\+Multi\+Select\+IO}} \texorpdfstring{$\ast$}{*}ms\+\_\+io)
+\item 
+IMGUI\+\_\+\+API bool {\bfseries Contains} (Im\+Gui\+ID id) const
+\item 
+IMGUI\+\_\+\+API void {\bfseries Clear} ()
+\item 
+IMGUI\+\_\+\+API void {\bfseries Swap} (\doxymbox{\hyperlink{structImGuiSelectionBasicStorage}{Im\+Gui\+Selection\+Basic\+Storage}} \&r)
+\item 
+IMGUI\+\_\+\+API void {\bfseries Set\+Item\+Selected} (Im\+Gui\+ID id, bool selected)
+\item 
+IMGUI\+\_\+\+API bool {\bfseries Get\+Next\+Selected\+Item} (void \texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*}opaque\+\_\+it, Im\+Gui\+ID \texorpdfstring{$\ast$}{*}out\+\_\+id)
+\item 
+Im\+Gui\+ID {\bfseries Get\+Storage\+Id\+From\+Index} (int idx)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Otros miembros heredados}
+\doxysubsection*{Atributos públicos heredados de \doxymbox{\hyperlink{structImGuiSelectionBasicStorage}{Im\+Gui\+Selection\+Basic\+Storage}}}
+\begin{DoxyCompactItemize}
+\item 
+int {\bfseries Size}
+\item 
+bool {\bfseries Preserve\+Order}
+\item 
+void \texorpdfstring{$\ast$}{*} {\bfseries User\+Data}
+\item 
+Im\+Gui\+ID(\texorpdfstring{$\ast$}{*} {\bfseries Adapter\+Index\+To\+Storage\+Id} )(\doxymbox{\hyperlink{structImGuiSelectionBasicStorage}{Im\+Gui\+Selection\+Basic\+Storage}} \texorpdfstring{$\ast$}{*}self, int idx)
+\item 
+int {\bfseries \+\_\+\+Selection\+Order}
+\item 
+\doxymbox{\hyperlink{structImGuiStorage}{Im\+Gui\+Storage}} {\bfseries \+\_\+\+Storage}
+\end{DoxyCompactItemize}
+
+
+La documentación de esta estructura está generada del siguiente archivo:\+\begin{DoxyCompactItemize}
+\item 
+build/\+\+\_\+deps/\+imgui-\/src/\+imgui\+\_\+demo.\+cpp\end{DoxyCompactItemize}

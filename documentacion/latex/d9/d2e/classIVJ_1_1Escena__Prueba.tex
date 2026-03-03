@@ -1,0 +1,184 @@
+\doxysection{Referencia de la clase IVJ::\+Escena\+\_\+\+Prueba}
+\hypertarget{classIVJ_1_1Escena__Prueba}{}\label{classIVJ_1_1Escena__Prueba}\index{IVJ::Escena\_Prueba@{IVJ::Escena\_Prueba}}
+Diagrama de herencia de IVJ::\+Escena\+\_\+\+Prueba\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{d9/d2e/classIVJ_1_1Escena__Prueba}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Métodos públicos}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classIVJ_1_1Escena__Prueba_ac8814004b29291c52f87eec5f90021d9}\label{classIVJ_1_1Escena__Prueba_ac8814004b29291c52f87eec5f90021d9} 
+{\bfseries Escena\+\_\+\+Prueba} (std::\+shared\+\_\+ptr$<$ \doxymbox{\hyperlink{classIVJ_1_1Entidad}{Entidad}} $>$ \&pref)
+\item 
+void \doxymbox{\hyperlink{classIVJ_1_1Escena__Prueba_a0fb753b1ed30c8db40462cc5c54a91b5}{on\+Init}} () override
+\begin{DoxyCompactList}\small\item\em Inicializa la escena (se llama al cargarla). \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{classIVJ_1_1Escena__Prueba_a00b7d3f3ce489b0ef56b8121880b46a8}{on\+Final}} () override
+\begin{DoxyCompactList}\small\item\em Limpia la escena (se llama al descargarla). \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{classIVJ_1_1Escena__Prueba_a3832c5230e1150535fe59e4e18140aaf}{on\+Update}} (float dt) override
+\begin{DoxyCompactList}\small\item\em Actualiza la lógica de la escena. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{classIVJ_1_1Escena__Prueba_ad8981bedd3bb61ae78a1a0481b4639fe}{on\+Inputs}} (const \doxymbox{\hyperlink{classCE_1_1Botones}{CE::\+\+Botones}} \&accion) override
+\begin{DoxyCompactList}\small\item\em Procesa entrada de botones mapeados. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{classIVJ_1_1Escena__Prueba_a6eb21e0e784c4d8733a389396bf9d8f5}{on\+Render}} () override
+\begin{DoxyCompactList}\small\item\em Renderiza la escena. \end{DoxyCompactList}\item 
+std::\+shared\+\_\+ptr$<$ \doxymbox{\hyperlink{classIVJ_1_1Entidad}{Entidad}} $>$ \doxymbox{\hyperlink{classIVJ_1_1Escena__Prueba_ac11fbf5eb9a9b6a3c7ac8105e8b6d8f6}{get\+Jugador}} () override
+\begin{DoxyCompactList}\small\item\em Obtiene la entidad del jugador de la escena. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Métodos públicos heredados de \doxymbox{\hyperlink{classCE_1_1Escena}{CE::\+\+Escena}}}
+\begin{DoxyCompactItemize}
+\item 
+virtual {\bfseries \texorpdfstring{$\sim$}{\string~}\+Escena} ()
+\begin{DoxyCompactList}\small\item\em Destructor virtual. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{classCE_1_1Escena_a86a6f993844de886879a3562378d49b7}{registrar\+Botones}} (sf::\+\+Keyboard::\+\+Scancode boton, const std::\+string \&accion)
+\begin{DoxyCompactList}\small\item\em Registra un mapeo de tecla a acción. \end{DoxyCompactList}\item 
+Hash\+Botones \& \doxymbox{\hyperlink{classCE_1_1Escena_ae19da6f6a5c932fdda676eaacda683a0}{get\+Botones}} ()
+\begin{DoxyCompactList}\small\item\em Obtiene el mapeo de botones a acciones. \end{DoxyCompactList}\item 
+\doxymbox{\hyperlink{classCE_1_1Pool}{Pool}} \& \doxymbox{\hyperlink{classCE_1_1Escena_a36fa3e07118825511b84f40f60b64e6c}{get\+Pool}} ()
+\begin{DoxyCompactList}\small\item\em Obtiene el pool de objetos de la escena. \end{DoxyCompactList}\item 
+std::\+vector$<$ sf::\+\+Keyboard::\+\+Scancode $>$ \doxymbox{\hyperlink{classCE_1_1Escena_a4a93f12159b3472a3721ab376ef81beb}{get\+Botones\+Registrados}} ()
+\begin{DoxyCompactList}\small\item\em Obtiene todas las teclas registradas como vector. \end{DoxyCompactList}\item 
+std::\+vector$<$ \doxymbox{\hyperlink{classIVJ_1_1TileMap}{IVJ::\+\+Tile\+Map}} $>$ \& \doxymbox{\hyperlink{classCE_1_1Escena_ad0ceb8522279c223ea147fa51e0b9925}{get\+Tile\+Maps\+Layers}} ()
+\begin{DoxyCompactList}\small\item\em Obtiene todas las capas de tilemaps. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Otros miembros heredados}
+\doxysubsection*{Atributos públicos heredados de \doxymbox{\hyperlink{classCE_1_1Escena}{CE::\+\+Escena}}}
+\begin{DoxyCompactItemize}
+\item 
+Hash\+Botones {\bfseries botones}
+\begin{DoxyCompactList}\small\item\em Mapeo de botones a nombres de acciones (público para acceso directo). \end{DoxyCompactList}\item 
+Hash\+Botones {\bfseries gui}
+\begin{DoxyCompactList}\small\item\em Mapeo de botones GUI (interfaz gráfica). \end{DoxyCompactList}\item 
+std::\+string {\bfseries nombre}
+\begin{DoxyCompactList}\small\item\em Nombre/\+identificador de la escena. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Atributos protegidos heredados de \doxymbox{\hyperlink{classCE_1_1Escena}{CE::\+\+Escena}}}
+\begin{DoxyCompactItemize}
+\item 
+\doxymbox{\hyperlink{classCE_1_1Pool}{Pool}} {\bfseries objetos} \{100\}
+\begin{DoxyCompactList}\small\item\em \doxylink{classCE_1_1Pool}{Pool} de objetos de la escena (capacidad:\+ 100 objetos). \end{DoxyCompactList}\item 
+std::\+vector$<$ \doxymbox{\hyperlink{classIVJ_1_1TileMap}{IVJ::\+\+Tile\+Map}} $>$ {\bfseries tiles\+\_\+layers}
+\begin{DoxyCompactList}\small\item\em Vector de tilemaps con múltiples capas. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{classIVJ_1_1Escena__Prueba_doc-func-members}
+\doxysubsection{Documentación de funciones miembro}
+\Hypertarget{classIVJ_1_1Escena__Prueba_ac11fbf5eb9a9b6a3c7ac8105e8b6d8f6}\index{IVJ::Escena\_Prueba@{IVJ::Escena\_Prueba}!getJugador@{getJugador}}
+\index{getJugador@{getJugador}!IVJ::Escena\_Prueba@{IVJ::Escena\_Prueba}}
+\doxysubsubsection{\texorpdfstring{getJugador()}{getJugador()}}
+{\footnotesize\ttfamily \label{classIVJ_1_1Escena__Prueba_ac11fbf5eb9a9b6a3c7ac8105e8b6d8f6} 
+std::\+shared\+\_\+ptr$<$ \doxymbox{\hyperlink{classIVJ_1_1Entidad}{Entidad}} $>$ IVJ::\+\+Escena\+\_\+\+Prueba::\+get\+Jugador (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Obtiene la entidad del jugador de la escena. 
+
+\begin{DoxyReturn}{Devuelve}
+Puntero compartido a la entidad del jugador (nullptr por defecto) 
+\end{DoxyReturn}
+\begin{DoxyNote}{Nota}
+Puede ser sobrescrito por subclases 
+\end{DoxyNote}
+
+
+Reimplementado de \doxymbox{\hyperlink{classCE_1_1Escena_a82db80b9c8ed4e76056110cbedaf393a}{CE::\+\+Escena}}.
+
+\Hypertarget{classIVJ_1_1Escena__Prueba_a00b7d3f3ce489b0ef56b8121880b46a8}\index{IVJ::Escena\_Prueba@{IVJ::Escena\_Prueba}!onFinal@{onFinal}}
+\index{onFinal@{onFinal}!IVJ::Escena\_Prueba@{IVJ::Escena\_Prueba}}
+\doxysubsubsection{\texorpdfstring{onFinal()}{onFinal()}}
+{\footnotesize\ttfamily \label{classIVJ_1_1Escena__Prueba_a00b7d3f3ce489b0ef56b8121880b46a8} 
+void IVJ::\+\+Escena\+\_\+\+Prueba::\+on\+Final (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Limpia la escena (se llama al descargarla). 
+
+\begin{DoxyNote}{Nota}
+Método virtual puro -\/ debe ser implementado por subclases 
+\end{DoxyNote}
+
+
+Implementa \doxymbox{\hyperlink{classCE_1_1Escena_acd29ab05b7d32581bcfbd634be4db0d8}{CE::\+\+Escena}}.
+
+\Hypertarget{classIVJ_1_1Escena__Prueba_a0fb753b1ed30c8db40462cc5c54a91b5}\index{IVJ::Escena\_Prueba@{IVJ::Escena\_Prueba}!onInit@{onInit}}
+\index{onInit@{onInit}!IVJ::Escena\_Prueba@{IVJ::Escena\_Prueba}}
+\doxysubsubsection{\texorpdfstring{onInit()}{onInit()}}
+{\footnotesize\ttfamily \label{classIVJ_1_1Escena__Prueba_a0fb753b1ed30c8db40462cc5c54a91b5} 
+void IVJ::\+\+Escena\+\_\+\+Prueba::\+on\+Init (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Inicializa la escena (se llama al cargarla). 
+
+\begin{DoxyNote}{Nota}
+Método virtual puro -\/ debe ser implementado por subclases 
+\end{DoxyNote}
+
+
+Implementa \doxymbox{\hyperlink{classCE_1_1Escena_aa5b1d1ee11f920a6034208aa3813f346}{CE::\+\+Escena}}.
+
+\Hypertarget{classIVJ_1_1Escena__Prueba_ad8981bedd3bb61ae78a1a0481b4639fe}\index{IVJ::Escena\_Prueba@{IVJ::Escena\_Prueba}!onInputs@{onInputs}}
+\index{onInputs@{onInputs}!IVJ::Escena\_Prueba@{IVJ::Escena\_Prueba}}
+\doxysubsubsection{\texorpdfstring{onInputs()}{onInputs()}}
+{\footnotesize\ttfamily \label{classIVJ_1_1Escena__Prueba_ad8981bedd3bb61ae78a1a0481b4639fe} 
+void IVJ::\+\+Escena\+\_\+\+Prueba::\+on\+Inputs (\begin{DoxyParamCaption}\item[{const \doxymbox{\hyperlink{classCE_1_1Botones}{CE::\+\+Botones}} \&}]{accion}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Procesa entrada de botones mapeados. 
+
+
+\begin{DoxyParams}{Parámetros}
+{\em accion} & Botón presionado con sus propiedades \\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Nota}
+Método virtual puro -\/ debe ser implementado por subclases 
+\end{DoxyNote}
+
+
+Implementa \doxymbox{\hyperlink{classCE_1_1Escena_a18a0d78ee0f9dbedc51f105ade30bfb4}{CE::\+\+Escena}}.
+
+\Hypertarget{classIVJ_1_1Escena__Prueba_a6eb21e0e784c4d8733a389396bf9d8f5}\index{IVJ::Escena\_Prueba@{IVJ::Escena\_Prueba}!onRender@{onRender}}
+\index{onRender@{onRender}!IVJ::Escena\_Prueba@{IVJ::Escena\_Prueba}}
+\doxysubsubsection{\texorpdfstring{onRender()}{onRender()}}
+{\footnotesize\ttfamily \label{classIVJ_1_1Escena__Prueba_a6eb21e0e784c4d8733a389396bf9d8f5} 
+void IVJ::\+\+Escena\+\_\+\+Prueba::\+on\+Render (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Renderiza la escena. 
+
+\begin{DoxyNote}{Nota}
+Método virtual puro -\/ debe ser implementado por subclases 
+\end{DoxyNote}
+
+
+Implementa \doxymbox{\hyperlink{classCE_1_1Escena_a2c0c5cac03eda5887fd7ad760cd0157b}{CE::\+\+Escena}}.
+
+\Hypertarget{classIVJ_1_1Escena__Prueba_a3832c5230e1150535fe59e4e18140aaf}\index{IVJ::Escena\_Prueba@{IVJ::Escena\_Prueba}!onUpdate@{onUpdate}}
+\index{onUpdate@{onUpdate}!IVJ::Escena\_Prueba@{IVJ::Escena\_Prueba}}
+\doxysubsubsection{\texorpdfstring{onUpdate()}{onUpdate()}}
+{\footnotesize\ttfamily \label{classIVJ_1_1Escena__Prueba_a3832c5230e1150535fe59e4e18140aaf} 
+void IVJ::\+\+Escena\+\_\+\+Prueba::\+on\+Update (\begin{DoxyParamCaption}\item[{float}]{dt}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Actualiza la lógica de la escena. 
+
+
+\begin{DoxyParams}{Parámetros}
+{\em dt} & Delta time en segundos \\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Nota}
+Método virtual puro -\/ debe ser implementado por subclases 
+\end{DoxyNote}
+
+
+Implementa \doxymbox{\hyperlink{classCE_1_1Escena_adafabc6e0e86440d3b71a780bf3cdc31}{CE::\+\+Escena}}.
+
+
+
+La documentación de esta clase está generada de los siguientes archivos:\+\begin{DoxyCompactItemize}
+\item 
+src/\+\+Juego/\+\+Escenas/\+Escena\+\_\+\+Prueba.\+hpp\item 
+src/\+\+Juego/\+\+Escenas/\+Escena\+\_\+\+Prueba.\+cpp\end{DoxyCompactItemize}

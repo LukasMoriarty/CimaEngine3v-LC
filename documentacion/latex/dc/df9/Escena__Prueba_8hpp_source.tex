@@ -1,0 +1,29 @@
+\doxysection{Escena\+\_\+\+Prueba.\+hpp}
+\hypertarget{Escena__Prueba_8hpp_source}{}\label{Escena__Prueba_8hpp_source}\index{src/Juego/Escenas/Escena\_Prueba.hpp@{src/Juego/Escenas/Escena\_Prueba.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#include\ <Motor/Primitivos/Escena.hpp>}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ \textcolor{keyword}{namespace\ }IVJ}
+\DoxyCodeLine{00006\ \{}
+\DoxyCodeLine{00007\ \ \ \ \ \textcolor{keyword}{class\ }Escena\_Prueba\ :\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classCE_1_1Escena}{CE::Escena}}}
+\DoxyCodeLine{00008\ \ \ \ \ \{}
+\DoxyCodeLine{00009\ \ \ \ \ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00010\ }
+\DoxyCodeLine{00011\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{explicit}\ Escena\_Prueba(std::shared\_ptr<Entidad>\&\ pref);}
+\DoxyCodeLine{00012\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \string~Escena\_Prueba()\{\};}
+\DoxyCodeLine{00013\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classIVJ_1_1Escena__Prueba_a0fb753b1ed30c8db40462cc5c54a91b5}{onInit}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00014\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classIVJ_1_1Escena__Prueba_a00b7d3f3ce489b0ef56b8121880b46a8}{onFinal}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00015\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classIVJ_1_1Escena__Prueba_a3832c5230e1150535fe59e4e18140aaf}{onUpdate}}(\textcolor{keywordtype}{float}\ dt)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00016\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classIVJ_1_1Escena__Prueba_ad8981bedd3bb61ae78a1a0481b4639fe}{onInputs}}(\textcolor{keyword}{const}\ \doxymbox{\hyperlink{classCE_1_1Botones}{CE::Botones}}\&\ accion)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00017\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classIVJ_1_1Escena__Prueba_a6eb21e0e784c4d8733a389396bf9d8f5}{onRender}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00018\ \ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<Entidad>\ \doxymbox{\hyperlink{classIVJ_1_1Escena__Prueba_ac11fbf5eb9a9b6a3c7ac8105e8b6d8f6}{getJugador}}()\textcolor{keyword}{\ override\ }\{\textcolor{keywordflow}{return}\ jugador\_ref;\}}
+\DoxyCodeLine{00019\ \ \ \ \ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ inicializar\{1\};}
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ \ \ \ \ std::shared\_ptr<Entidad>\&\ jugador\_ref;}
+\DoxyCodeLine{00022\ \ \ \ \ \};}
+\DoxyCodeLine{00023\ \}}
+
+\end{DoxyCode}

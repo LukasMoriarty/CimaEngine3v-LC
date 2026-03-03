@@ -1,0 +1,55 @@
+\chapter{Cima\+Engine3v }
+\hypertarget{md_README}{}\label{md_README}\index{CimaEngine3v@{CimaEngine3v}}
+\label{md_README_autotoc_md223}%
+\Hypertarget{md_README_autotoc_md223}%
+
+
+\href{https://github.com/Omar-z/CimaEngine3v/actions/workflows/build.yml}{\texttt{}}\hypertarget{md_README_autotoc_md224}{}\doxysection{\texorpdfstring{Como compilar y ejecutar}{Como compilar y ejecutar}}\label{md_README_autotoc_md224}
+1.-\/ crear un folder build y moverse en consola a el
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{mkdir\ build\ \&\&\ cd\ build}
+
+\end{DoxyCode}
+
+
+2.-\/ en la consola dentro del folder build
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\#para\ el\ build\ de\ Debug\ ,\ en\ consola\ ir\ a\ CimaEngine/build/\ }
+\DoxyCodeLine{cmake\ ..\ -\/DCMAKE\_BUILD\_TYPE=Debug}
+\DoxyCodeLine{}
+\DoxyCodeLine{\#\ para\ el\ build\ de\ Release\ ,\ en\ consola\ ir\ a\ CimaEngine/build/\ }
+\DoxyCodeLine{cmake\ ..\ -\/DCMAKE\_BUILD\_TYPE=Release}
+\DoxyCodeLine{}
+\DoxyCodeLine{\#\ Especificar\ si\ quiere\ usar\ un\ toolchain\ diferente}
+\DoxyCodeLine{}
+\DoxyCodeLine{cmake\ -\/G"{}MinGW\ Makefiles"{}\ ..\ -\/DCMAKE\_BUILD\_TYPE=Debug}
+
+\end{DoxyCode}
+ 1 copiar el archivo {\ttfamily compiler\+\_\+commands.\+json} generado en el folder {\ttfamily build} al folder raíz, este archivo le ayuda a tu IDE a autocompletar mejor y encontrar los paths
+
+3.-\/ Después de crear el build, compilamos
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\#\ estando\ en\ el\ folder\ de\ \`{}build`\ }
+\DoxyCodeLine{cmake\ -\/-\/build\ .\ -\/-\/target\ CimaEngine3v\ -\/-\/\ -\/j\ 8}
+
+\end{DoxyCode}
+
+
+4.-\/ el ejecutable se crea en {\ttfamily Cima\+Engine3v/\+bin/\+\texorpdfstring{$<$}{<}perfil\texorpdfstring{$>$}{>}/\+\+Cima\+Engine3v.exe}
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\#\ si\ se\ hizo\ un\ build\ de\ Debug}
+\DoxyCodeLine{CimaEngine3v/bin/Debug/CimaEngine3v.exe}
+\DoxyCodeLine{}
+\DoxyCodeLine{\#\ si\ se\ hizo\ un\ build\ de\ Release}
+\DoxyCodeLine{CimaEngine3v/bin/Release/CimaEngine3v.exe}
+
+\end{DoxyCode}
+ 

@@ -1,0 +1,39 @@
+\doxysection{Tile\+Map.\+hpp}
+\hypertarget{TileMap_8hpp_source}{}\label{TileMap_8hpp_source}\index{src/Juego/objetos/TileMap.hpp@{src/Juego/objetos/TileMap.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#include<SFML/Graphics.hpp>}}
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ "{}../../Motor/Primitivos/CEPool.hpp"{}}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ "{}../../Motor/Componentes/IComponentes.hpp"{}}}
+\DoxyCodeLine{00005\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00006\ \textcolor{comment}{/*TODO:\ Mover\ a\ Motor/Mapas\ para\ pasarlo\ a\ un\ dll\ el\ motor*/}}
+\DoxyCodeLine{00007\ \textcolor{keyword}{namespace\ }IVJ}
+\DoxyCodeLine{00008\ \{}
+\DoxyCodeLine{00009\ \ \ \ \ \textcolor{keyword}{class\ }TileMap:\ \textcolor{keyword}{public}\ sf::Transformable,\ \textcolor{keyword}{public}\ sf::Drawable}
+\DoxyCodeLine{00010\ \ \ \ \ \{}
+\DoxyCodeLine{00011\ \ \ \ \ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00012\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{explicit}\ TileMap()=\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00013\ \ \ \ \ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00014\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ loadTileMap(\textcolor{keyword}{const}\ std::string\&\ atlas\_path);}
+\DoxyCodeLine{00015\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ loadTileMap(\textcolor{keyword}{const}\ std::string\&\ atlas\_path,\doxymbox{\hyperlink{classCE_1_1Pool}{CE::Pool}}\&\ objetos);}
+\DoxyCodeLine{00016\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{virtual}\ \textcolor{keywordtype}{void}\ draw(sf::RenderTarget\&\ target,sf::RenderStates\ state)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00017\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ TODO:\ shaders\ en\ tilemap}}
+\DoxyCodeLine{00018\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{bool}\ loadTileMapShaders(\textcolor{keyword}{const}\ std::string\&\ vert,\ \textcolor{keyword}{const}\ std::string\&\ frag);}
+\DoxyCodeLine{00019\ \ \ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{classCE_1_1IShader}{CE::IShader}}\ *getTilemapShader()\ \{\textcolor{keywordflow}{return}\ tilemap\_shader.get();\};}
+\DoxyCodeLine{00020\ \ \ \ \ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ atlas\_w\{\};}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ atlas\_h\{\};}
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ tile\_w\{\};}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ tile\_h\{\};}
+\DoxyCodeLine{00025\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ map\_r\{\};}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{int}\ map\_c\{\};}
+\DoxyCodeLine{00027\ \ \ \ \ \ \ \ \ \ \ \ \ std::string\ atlas\_p\{\};}
+\DoxyCodeLine{00028\ \ \ \ \ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ \ \ \ \ \ \ sf::VertexArray\ tiles\_vertex;}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \ \ \ \ sf::Texture\ atlas\_texture;}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \ \ \ \ std::unique\_ptr<CE::IShader>\ tilemap\_shader;}
+\DoxyCodeLine{00032\ \ \ \ \ \};}
+\DoxyCodeLine{00033\ \}}
+
+\end{DoxyCode}

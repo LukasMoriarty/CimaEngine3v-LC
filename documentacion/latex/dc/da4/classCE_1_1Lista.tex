@@ -1,0 +1,277 @@
+\doxysection{Referencia de la plantilla de la clase CE::\+Lista\texorpdfstring{$<$}{<} T \texorpdfstring{$>$}{>}}
+\hypertarget{classCE_1_1Lista}{}\label{classCE_1_1Lista}\index{CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}}
+
+
+\doxylink{classCE_1_1Lista}{Lista} doblemente enlazada template con patrón iterador.  
+
+
+
+
+{\ttfamily \+\#include $<$Lista.\+hpp$>$}
+
+Diagrama de herencia de CE::\+Lista\texorpdfstring{$<$}{<} T \texorpdfstring{$>$}{>}\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{dc/da4/classCE_1_1Lista}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Métodos públicos}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classCE_1_1Lista_a3a274a39f6114ab7ed2d47575505c662}\label{classCE_1_1Lista_a3a274a39f6114ab7ed2d47575505c662} 
+{\bfseries Lista} ()
+\begin{DoxyCompactList}\small\item\em Constructor por defecto -\/ crea lista vacía. \end{DoxyCompactList}\item 
+T \texorpdfstring{$\ast$}{*} \doxymbox{\hyperlink{classCE_1_1Lista_acb0443735ba1ee5906a75e719de75b19}{iter\+Inicio}} ()
+\begin{DoxyCompactList}\small\item\em Mueve iterador al inicio y retorna puntero al dato. \end{DoxyCompactList}\item 
+T \texorpdfstring{$\ast$}{*} \doxymbox{\hyperlink{classCE_1_1Lista_a3779e4ab20f27a2308bdcdc70ecc1329}{iter\+Final}} ()
+\begin{DoxyCompactList}\small\item\em Mueve iterador al final y retorna puntero al dato. \end{DoxyCompactList}\item 
+T \texorpdfstring{$\ast$}{*} \doxymbox{\hyperlink{classCE_1_1Lista_ab6a3f1e76103704afe86365acfefbaea}{iter\+Actual}} ()
+\begin{DoxyCompactList}\small\item\em Retorna puntero al dato actual sin mover iterador. \end{DoxyCompactList}\item 
+T \texorpdfstring{$\ast$}{*} \doxymbox{\hyperlink{classCE_1_1Lista_a93d3b09cba613b737ce7eac43729ab0b}{iter\+Siguiente}} ()
+\begin{DoxyCompactList}\small\item\em Avanza el iterador al siguiente nodo. \end{DoxyCompactList}\item 
+bool \doxymbox{\hyperlink{classCE_1_1Lista_aaf4202f53ec896644f7bbe4b876acef6}{iter\+Termino}} () const
+\begin{DoxyCompactList}\small\item\em Verifica si iteración ha terminado. \end{DoxyCompactList}\item 
+void \doxymbox{\hyperlink{classCE_1_1Lista_ac1a5c03b9683492851a00f8160ae6264}{agregar\+Dato}} (const T \&d)
+\begin{DoxyCompactList}\small\item\em Agrega un elemento al final de la lista. \end{DoxyCompactList}\item 
+T \doxymbox{\hyperlink{classCE_1_1Lista_a932ee647f56c1966260ffe92e083f9e8}{eliminar\+Dato}} (int id)
+\begin{DoxyCompactList}\small\item\em Elimina elemento en posición específica. \end{DoxyCompactList}\item 
+T \doxymbox{\hyperlink{classCE_1_1Lista_a61208ae1463db7d058a26b418d869b53}{pop\+Dato}} ()
+\begin{DoxyCompactList}\small\item\em Elimina y retorna el último elemento. \end{DoxyCompactList}\item 
+T \doxymbox{\hyperlink{classCE_1_1Lista_ae0b144daf515db9b21a1868010f3fab2}{pop\+Front\+Dato}} ()
+\begin{DoxyCompactList}\small\item\em Elimina y retorna el primer elemento. \end{DoxyCompactList}\item 
+unsigned int \doxymbox{\hyperlink{classCE_1_1Lista_a96ac972c296efc9e1f8db687d9258670}{get\+Size}} () const
+\begin{DoxyCompactList}\small\item\em Obtiene el número de elementos en la lista. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Descripción detallada}
+\subsubsection*{template$<$typename T$>$\newline
+class CE::\+\+Lista$<$ T $>$}
+\doxylink{classCE_1_1Lista}{Lista} doblemente enlazada template con patrón iterador. 
+
+Implementa una lista enlazada genérica que actúa como pila/\+cola en operaciones de eliminación (pop) pero como lista en inserción (append). Implementa los patrones \doxylink{classCE_1_1IIterador}{IIterador} e \doxylink{classCE_1_1IManipularDatos}{IManipular\+Datos}.
+
+Características:\+
+\begin{DoxyItemize}
+\item Inserción en O(1) al final
+\item Eliminación en O(1) desde inicio/\+final
+\item Eliminación en O(n) desde posición arbitraria
+\item Iteración bidireccional
+\item Gestión automática de memoria con shared\+\_\+ptr
+\end{DoxyItemize}
+
+
+\begin{DoxyTemplParams}{Parámetros de plantilla}
+{\em T} & Tipo de elementos almacenados \\
+\hline
+\end{DoxyTemplParams}
+
+
+\label{doc-func-members}
+\Hypertarget{classCE_1_1Lista_doc-func-members}
+\doxysubsection{Documentación de funciones miembro}
+\Hypertarget{classCE_1_1Lista_ac1a5c03b9683492851a00f8160ae6264}\index{CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}!agregarDato@{agregarDato}}
+\index{agregarDato@{agregarDato}!CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{agregarDato()}{agregarDato()}}
+{\footnotesize\ttfamily \label{classCE_1_1Lista_ac1a5c03b9683492851a00f8160ae6264} 
+template$<$typename T$>$ \\
+void \doxymbox{\hyperlink{classCE_1_1Lista}{CE::\+\+Lista}}$<$ T $>$::\+agregar\+Dato (\begin{DoxyParamCaption}\item[{const T \&}]{d}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+Agrega un elemento al final de la lista. 
+
+Implementación de agregar\+Dato -\/ Agrega dato al final (O(1)).
+
+
+\begin{DoxyParams}{Parámetros}
+{\em d} & Referencia constante al elemento a agregar \\
+\hline
+\end{DoxyParams}
+
+
+Implementa \doxymbox{\hyperlink{classCE_1_1IManipularDatos_a6898c3d1fc22006c3d8365d8ca26332f}{CE::\+\+IManipular\+Datos$<$ T $>$}}.
+
+\Hypertarget{classCE_1_1Lista_a932ee647f56c1966260ffe92e083f9e8}\index{CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}!eliminarDato@{eliminarDato}}
+\index{eliminarDato@{eliminarDato}!CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{eliminarDato()}{eliminarDato()}}
+{\footnotesize\ttfamily \label{classCE_1_1Lista_a932ee647f56c1966260ffe92e083f9e8} 
+template$<$typename T$>$ \\
+T \doxymbox{\hyperlink{classCE_1_1Lista}{CE::\+\+Lista}}$<$ T $>$::\+eliminar\+Dato (\begin{DoxyParamCaption}\item[{int}]{id}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+Elimina elemento en posición específica. 
+
+Implementación de eliminar\+Dato -\/ Elimina en posición id (O(n)).
+
+
+\begin{DoxyParams}{Parámetros}
+{\em id} & Índice del elemento (0 = inicio, size-\/1 = final) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Devuelve}
+Copia del elemento eliminado 
+\end{DoxyReturn}
+
+
+Implementa \doxymbox{\hyperlink{classCE_1_1IManipularDatos_abcd0ea71969dde05f752535f1ed5b2f5}{CE::\+\+IManipular\+Datos$<$ T $>$}}.
+
+\Hypertarget{classCE_1_1Lista_a96ac972c296efc9e1f8db687d9258670}\index{CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}!getSize@{getSize}}
+\index{getSize@{getSize}!CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{getSize()}{getSize()}}
+{\footnotesize\ttfamily \label{classCE_1_1Lista_a96ac972c296efc9e1f8db687d9258670} 
+template$<$typename T$>$ \\
+unsigned int \doxymbox{\hyperlink{classCE_1_1Lista}{CE::\+\+Lista}}$<$ T $>$::\+get\+Size (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Obtiene el número de elementos en la lista. 
+
+\begin{DoxyReturn}{Devuelve}
+Tamaño actual de la lista 
+\end{DoxyReturn}
+\Hypertarget{classCE_1_1Lista_ab6a3f1e76103704afe86365acfefbaea}\index{CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}!iterActual@{iterActual}}
+\index{iterActual@{iterActual}!CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{iterActual()}{iterActual()}}
+{\footnotesize\ttfamily \label{classCE_1_1Lista_ab6a3f1e76103704afe86365acfefbaea} 
+template$<$typename T$>$ \\
+T \texorpdfstring{$\ast$}{*} \doxymbox{\hyperlink{classCE_1_1Lista}{CE::\+\+Lista}}$<$ T $>$::\+iter\+Actual (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+Retorna puntero al dato actual sin mover iterador. 
+
+Implementación de iter\+Actual.
+
+\begin{DoxyReturn}{Devuelve}
+Puntero al dato del nodo actual 
+\end{DoxyReturn}
+
+
+Implementa \doxymbox{\hyperlink{classCE_1_1IIterador_a03626272fab97999cd038e693a3085ca}{CE::\+\+IIterador$<$ T $>$}}.
+
+\Hypertarget{classCE_1_1Lista_a3779e4ab20f27a2308bdcdc70ecc1329}\index{CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}!iterFinal@{iterFinal}}
+\index{iterFinal@{iterFinal}!CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{iterFinal()}{iterFinal()}}
+{\footnotesize\ttfamily \label{classCE_1_1Lista_a3779e4ab20f27a2308bdcdc70ecc1329} 
+template$<$typename T$>$ \\
+T \texorpdfstring{$\ast$}{*} \doxymbox{\hyperlink{classCE_1_1Lista}{CE::\+\+Lista}}$<$ T $>$::\+iter\+Final (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+Mueve iterador al final y retorna puntero al dato. 
+
+Implementación de iter\+Final.
+
+\begin{DoxyReturn}{Devuelve}
+Puntero al dato del último nodo 
+\end{DoxyReturn}
+
+
+Implementa \doxymbox{\hyperlink{classCE_1_1IIterador_aa5d764da7b0c7538f37c41c6eb675612}{CE::\+\+IIterador$<$ T $>$}}.
+
+\Hypertarget{classCE_1_1Lista_acb0443735ba1ee5906a75e719de75b19}\index{CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}!iterInicio@{iterInicio}}
+\index{iterInicio@{iterInicio}!CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{iterInicio()}{iterInicio()}}
+{\footnotesize\ttfamily \label{classCE_1_1Lista_acb0443735ba1ee5906a75e719de75b19} 
+template$<$typename T$>$ \\
+T \texorpdfstring{$\ast$}{*} \doxymbox{\hyperlink{classCE_1_1Lista}{CE::\+\+Lista}}$<$ T $>$::\+iter\+Inicio (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+Mueve iterador al inicio y retorna puntero al dato. 
+
+Implementación de iter\+Inicio.
+
+\begin{DoxyReturn}{Devuelve}
+Puntero al dato del primer nodo 
+\end{DoxyReturn}
+
+
+Implementa \doxymbox{\hyperlink{classCE_1_1IIterador_a688fd4df583c36dd1fdb9a5ffe030ed5}{CE::\+\+IIterador$<$ T $>$}}.
+
+\Hypertarget{classCE_1_1Lista_a93d3b09cba613b737ce7eac43729ab0b}\index{CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}!iterSiguiente@{iterSiguiente}}
+\index{iterSiguiente@{iterSiguiente}!CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{iterSiguiente()}{iterSiguiente()}}
+{\footnotesize\ttfamily \label{classCE_1_1Lista_a93d3b09cba613b737ce7eac43729ab0b} 
+template$<$typename T$>$ \\
+T \texorpdfstring{$\ast$}{*} \doxymbox{\hyperlink{classCE_1_1Lista}{CE::\+\+Lista}}$<$ T $>$::\+iter\+Siguiente (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+Avanza el iterador al siguiente nodo. 
+
+Implementación de iter\+Siguiente.
+
+\begin{DoxyReturn}{Devuelve}
+Puntero al dato del siguiente nodo 
+\end{DoxyReturn}
+
+
+Implementa \doxymbox{\hyperlink{classCE_1_1IIterador_a7aff9318dd7b0bcc27112fd7bd21f224}{CE::\+\+IIterador$<$ T $>$}}.
+
+\Hypertarget{classCE_1_1Lista_aaf4202f53ec896644f7bbe4b876acef6}\index{CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}!iterTermino@{iterTermino}}
+\index{iterTermino@{iterTermino}!CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{iterTermino()}{iterTermino()}}
+{\footnotesize\ttfamily \label{classCE_1_1Lista_aaf4202f53ec896644f7bbe4b876acef6} 
+template$<$typename T$>$ \\
+bool \doxymbox{\hyperlink{classCE_1_1Lista}{CE::\+\+Lista}}$<$ T $>$::\+iter\+Termino (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+Verifica si iteración ha terminado. 
+
+Implementación de iter\+Termino.
+
+\begin{DoxyReturn}{Devuelve}
+true si el iterador es nullptr, false en caso contrario 
+\end{DoxyReturn}
+
+
+Implementa \doxymbox{\hyperlink{classCE_1_1IIterador_a10d95ddf7c07185feb11bf452986a781}{CE::\+\+IIterador$<$ T $>$}}.
+
+\Hypertarget{classCE_1_1Lista_a61208ae1463db7d058a26b418d869b53}\index{CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}!popDato@{popDato}}
+\index{popDato@{popDato}!CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{popDato()}{popDato()}}
+{\footnotesize\ttfamily \label{classCE_1_1Lista_a61208ae1463db7d058a26b418d869b53} 
+template$<$typename T$>$ \\
+T \doxymbox{\hyperlink{classCE_1_1Lista}{CE::\+\+Lista}}$<$ T $>$::\+pop\+Dato (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+Elimina y retorna el último elemento. 
+
+Implementación de pop\+Dato -\/ Elimina del final (O(1)).
+
+\begin{DoxyReturn}{Devuelve}
+Copia del elemento del final removido 
+\end{DoxyReturn}
+
+
+Implementa \doxymbox{\hyperlink{classCE_1_1IManipularDatos_a6e003e13fd28e423c607e4a7a61b5df9}{CE::\+\+IManipular\+Datos$<$ T $>$}}.
+
+\Hypertarget{classCE_1_1Lista_ae0b144daf515db9b21a1868010f3fab2}\index{CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}!popFrontDato@{popFrontDato}}
+\index{popFrontDato@{popFrontDato}!CE::Lista$<$ T $>$@{CE::Lista$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{popFrontDato()}{popFrontDato()}}
+{\footnotesize\ttfamily \label{classCE_1_1Lista_ae0b144daf515db9b21a1868010f3fab2} 
+template$<$typename T$>$ \\
+T \doxymbox{\hyperlink{classCE_1_1Lista}{CE::\+\+Lista}}$<$ T $>$::\+pop\+Front\+Dato (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+Elimina y retorna el primer elemento. 
+
+Implementación de pop\+Front\+Dato -\/ Elimina del inicio (O(1)).
+
+\begin{DoxyReturn}{Devuelve}
+Copia del elemento del inicio removido 
+\end{DoxyReturn}
+
+
+Implementa \doxymbox{\hyperlink{classCE_1_1IManipularDatos_a2c60ce683e56191cce1faa92ac2f441d}{CE::\+\+IManipular\+Datos$<$ T $>$}}.
+
+
+
+La documentación de esta clase está generada del siguiente archivo:\+\begin{DoxyCompactItemize}
+\item 
+src/\+\+Motor/\+\+Utils/\+Lista.\+hpp\end{DoxyCompactItemize}

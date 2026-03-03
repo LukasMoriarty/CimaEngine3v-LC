@@ -1,0 +1,25 @@
+\doxysection{Entidad.\+hpp}
+\hypertarget{Entidad_8hpp_source}{}\label{Entidad_8hpp_source}\index{src/Juego/objetos/Entidad.hpp@{src/Juego/objetos/Entidad.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#include\ "{}../../Motor/Primitivos/Objetos.hpp"{}}\ }
+\DoxyCodeLine{00003\ \textcolor{preprocessor}{\#include\ "{}../Maquinas/FSM.hpp"{}}}
+\DoxyCodeLine{00004\ \textcolor{preprocessor}{\#include\ <memory>}}
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{keyword}{namespace\ }IVJ}
+\DoxyCodeLine{00007\ \{}
+\DoxyCodeLine{00008\ \ \ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classIVJ_1_1FSM}{FSM}};\ \textcolor{comment}{//referencia\ circular}}
+\DoxyCodeLine{00009\ \ \ \ \ \textcolor{keyword}{class\ }\doxymbox{\hyperlink{classIVJ_1_1Entidad}{Entidad}}:\ \textcolor{keyword}{public}\ \doxymbox{\hyperlink{classCE_1_1Objeto}{CE::Objeto}}}
+\DoxyCodeLine{00010\ \ \ \ \ \{}
+\DoxyCodeLine{00011\ \ \ \ \ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00012\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \doxymbox{\hyperlink{classIVJ_1_1Entidad_a4fe15970acf1635c6e372a6c90ab80bd}{onUpdate}}(\textcolor{keywordtype}{float}\ dt)\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00013\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ draw(sf::RenderTarget\ \&target,\ sf::RenderStates\ state)\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//fsm}}
+\DoxyCodeLine{00016\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ setFSM(\textcolor{keyword}{const}\ std::shared\_ptr<FSM>\&\ mq);}
+\DoxyCodeLine{00017\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ inputFSM();}
+\DoxyCodeLine{00018\ \ \ \ \ \};}
+\DoxyCodeLine{00019\ \}}
+
+\end{DoxyCode}

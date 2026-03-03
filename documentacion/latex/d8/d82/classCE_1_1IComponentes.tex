@@ -1,0 +1,35 @@
+\doxysection{Referencia de la clase CE::\+IComponentes}
+\hypertarget{classCE_1_1IComponentes}{}\label{classCE_1_1IComponentes}\index{CE::IComponentes@{CE::IComponentes}}
+
+
+Clase base abstracta para todos los componentes de entidades.  
+
+
+
+
+{\ttfamily \+\#include $<$IComponentes.\+hpp$>$}
+
+Diagrama de herencia de CE::\+IComponentes\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=12.000000cm]{d8/d82/classCE_1_1IComponentes}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Métodos públicos}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classCE_1_1IComponentes_a5e931db73a02fce9d335e25d3bde6c3e}\label{classCE_1_1IComponentes_a5e931db73a02fce9d335e25d3bde6c3e} 
+virtual {\bfseries \texorpdfstring{$\sim$}{\string~}\+IComponentes} ()=default
+\begin{DoxyCompactList}\small\item\em Destructor virtual por defecto. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Descripción detallada}
+Clase base abstracta para todos los componentes de entidades. 
+
+Define la interfaz principal para el sistema de componentes. Todos los componentes derivados heredan de esta clase y se pueden adjuntar a objetos (\doxylink{classCE_1_1Objeto}{Objeto}) para proporcionar funcionalidad específica (transformación, renderizado, estadísticas, etc).
+
+El motor utiliza un patrón de arquitectura basada en componentes (ECS -\/ Entity Component System) para máxima flexibilidad y composición. 
+
+La documentación de esta clase está generada del siguiente archivo:\+\begin{DoxyCompactItemize}
+\item 
+src/\+\+Motor/\+\+Componentes/\+IComponentes.\+hpp\end{DoxyCompactItemize}
