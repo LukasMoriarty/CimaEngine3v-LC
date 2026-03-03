@@ -148,8 +148,6 @@ namespace IVJ
 		// Crear el componente ICParte
 		auto nueva_parte = std::make_shared<ICParte>(
 			nueva_figura,
-			cuerpo->width,
-			cuerpo->height,
 			10 * (cuerpo->partes.size() + 1)  // Timer más largo para partes posteriores
 		);
 

@@ -4,6 +4,7 @@
 #include "../../Motor/Primitivos/Objetos.hpp"
 namespace IVJ
 {
+
 	template <typename T>
 	class Cola
 	{
@@ -203,7 +204,7 @@ namespace IVJ
 	class ICParte : public CE::IComponentes
 	{
 		public:
-			explicit ICParte(std::shared_ptr<Figuras> figura, int w, int h, int timer_max = 10);
+			explicit ICParte(std::shared_ptr<Figuras> figura, int timer_max = 10);
 			~ICParte() override = default;
 		public:
 			Cola<CE::Vector2D> cola_posiciones;  // Cola de posiciones para seguimiento

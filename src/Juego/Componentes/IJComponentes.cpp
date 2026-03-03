@@ -134,7 +134,7 @@ namespace IVJ
 	{}
 
 	// Implementación de ICParte
-	ICParte::ICParte(std::shared_ptr<Figuras> figura, int w, int h, int timer_max)
+	ICParte::ICParte(std::shared_ptr<Figuras> figura, int timer_max)
 		: CE::IComponentes{},
 		  cola_posiciones{},
 		  parte{figura},
