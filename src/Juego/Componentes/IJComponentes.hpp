@@ -4,7 +4,6 @@
 #include "../../Motor/Primitivos/Objetos.hpp"
 namespace IVJ
 {
-
 	template <typename T>
 	class Cola
 	{
@@ -22,7 +21,7 @@ namespace IVJ
 
 			~Cola()
 			{
-				while (!vacia)
+				while (!vacia())
 				{
 					pop();
 				}
@@ -60,6 +59,18 @@ namespace IVJ
 			bool vacia()
 			{
 				return inicio == nullptr;
+			}
+
+			int size() const
+			{
+				int count = 0;
+				Nodo* temp = inicio;
+				while (temp != nullptr)
+				{
+					count++;
+					temp = temp->siguiente;
+				}
+				return count;
 			}
 	};
 
@@ -174,14 +185,46 @@ namespace IVJ
 			float velocidad;
 	 };
 
-	// componente nuevo ICTimer
-	// ojo que en IComponentes ya hay un ITimer, pero este es diferente, el ITimer del motor es para medir el tiempo en frames, mientras que este ICTimer es para medir el tiempo de cada parte de la vibora, por lo que se deben modificar los atributos para que sean mas especificos a su uso
-	class ICTimer {};
+	// Forward declaration para usar Figuras
+	class Figuras;
 
-	// componente nuevo ICParte
-	// para este componente se deben inicializar los otros componentes que tiene de atributo al momento de crear el objeto
-	class ICParte {};
+	// Componente de timer específico para partes de la víbora
+	class ICTimer : public CE::IComponentes
+	{
+		public:
+			explicit ICTimer(int max_frames = 60);
+			~ICTimer() override = default;
+		public:
+			int curr_frame;
+			int max_frame;
+	};
 
-	// componente nuevo ICPartesCuerpo
-	class ICPartesCuerpo {};
+	// Componente que representa una parte del cuerpo de la víbora
+	class ICParte : public CE::IComponentes
+	{
+		public:
+			explicit ICParte(std::shared_ptr<Figuras> figura, int w, int h, int timer_max = 10);
+			~ICParte() override = default;
+		public:
+			Cola<CE::Vector2D> cola_posiciones;  // Cola de posiciones para seguimiento
+			std::shared_ptr<Figuras> parte;       // Figura visual de la parte
+			CE::Vector2D pos;                     // Posición actual
+			std::shared_ptr<ICTimer> timer;       // Timer para control de movimiento
+			bool hacerAccion;                     // Indica si debe seguir a la cabeza
+	};
+
+	// Componente que gestiona todas las partes del cuerpo de la víbora
+	class ICPartesCuerpo : public CE::IComponentes
+	{
+		public:
+			explicit ICPartesCuerpo(int w, int h);
+			~ICPartesCuerpo() override = default;
+
+			void agregarParte(std::shared_ptr<ICParte> nueva_parte);
+
+		public:
+			std::vector<std::shared_ptr<ICParte>> partes;
+			int width;
+			int height;
+	};
 }

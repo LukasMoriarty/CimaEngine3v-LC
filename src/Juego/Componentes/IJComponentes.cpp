@@ -1,6 +1,7 @@
 #include "IJComponentes.hpp"
 #include "../../Motor/Render/Render.hpp"
 #include "../../Motor/Primitivos/GestorAssets.hpp"
+#include "../Figuras/Figuras.hpp"
 #include <cmath>
 #include <string>
 
@@ -34,12 +35,12 @@ namespace IVJ
 	IDialogo::IDialogo()
 		:IInteractuable(),texto{L""},id_texto{0}
 	{
-		texto= L"Texto de Prueba ABC ABC, se debe cargar por el arbol, al precionar una tecla" 
-			L"se avanza al siguiente texto del dialogo, esto es solo una demostración." 
+		texto= L"Texto de Prueba ABC ABC, se debe cargar por el arbol, al precionar una tecla"
+			L"se avanza al siguiente texto del dialogo, esto es solo una demostración."
 			L" El texto debe tener saltos de linea automáticos para no salirse de la caja"
 			L"  de dialogo que se renderiza en pantalla."
 			L"Espero que funcione correctamente y se vea bien en pantalla.";
-		
+
 	}
 	void IDialogo::onInteractuar(CE::Objeto& obj)
 	{
@@ -49,17 +50,17 @@ namespace IVJ
 		//auto control = obj.getComponente<CE::IControl>();
 		//control->setActivo(false);
 	}
-	
+
 	std::wstring IDialogo::agregarSaltoLinea(const std::wstring& str, size_t max_len)
 	{
 		std::wstring resultado;
 		size_t pos = 0;
-		while (pos < str.size()) 
+		while (pos < str.size())
 		{
 			size_t chunk_size = std::min(max_len, str.size() - pos);
 			resultado += str.substr(pos, chunk_size); //extraer un fragmento
 			pos += chunk_size;
-			if (pos < str.size()) 
+			if (pos < str.size())
 				resultado += L"\n";
 		}
 		return resultado;
@@ -89,7 +90,7 @@ namespace IVJ
 		sprite.setOrigin({dim.x/2.f,dim.y/2.f});
 		parent = p;
 		if(!shader.loadFromFile(ASSETS "/shaders/prueba.frag",sf::Shader::Type::Fragment)) exit(1);
-		
+
 		//blob
 		shader.setUniform("blob",
 		CE::GestorAssets::Get().getTextura("blob"));
@@ -127,6 +128,35 @@ namespace IVJ
 		:CE::IComponentes{}, radio{radio}, velocidad{velocidad}
 	{}
 
+	// Implementación de ICTimer
+	ICTimer::ICTimer(int max_frames)
+		: CE::IComponentes{}, curr_frame{0}, max_frame{max_frames}
+	{}
 
+	// Implementación de ICParte
+	ICParte::ICParte(std::shared_ptr<Figuras> figura, int w, int h, int timer_max)
+		: CE::IComponentes{},
+		  cola_posiciones{},
+		  parte{figura},
+		  pos{0.f, 0.f},
+		  timer{std::make_shared<ICTimer>(timer_max)},
+		  hacerAccion{false}
+	{
+		// Inicializar la posición desde la figura
+		if (parte) {
+			pos = parte->getTransformada()->posicion;
+		}
+	}
 
+	// Implementación de ICPartesCuerpo
+	ICPartesCuerpo::ICPartesCuerpo(int w, int h)
+		: CE::IComponentes{}, partes{}, width{w}, height{h}
+	{}
+
+	void ICPartesCuerpo::agregarParte(std::shared_ptr<ICParte> nueva_parte)
+	{
+		if (nueva_parte) {
+			partes.push_back(nueva_parte);
+		}
+	}
 }
