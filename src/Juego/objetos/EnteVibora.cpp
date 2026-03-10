@@ -8,10 +8,7 @@ namespace IVJ
 						   const sf::Color& relleno,
 						   const sf::Color& contorno)
 		: Rectangulo(ancho, largo, relleno, contorno)
-	{
-		// La cabeza se inicializa con su componente de partes del cuerpo
-		// Se hará en la escena
-	}
+	{}
 
 	void EnteVibora::onUpdate(float dt)
 	{

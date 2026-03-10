@@ -26,6 +26,10 @@ namespace IVJ
 		registrarBotones(sf::Keyboard::Scancode::S, "abajo");
 		registrarBotones(sf::Keyboard::Scancode::A, "izquierda");
 		registrarBotones(sf::Keyboard::Scancode::D, "derecha");
+		registrarBotones(sf::Keyboard::Scancode::Up, "arriba");
+		registrarBotones(sf::Keyboard::Scancode::Down, "abajo");
+		registrarBotones(sf::Keyboard::Scancode::Left, "izquierda");
+		registrarBotones(sf::Keyboard::Scancode::Right, "derecha");
 
 		// ============================================
 		// CREAR LA VÍBORA (EJERCICIO)
@@ -33,8 +37,8 @@ namespace IVJ
 
 		// Crear la cabeza de la víbora
 		vibora = std::make_shared<EnteVibora>(
-			30.f,  // ancho
-			30.f,  // largo
+			75.f,  // ancho
+			75.f,  // largo
 			sf::Color::Green,   // color de relleno
 			sf::Color::Black	// color de contorno
 		);
@@ -42,20 +46,20 @@ namespace IVJ
 		// Posición inicial en el centro de la pantalla
 		vibora->setPosicion(400.f, 300.f);
 
-		// IMPORTANTE: Dar velocidad inicial a la víbora para que empiece moviéndose
-		vibora->getTransformada()->velocidad = CE::Vector2D{-100.f, 0.f}; // Izquierda
+		// VELOCIDAD INICIAL
+		vibora->getTransformada()->velocidad = CE::Vector2D{100.f, 0.f};
 
 		// Agregar componente de control para mover la cabeza
 		vibora->addComponente(std::make_shared<CE::IControl>());
 
 		// PASO 5: Agregar componente ICPartesCuerpo que inicie con 3 partes
-		auto cuerpo = std::make_shared<ICPartesCuerpo>(30, 30);
+		auto cuerpo = std::make_shared<ICPartesCuerpo>(50, 50);
 		vibora->addComponente(cuerpo);
 
 		// Agregar las 3 partes iniciales
-		vibora->agregarParteAlCuerpo(sf::Color::Yellow);
-		vibora->agregarParteAlCuerpo(sf::Color::Cyan);
-		vibora->agregarParteAlCuerpo(sf::Color::Magenta);
+		vibora->agregarParteAlCuerpo(sf::Color::Red);
+		vibora->agregarParteAlCuerpo(sf::Color::Red);
+		vibora->agregarParteAlCuerpo(sf::Color::Red);
 
 		// Agregar la víbora al pool de objetos
 		objetos.agregarPool(vibora);
@@ -136,7 +140,6 @@ namespace IVJ
 				// Colores aleatorios para las nuevas partes
 				static int color_index = 0;
 				sf::Color colores[] = {
-					sf::Color::Red,
 					sf::Color::Blue,
 					sf::Color::Yellow,
 					sf::Color::Magenta,
@@ -144,7 +147,7 @@ namespace IVJ
 					sf::Color::White
 				};
 
-				vibora->agregarParteAlCuerpo(colores[color_index % 6]);
+				vibora->agregarParteAlCuerpo(colores[color_index % 5]);
 				color_index++;
 
 				// Resetear el timer
@@ -191,7 +194,6 @@ namespace IVJ
 		CE::Vector2D vel_actual = trans->velocidad;
 
 		// Cambiar dirección según la tecla presionada
-		// Regla: no puede ir en dirección opuesta (snake no puede voltearse sobre sí misma)
 		if (accion.getNombre() == "arriba" && vel_actual.y == 0)
 		{
 			trans->velocidad = CE::Vector2D{0.f, -velocidad};
