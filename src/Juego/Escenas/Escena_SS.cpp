@@ -33,11 +33,11 @@ namespace IVJ
 		registrarBotones(sf::Keyboard::Scancode::Left, "izquierda");
 		registrarBotones(sf::Keyboard::Scancode::Right, "derecha");
 
-		// Crear la cabeza de la víbora (ahora es un Triángulo)
+		// Crear la cabeza de la víbora
 		vibora = std::make_shared<EnteVibora>(
-			50.f,  // tam_lado (tamaño del triángulo)
-			sf::Color::Green,
-			sf::Color::Black
+			35.f,				// Radio de la cabeza
+			sf::Color::Green,	// Color de relleno
+			sf::Color::Black	// Color de contorno
 		);
 
 		// Posición inicial en el centro de la pantalla
@@ -134,18 +134,7 @@ namespace IVJ
 			// Cada 3 segundos, agregar una nueva parte
 			if (timer_agregar_parte >= 3.0f)
 			{
-				// Colores aleatorios para las nuevas partes
-				static int color_index = 0;
-				sf::Color colores[] = {
-					sf::Color::Blue,
-					sf::Color::Yellow,
-					sf::Color::Magenta,
-					sf::Color::Cyan,
-					sf::Color::White
-				};
-
-				vibora->agregarParteAlCuerpo(colores[color_index % 5]);
-				color_index++;
+				vibora->agregarParteAlCuerpo(sf::Color::White);
 
 				// Resetear el timer
 				timer_agregar_parte = 0.f;
