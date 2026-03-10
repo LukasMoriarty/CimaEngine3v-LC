@@ -5,10 +5,10 @@
 namespace IVJ
 {
 	// 1. Actualizar el constructor
-	EnteVibora::EnteVibora(float tam_lado,
+	EnteVibora::EnteVibora(float radio,
 						   const sf::Color& relleno,
 						   const sf::Color& contorno)
-		: Triangulo(tam_lado, relleno, contorno)
+		: Circulo(radio, relleno, contorno)
 	{}
 
 	void EnteVibora::onUpdate(float dt)
@@ -19,7 +19,7 @@ namespace IVJ
 		transform->posicion.y += transform->velocidad.y * dt;
 
 		// 3. Actualizar la cabeza como Triangulo
-		Triangulo::onUpdate(dt); 
+		Circulo::onUpdate(dt);
 
 		auto cuerpo = getComponente<ICPartesCuerpo>();
 		if (!cuerpo || cuerpo->partes.empty()) return;
@@ -66,7 +66,7 @@ namespace IVJ
 			}
 		}
 
-		Triangulo::draw(target, state);
+		Circulo::draw(target, state);
 	}
 
 	void EnteVibora::agregarParteAlCuerpo(const sf::Color& color)
@@ -89,7 +89,7 @@ namespace IVJ
 			pos_inicial = ultima_parte->pos->posicion;
 		}
 
-		auto nueva_parte = std::make_shared<ICParte>(nueva_figura, 15);
+		auto nueva_parte = std::make_shared<ICParte>(nueva_figura, 35);
 		nueva_parte->pos->posicion = pos_inicial;
 		nueva_parte->parte->setPosicion(pos_inicial.x, pos_inicial.y);
 

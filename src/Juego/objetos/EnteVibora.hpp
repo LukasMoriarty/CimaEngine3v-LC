@@ -12,17 +12,16 @@ namespace IVJ
 	 * Esta clase gestiona la cabeza de la víbora y coordina el movimiento
 	 * de todas las partes del cuerpo que la siguen.
 	 */
-	class EnteVibora : public Triangulo
+	class EnteVibora : public Circulo
 	{
 	public:
 		/**
 		 * @brief Constructor de la víbora
-		 * @param ancho Ancho de la cabeza
-		 * @param largo Largo de la cabeza
+		 * @param radio Radio de la cabeza
 		 * @param relleno Color de relleno
 		 * @param contorno Color de contorno
 		 */
-		explicit EnteVibora(float size_lado,
+		explicit EnteVibora(float radio,
 						   const sf::Color& relleno,
 						   const sf::Color& contorno);
 
