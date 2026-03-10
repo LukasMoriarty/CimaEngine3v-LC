@@ -33,8 +33,8 @@ namespace IVJ
 
         // Crear la cabeza de la víbora
         vibora = std::make_shared<EnteVibora>(
-            50.f,  // ancho
-            5.f,  // largo
+            50.f,   // ancho
+            50.f,    // largo
             sf::Color::Green,   // color de relleno
             sf::Color::Black    // color de contorno
         );
