@@ -190,22 +190,26 @@ namespace IVJ
 		float velocidad = 100.f;
 		CE::Vector2D vel_actual = trans->velocidad;
 
-		// Cambiar dirección según la tecla presionada
+		// Cambiar dirección y ROTACIÓN según la tecla presionada
 		if (accion.getNombre() == "arriba" && vel_actual.y == 0)
 		{
 			trans->velocidad = CE::Vector2D{0.f, -velocidad};
+			trans->angulo = 0.f; // Apuntar hacia arriba
 		}
 		else if (accion.getNombre() == "abajo" && vel_actual.y == 0)
 		{
 			trans->velocidad = CE::Vector2D{0.f, velocidad};
+			trans->angulo = 180.f; // Apuntar hacia abajo
 		}
 		else if (accion.getNombre() == "izquierda" && vel_actual.x == 0)
 		{
 			trans->velocidad = CE::Vector2D{-velocidad, 0.f};
+			trans->angulo = -90.f; // Apuntar hacia la izquierda
 		}
 		else if (accion.getNombre() == "derecha" && vel_actual.x == 0)
 		{
 			trans->velocidad = CE::Vector2D{velocidad, 0.f};
+			trans->angulo = 90.f; // Apuntar hacia la derecha
 		}
 	}
 

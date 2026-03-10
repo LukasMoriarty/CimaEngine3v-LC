@@ -18,24 +18,6 @@ namespace IVJ
 		transform->posicion.x += transform->velocidad.x * dt;
 		transform->posicion.y += transform->velocidad.y * dt;
 
-		// 2. LÓGICA DE ROTACIÓN SEGÚN DIRECCIÓN
-		if (transform->velocidad.y < 0)
-        {
-			transform->angulo = 0.f;	// Arriba
-		}
-		else if (transform->velocidad.y > 0)
-		{
-			transform->angulo = 180.f;	// Abajo
-		}
-		else if (transform->velocidad.x > 0)
-		{
-			transform->angulo = 90.f;	// Derecha
-		}
-		else if (transform->velocidad.x < 0)
-		{
-			transform->angulo = -90.f;	// Izquierda
-		}
-
 		// 3. Actualizar la cabeza como Triangulo
 		Triangulo::onUpdate(dt); 
 
