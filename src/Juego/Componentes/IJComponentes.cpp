@@ -147,11 +147,4 @@ namespace IVJ
 	ICPartesCuerpo::ICPartesCuerpo(int w, int h)
 		: CE::IComponentes{}, partes{}, width{w}, height{h}
 	{}
-
-	void ICPartesCuerpo::agregarParte(std::shared_ptr<ICParte> nueva_parte)
-	{
-		if (nueva_parte) {
-			partes.push_back(nueva_parte);
-		}
-	}
 }

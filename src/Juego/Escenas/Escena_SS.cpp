@@ -1,4 +1,6 @@
 #include "Escena_SS.hpp"
+
+#include <algorithm>
 #include <Juego/Figuras/Figuras.hpp>
 #include <Juego/objetos/Texto.hpp>
 #include <Juego/objetos/EnteVibora.hpp>
@@ -42,7 +44,7 @@ namespace IVJ
 		vibora->setPosicion(400.f, 300.f);
 
 		// VELOCIDAD INICIAL
-		vibora->getTransformada()->velocidad = CE::Vector2D{100.f, 0.f};
+		vibora->getTransformada()->velocidad = CE::Vector2D{0.f, 100.f};
 
 		// Agregar componente de control para mover la cabeza
 		vibora->addComponente(std::make_shared<CE::IControl>());

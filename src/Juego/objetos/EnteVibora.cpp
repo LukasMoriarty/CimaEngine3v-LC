@@ -84,15 +84,6 @@ namespace IVJ
 			}
 		}
 
-		sf::Transform rotacion;
-		rotacion.rotate(
-			sf::degrees(transform->angulo),
-			sf::Vector2f(transform->posicion.x, transform->posicion.y)
-		);
-
-		sf::RenderStates estadoCabeza = state;
-		estadoCabeza.transform *= rotacion;
-
 		Triangulo::draw(target, state);
 	}
 
