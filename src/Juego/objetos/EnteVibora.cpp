@@ -18,6 +18,28 @@ namespace IVJ
 		transform->posicion.x += transform->velocidad.x * dt;
 		transform->posicion.y += transform->velocidad.y * dt;
 
+		auto windowSize = CE::Render::Get().GetVentana().getSize();
+		float maxX = static_cast<float>(windowSize.x);
+		float maxY = static_cast<float>(windowSize.y);
+
+		if (transform->posicion.x < 0.f)
+		{
+			transform->posicion.x = 0.f;
+            transform->velocidad.x *= -1.f;
+        } else if (transform->posicion.x > maxX) {
+            transform->posicion.x = maxX;
+            transform->velocidad.x *= -1.f;
+		}
+
+		if (transform->posicion.y < 0.f)
+        {
+            transform->posicion.y = 0.f;
+            transform->velocidad.y *= -1.f;
+        } else if (transform->posicion.y > maxY) {
+            transform->posicion.y = maxY;
+            transform->velocidad.y *= -1.f;
+        }
+
 		// 3. Actualizar la cabeza como Triangulo
 		Circulo::onUpdate(dt);
 
