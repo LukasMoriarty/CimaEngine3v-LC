@@ -17,7 +17,7 @@ namespace IVJ
         if(!inicializar)
             return;
 
-        //Inicializar todo lo que contendra la escena 
+        //Inicializar
         auto rect = std::make_shared<Rectangulo>(100.f,20.f,sf::Color::Red,sf::Color::Black);
         rect->setPosicion(200.f,300.f);
 
