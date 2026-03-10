@@ -8,7 +8,7 @@ namespace IVJ
 	EnteVibora::EnteVibora(float tam_lado,
 						   const sf::Color& relleno,
 						   const sf::Color& contorno)
-		: Triangulo(tam_lado, relleno, contorno) // <-- CAMBIO: Llamar a Triangulo
+		: Triangulo(tam_lado, relleno, contorno)
 	{}
 
 	void EnteVibora::onUpdate(float dt)
@@ -83,6 +83,15 @@ namespace IVJ
 				}
 			}
 		}
+
+		sf::Transform rotacion;
+		rotacion.rotate(
+			sf::degrees(transform->angulo),
+			sf::Vector2f(transform->posicion.x, transform->posicion.y)
+		);
+
+		sf::RenderStates estadoCabeza = state;
+		estadoCabeza.transform *= rotacion;
 
 		Triangulo::draw(target, state);
 	}
