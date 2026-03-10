@@ -13,6 +13,7 @@
 #include <Juego/Escenas/Escena_Prueba.hpp>
 #include <Juego/Escenas/Escena_SS.hpp>
 #include <Juego/Escenas/Escena_Menu.hpp>
+#include <Juego/Escenas/Escena_Epidemia.hpp>
 #include <Juego/objetos/Entidad.hpp>
 
 
@@ -27,11 +28,11 @@ namespace IVJ
     void Juego::OnInit(void)
     {
         std::cout<<"Inicializando Juego\n";
-        
-        
+
         CE::GestorEscenas::Get().registrarEscena("Prueba",std::make_shared<Escena_Prueba>(jugador));
         CE::GestorEscenas::Get().registrarEscena("SS",std::make_shared<Escena_SS>(jugador));
         CE::GestorEscenas::Get().registrarEscena("Menu",std::make_shared<Escena_Menu>());
+        CE::GestorEscenas::Get().registrarEscena("Epidemia",std::make_shared<Escena_Epidemia>(jugador));
 
         //crear el jugador
         jugador = std::make_shared<Entidad>();
