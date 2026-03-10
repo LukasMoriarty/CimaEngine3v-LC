@@ -11,226 +11,210 @@
 
 namespace IVJ
 {
-    Escena_SS::Escena_SS(std::shared_ptr<Entidad>& pref)
-        : CE::Escena{}, jugador_ref{pref}, vibora{nullptr}, timer_agregar_parte{0.f}
-    {
-    }
+	Escena_SS::Escena_SS(std::shared_ptr<Entidad>& pref)
+		: CE::Escena{}, jugador_ref{pref}, vibora{nullptr}, timer_agregar_parte{0.f}
+	{
+	}
 
-    void Escena_SS::onInit()
-    {
-        if(!inicializar)
-            return;
+	void Escena_SS::onInit()
+	{
+		if(!inicializar)
+			return;
 
-        // Registrar controles para la víbora
-        registrarBotones(sf::Keyboard::Scancode::W, "arriba");
-        registrarBotones(sf::Keyboard::Scancode::S, "abajo");
-        registrarBotones(sf::Keyboard::Scancode::A, "izquierda");
-        registrarBotones(sf::Keyboard::Scancode::D, "derecha");
+		// Registrar controles para la víbora
+		registrarBotones(sf::Keyboard::Scancode::W, "arriba");
+		registrarBotones(sf::Keyboard::Scancode::S, "abajo");
+		registrarBotones(sf::Keyboard::Scancode::A, "izquierda");
+		registrarBotones(sf::Keyboard::Scancode::D, "derecha");
 
-        // ============================================
-        // CREAR LA VÍBORA (EJERCICIO)
-        // ============================================
+		// ============================================
+		// CREAR LA VÍBORA (EJERCICIO)
+		// ============================================
 
-        // Crear la cabeza de la víbora
-        vibora = std::make_shared<EnteVibora>(
-            50.f,   // ancho
-            50.f,    // largo
-            sf::Color::Green,   // color de relleno
-            sf::Color::Black    // color de contorno
-        );
+		// Crear la cabeza de la víbora
+		vibora = std::make_shared<EnteVibora>(
+			30.f,  // ancho
+			30.f,  // largo
+			sf::Color::Green,   // color de relleno
+			sf::Color::Black	// color de contorno
+		);
 
-        // Posición inicial en el centro de la pantalla
-        vibora->setPosicion(400.f, 300.f);
+		// Posición inicial en el centro de la pantalla
+		vibora->setPosicion(400.f, 300.f);
 
-        // Agregar componente de control para mover la cabeza
-        vibora->addComponente(std::make_shared<CE::IControl>());
+		// IMPORTANTE: Dar velocidad inicial a la víbora para que empiece moviéndose
+		vibora->getTransformada()->velocidad = CE::Vector2D{-100.f, 0.f}; // Izquierda
 
-        // PASO 5: Agregar componente ICPartesCuerpo que inicie con 3 partes
-        auto cuerpo = std::make_shared<ICPartesCuerpo>(30, 30);
-        vibora->addComponente(cuerpo);
+		// Agregar componente de control para mover la cabeza
+		vibora->addComponente(std::make_shared<CE::IControl>());
 
-        // Agregar las 3 partes iniciales
-        vibora->agregarParteAlCuerpo(sf::Color::Yellow);
-        vibora->agregarParteAlCuerpo(sf::Color::Cyan);
-        vibora->agregarParteAlCuerpo(sf::Color::Magenta);
+		// PASO 5: Agregar componente ICPartesCuerpo que inicie con 3 partes
+		auto cuerpo = std::make_shared<ICPartesCuerpo>(30, 30);
+		vibora->addComponente(cuerpo);
 
-        // Agregar la víbora al pool de objetos
-        objetos.agregarPool(vibora);
+		// Agregar las 3 partes iniciales
+		vibora->agregarParteAlCuerpo(sf::Color::Yellow);
+		vibora->agregarParteAlCuerpo(sf::Color::Cyan);
+		vibora->agregarParteAlCuerpo(sf::Color::Magenta);
 
-        /*
-        // ============================================
-        // OTRAS FIGURAS DE PRUEBA
-        // ============================================
+		// Agregar la víbora al pool de objetos
+		objetos.agregarPool(vibora);
 
-        figura = std::make_shared<Rectangulo>(
-            100.f, 50.f, sf::Color::Red, sf::Color::Yellow);
-        figura->setPosicion(350.f, 400.f);
-        objetos.agregarPool(figura);
+		/*
+		// ============================================
+		// OTRAS FIGURAS DE PRUEBA
+		// ============================================
 
-        figura2 = std::make_shared<Circulo>(
-            50.f, sf::Color::Blue, sf::Color::White);
-        figura2->setPosicion(250.f, 200.f);
-        objetos.agregarPool(figura2);
+		figura = std::make_shared<Rectangulo>(
+			100.f, 50.f, sf::Color::Red, sf::Color::Yellow);
+		figura->setPosicion(350.f, 400.f);
+		objetos.agregarPool(figura);
 
-        // Cargar figuras desde archivo (opcional)
-        std::ifstream miarchivo(ASSETS "/config/figuras.txt");
-        std::string tipo;
-        float px, py;
-        float w, h;
-        int fr, fg, fb, cr, cg, cb;
+		figura2 = std::make_shared<Circulo>(
+			50.f, sf::Color::Blue, sf::Color::White);
+		figura2->setPosicion(250.f, 200.f);
+		objetos.agregarPool(figura2);
 
-        while (miarchivo >> tipo)
-        {
-            if (tipo == "Rectangulo")
-            {
-                miarchivo >> px >> py >> w >> h >> fr >> fg >> fb >> cr >> cg >> cb;
-                auto nuevaFigura = std::make_shared<Rectangulo>(w, h,
-                    sf::Color(fr, fg, fb, 255),
-                    sf::Color(cr, cg, cb, 255));
-                nuevaFigura->setPosicion(px, py);
-                nuevaFigura->addComponente(std::make_shared<IArribaAbajo>(py - 50.f, py + 50.f, 50.f));
-                objetos.agregarPool(nuevaFigura);
-            }
-            else if (tipo == "Circulo")
-            {
-                miarchivo >> px >> py >> w >> fr >> fg >> fb >> cr >> cg >> cb;
-                auto nuevaFigura = std::make_shared<Circulo>(w,
-                    sf::Color(fr, fg, fb, 255),
-                    sf::Color(cr, cg, cb, 255));
-                nuevaFigura->setPosicion(px, py);
-                nuevaFigura->addComponente(std::make_shared<ICirculos>(2.f, 1.f));
-                objetos.agregarPool(nuevaFigura);
-            }
-            else if (tipo == "Triangulo")
-            {
-                miarchivo >> px >> py >> w >> fr >> fg >> fb >> cr >> cg >> cb;
-                auto nuevaFigura = std::make_shared<Triangulo>(w,
-                    sf::Color(fr, fg, fb, 255),
-                    sf::Color(cr, cg, cb, 255));
-                nuevaFigura->setPosicion(px, py);
-                nuevaFigura->addComponente(std::make_shared<IWave>(5.f, 1.f, 1.f));
-                objetos.agregarPool(nuevaFigura);
-            }
-        }
-        */
+		// Cargar figuras desde archivo (opcional)
+		std::ifstream miarchivo(ASSETS "/config/figuras.txt");
+		std::string tipo;
+		float px, py;
+		float w, h;
+		int fr, fg, fb, cr, cg, cb;
 
-        inicializar = 0;
-    }
+		while (miarchivo >> tipo)
+		{
+			if (tipo == "Rectangulo")
+			{
+				miarchivo >> px >> py >> w >> h >> fr >> fg >> fb >> cr >> cg >> cb;
+				auto nuevaFigura = std::make_shared<Rectangulo>(w, h,
+					sf::Color(fr, fg, fb, 255),
+					sf::Color(cr, cg, cb, 255));
+				nuevaFigura->setPosicion(px, py);
+				nuevaFigura->addComponente(std::make_shared<IArribaAbajo>(py - 50.f, py + 50.f, 50.f));
+				objetos.agregarPool(nuevaFigura);
+			}
+			else if (tipo == "Circulo")
+			{
+				miarchivo >> px >> py >> w >> fr >> fg >> fb >> cr >> cg >> cb;
+				auto nuevaFigura = std::make_shared<Circulo>(w,
+					sf::Color(fr, fg, fb, 255),
+					sf::Color(cr, cg, cb, 255));
+				nuevaFigura->setPosicion(px, py);
+				nuevaFigura->addComponente(std::make_shared<ICirculos>(2.f, 1.f));
+				objetos.agregarPool(nuevaFigura);
+			}
+			else if (tipo == "Triangulo")
+			{
+				miarchivo >> px >> py >> w >> fr >> fg >> fb >> cr >> cg >> cb;
+				auto nuevaFigura = std::make_shared<Triangulo>(w,
+					sf::Color(fr, fg, fb, 255),
+					sf::Color(cr, cg, cb, 255));
+				nuevaFigura->setPosicion(px, py);
+				nuevaFigura->addComponente(std::make_shared<IWave>(5.f, 1.f, 1.f));
+				objetos.agregarPool(nuevaFigura);
+			}
+		}
+		*/
 
-    void Escena_SS::onFinal()
-    {
-    }
+		inicializar = 0;
+	}
 
-    void Escena_SS::onUpdate(float dt)
-    {
-        if (vibora)
-        {
-            timer_agregar_parte += dt;
+	void Escena_SS::onFinal()
+	{
+	}
 
-            // Cada 3 segundos, agregar una nueva parte
-            if (timer_agregar_parte >= 3.0f)
-            {
-                // Colores aleatorios para las nuevas partes
-                static int color_index = 0;
-                sf::Color colores[] = {
-                    sf::Color::Red,
-                    sf::Color::Blue,
-                    sf::Color::Yellow,
-                    sf::Color::Magenta,
-                    sf::Color::Cyan,
-                    sf::Color::White
-                };
+	void Escena_SS::onUpdate(float dt)
+	{
+		if (vibora)
+		{
+			timer_agregar_parte += dt;
 
-                vibora->agregarParteAlCuerpo(colores[color_index % 6]);
-                color_index++;
+			// Cada 3 segundos, agregar una nueva parte
+			if (timer_agregar_parte >= 3.0f)
+			{
+				// Colores aleatorios para las nuevas partes
+				static int color_index = 0;
+				sf::Color colores[] = {
+					sf::Color::Red,
+					sf::Color::Blue,
+					sf::Color::Yellow,
+					sf::Color::Magenta,
+					sf::Color::Cyan,
+					sf::Color::White
+				};
 
-                // Resetear el timer
-                timer_agregar_parte = 0.f;
+				vibora->agregarParteAlCuerpo(colores[color_index % 6]);
+				color_index++;
 
-                CE::GLogger::Get().agregarLog(
-                    "Nueva parte agregada a la vibora!",
-                    CE::GLogger::Niveles::LOG_DEBUG
-                );
-            }
-        }
+				// Resetear el timer
+				timer_agregar_parte = 0.f;
 
-        // Actualizar todos los objetos
-        for (auto& obj : objetos.getPool())
-        {
-            obj->onUpdate(dt);
+				CE::GLogger::Get().agregarLog(
+					"Nueva parte agregada a la vibora!",
+					CE::GLogger::Niveles::LOG_DEBUG
+				);
+			}
+		}
 
-            /*
-            // Aplicar sistemas de movimiento a otras figuras
-            SistemaRectanguloMoverUpDown(*obj, dt);
-            SistemaTrianguloWave(*obj, dt);
-            SistemaCirculoMoverEnCirculos(*obj, dt);
-            */
-        }
+		// Actualizar todos los objetos
+		for (auto& obj : objetos.getPool())
+		{
+			obj->onUpdate(dt);
 
-        // Logger de debug
-        static float timer{0.f};
-        timer += dt;
-        CE::GLogger::Get().agregarLog(
-            "Timer:" + std::to_string(timer),
-            CE::GLogger::Niveles::LOG_DEBUG
-        );
-    }
+			// Aplicar sistemas de movimiento a otras figuras
+			SistemaRectanguloMoverUpDown(*obj, dt);
+			SistemaTrianguloWave(*obj, dt);
+			SistemaCirculoMoverEnCirculos(*obj, dt);
+		}
 
-    void Escena_SS::onInputs(const CE::Botones& accion)
-    {
-        if (!vibora) return;
+		// Logger de debug
+		static float timer{0.f};
+		timer += dt;
+		CE::GLogger::Get().agregarLog(
+			"Timer:" + std::to_string(timer),
+			CE::GLogger::Niveles::LOG_DEBUG
+		);
+	}
 
-        auto control = vibora->getComponente<CE::IControl>();
-        if (!control) return;
+	void Escena_SS::onInputs(const CE::Botones& accion)
+	{
+		if (!vibora) return;
 
-        // Procesar inputs para controlar la víbora
-        if (accion.getTipo() == CE::Botones::TipoAccion::OnPress)
-        {
-            if (accion.getNombre() == "arriba")
-                control->arr = true;
-            else if (accion.getNombre() == "abajo")
-                control->abj = true;
-            else if (accion.getNombre() == "izquierda")
-                control->izq = true;
-            else if (accion.getNombre() == "derecha")
-                control->der = true;
-        }
-        else if (accion.getTipo() == CE::Botones::TipoAccion::OnRelease)
-        {
-            if (accion.getNombre() == "arriba")
-                control->arr = false;
-            else if (accion.getNombre() == "abajo")
-                control->abj = false;
-            else if (accion.getNombre() == "izquierda")
-                control->izq = false;
-            else if (accion.getNombre() == "derecha")
-                control->der = false;
-        }
+		auto trans = vibora->getTransformada();
+		if (!trans) return;
 
-        // Aplicar el movimiento basado en el control
-        if (vibora)
-        {
-            auto trans = vibora->getTransformada();
-            float velocidad = 200.f;
+		// Solo procesar al presionar tecla (cambio de dirección)
+		if (accion.getTipo() != CE::Botones::TipoAccion::OnPress) return;
 
-            trans->velocidad = CE::Vector2D{0.f, 0.f};
+		float velocidad = 100.f;
+		CE::Vector2D vel_actual = trans->velocidad;
 
-            if (control->arr)
-                trans->velocidad.y = -velocidad;
-            if (control->abj)
-                trans->velocidad.y = velocidad;
-            if (control->izq)
-                trans->velocidad.x = -velocidad;
-            if (control->der)
-                trans->velocidad.x = velocidad;
-        }
-    }
+		// Cambiar dirección según la tecla presionada
+		// Regla: no puede ir en dirección opuesta (snake no puede voltearse sobre sí misma)
+		if (accion.getNombre() == "arriba" && vel_actual.y == 0)
+		{
+			trans->velocidad = CE::Vector2D{0.f, -velocidad};
+		}
+		else if (accion.getNombre() == "abajo" && vel_actual.y == 0)
+		{
+			trans->velocidad = CE::Vector2D{0.f, velocidad};
+		}
+		else if (accion.getNombre() == "izquierda" && vel_actual.x == 0)
+		{
+			trans->velocidad = CE::Vector2D{-velocidad, 0.f};
+		}
+		else if (accion.getNombre() == "derecha" && vel_actual.x == 0)
+		{
+			trans->velocidad = CE::Vector2D{velocidad, 0.f};
+		}
+	}
 
-    void Escena_SS::onRender()
-    {
-        for (auto& obj : objetos.getPool())
-        {
-            CE::Render::Get().AddToDraw(*obj);
-        }
-    }
+	void Escena_SS::onRender()
+	{
+		for (auto& obj : objetos.getPool())
+		{
+			CE::Render::Get().AddToDraw(*obj);
+		}
+	}
 }

@@ -204,14 +204,14 @@ namespace IVJ
 	class ICParte : public CE::IComponentes
 	{
 		public:
-			explicit ICParte(std::shared_ptr<Figuras> figura, int timer_max = 10);
+			explicit ICParte(std::shared_ptr<Figuras> figura, int timer_max = 15);
 			~ICParte() override = default;
 		public:
-			Cola<CE::Vector2D> cola_posiciones;  // Cola de posiciones para seguimiento
-			std::shared_ptr<Figuras> parte;       // Figura visual de la parte
-			CE::Vector2D pos;                     // Posición actual
-			std::shared_ptr<ICTimer> timer;       // Timer para control de movimiento
-			bool hacerAccion;                     // Indica si debe seguir a la cabeza
+			Cola<CE::Vector2D> cola_posiciones;
+			std::shared_ptr<Figuras> parte;
+			std::shared_ptr<CE::ITransform> pos;
+			std::shared_ptr<ICTimer> timer;
+			bool hacerAccion;
 	};
 
 	// Componente que gestiona todas las partes del cuerpo de la víbora

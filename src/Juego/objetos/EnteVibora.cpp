@@ -5,8 +5,8 @@
 namespace IVJ
 {
 	EnteVibora::EnteVibora(float ancho, float largo,
-	                       const sf::Color& relleno,
-	                       const sf::Color& contorno)
+						   const sf::Color& relleno,
+						   const sf::Color& contorno)
 		: Rectangulo(ancho, largo, relleno, contorno)
 	{
 		// La cabeza se inicializa con su componente de partes del cuerpo
@@ -15,57 +15,54 @@ namespace IVJ
 
 	void EnteVibora::onUpdate(float dt)
 	{
-		// Actualizar la posición de la cabeza (comportamiento base de Rectangulo)
+		// 1. Movimiento base de la cabeza
+		transform->pos_prev = transform->posicion;
+		transform->posicion.x += transform->velocidad.x * dt;
+		transform->posicion.y += transform->velocidad.y * dt;
 		Rectangulo::onUpdate(dt);
 
-		// Obtener el componente de partes del cuerpo si existe
 		auto cuerpo = getComponente<ICPartesCuerpo>();
-		if (!cuerpo) return;
+		if (!cuerpo || cuerpo->partes.empty()) return;
 
-		// Si no hay partes, no hacer nada
-		if (cuerpo->partes.empty()) return;
-
-		// La primera parte sigue a la cabeza
+		// El primer objetivo a perseguir es la posición actual de la cabeza
 		CE::Vector2D objetivo_anterior = transform->posicion;
 
-		// Actualizar cada parte del cuerpo
 		for (size_t i = 0; i < cuerpo->partes.size(); ++i)
 		{
 			auto& parte = cuerpo->partes[i];
 
-			// Incrementar el timer de la parte
-			parte->timer->curr_frame++;
+			// 2. Insertamos la posición a perseguir
+			parte->cola_posiciones.push(objetivo_anterior);
 
-			// Si el timer alcanzó su máximo, activar la acción
-			if (parte->timer->curr_frame >= parte->timer->max_frame)
-			{
-				parte->hacerAccion = true;
-			}
+			// 3. IMPORTANTE: Guardamos dónde está ESTA parte ANTES de moverla,
+			// para que la SIGUIENTE parte la persiga a ella.
+			objetivo_anterior = parte->pos->posicion;
 
-			// Si la parte debe hacer acción (perseguir)
-			if (parte->hacerAccion)
-			{
-				// Agregar la posición objetivo a la cola
-				parte->cola_posiciones.push(objetivo_anterior);
-
-				// Mantener un tamaño máximo de cola (para evitar memoria infinita)
-				while (parte->cola_posiciones.size() > 50)
-				{
-					parte->cola_posiciones.pop();
+			// 4. Lógica del timer para iniciar el movimiento
+			if (!parte->hacerAccion) {
+				parte->timer->curr_frame++;
+				if (parte->timer->curr_frame >= parte->timer->max_frame) {
+					parte->hacerAccion = true;
 				}
+			}
+	
+			// 5. Aplicar el movimiento si el timer ya terminó
+			if (parte->hacerAccion && !parte->cola_posiciones.vacia()) {
+				CE::Vector2D pos_destino = parte->cola_posiciones.front();
+				parte->cola_posiciones.pop();
 
-				// Actualizar la parte hacia el objetivo
-				actualizarParte(parte, objetivo_anterior, dt);
+				parte->pos->posicion = pos_destino;
+				parte->parte->setPosicion(pos_destino.x, pos_destino.y);
 			}
 
-			// La siguiente parte seguirá a esta parte
-			objetivo_anterior = parte->pos;
+			// Actualizar la figura por si tiene lógica interna
+			parte->parte->onUpdate(dt);
 		}
 	}
 
 	void EnteVibora::actualizarParte(std::shared_ptr<ICParte> parte,
-	                                 const CE::Vector2D& objetivo,
-	                                 float dt)
+									 const CE::Vector2D& objetivo,
+									 float dt)
 	{
 		if (!parte || !parte->parte) return;
 
@@ -98,7 +95,6 @@ namespace IVJ
 
 	void EnteVibora::draw(sf::RenderTarget& target, sf::RenderStates state) const
 	{
-		// Primero dibujar todas las partes del cuerpo (de atrás hacia adelante)
 		auto cuerpo = getComponente<ICPartesCuerpo>();
 		if (cuerpo)
 		{
@@ -106,11 +102,11 @@ namespace IVJ
 			{
 				if (parte && parte->parte)
 				{
-					target.draw(*parte->parte, state);
+					// IMPORTANTE: Usamos Default para dibujar en coordenadas globales reales
+					target.draw(*parte->parte, sf::RenderStates::Default);
 				}
 			}
 		}
-
 		// Luego dibujar la cabeza encima
 		Rectangulo::draw(target, state);
 	}
@@ -120,40 +116,21 @@ namespace IVJ
 		auto cuerpo = getComponente<ICPartesCuerpo>();
 		if (!cuerpo) return;
 
-		// Crear nueva figura para la parte (círculo para diferenciarlo de la cabeza)
-		auto nueva_figura = std::make_shared<Circulo>(
-			cuerpo->width / 2.0f,  // radio basado en width
-			color,
-			sf::Color::Black
-		);
+		auto nueva_figura = std::make_shared<Circulo>(cuerpo->width / 2.0f, color, sf::Color::Black);
 
-		// Determinar posición inicial de la nueva parte
 		CE::Vector2D pos_inicial;
-		if (cuerpo->partes.empty())
-		{
-			// Si es la primera parte, colocarla detrás de la cabeza
+		if (cuerpo->partes.empty()) {
 			pos_inicial = transform->posicion;
-			pos_inicial.x -= cuerpo->width;
-		}
-		else
-		{
-			// Colocarla detrás de la última parte
+		} else {
 			auto& ultima_parte = cuerpo->partes.back();
-			pos_inicial = ultima_parte->pos;
-			pos_inicial.x -= cuerpo->width;
+			pos_inicial = ultima_parte->pos->posicion; // Extraído correctamente
 		}
 
-		nueva_figura->setPosicion(pos_inicial.x, pos_inicial.y);
+		// Le damos 15 frames de retraso inicial para separarla de la parte anterior
+		auto nueva_parte = std::make_shared<ICParte>(nueva_figura, 15);
+		nueva_parte->pos->posicion = pos_inicial;
+		nueva_parte->parte->setPosicion(pos_inicial.x, pos_inicial.y);
 
-		// Crear el componente ICParte
-		auto nueva_parte = std::make_shared<ICParte>(
-			nueva_figura,
-			10 * (cuerpo->partes.size() + 1)  // Timer más largo para partes posteriores
-		);
-
-		nueva_parte->pos = pos_inicial;
-
-		// Agregar la parte al cuerpo
-		cuerpo->agregarParte(nueva_parte);
+		cuerpo->partes.push_back(nueva_parte);
 	}
 }

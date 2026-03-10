@@ -138,15 +138,10 @@ namespace IVJ
 		: CE::IComponentes{},
 		  cola_posiciones{},
 		  parte{figura},
-		  pos{0.f, 0.f},
+		  pos{std::make_shared<CE::ITransform>()},
 		  timer{std::make_shared<ICTimer>(timer_max)},
 		  hacerAccion{false}
-	{
-		// Inicializar la posición desde la figura
-		if (parte) {
-			pos = parte->getTransformada()->posicion;
-		}
-	}
+	{}
 
 	// Implementación de ICPartesCuerpo
 	ICPartesCuerpo::ICPartesCuerpo(int w, int h)
