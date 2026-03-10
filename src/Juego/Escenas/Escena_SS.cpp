@@ -31,16 +31,11 @@ namespace IVJ
 		registrarBotones(sf::Keyboard::Scancode::Left, "izquierda");
 		registrarBotones(sf::Keyboard::Scancode::Right, "derecha");
 
-		// ============================================
-		// CREAR LA VÍBORA (EJERCICIO)
-		// ============================================
-
-		// Crear la cabeza de la víbora
+		// Crear la cabeza de la víbora (ahora es un Triángulo)
 		vibora = std::make_shared<EnteVibora>(
-			75.f,  // ancho
-			75.f,  // largo
-			sf::Color::Green,   // color de relleno
-			sf::Color::Black	// color de contorno
+			50.f,  // tam_lado (tamaño del triángulo)
+			sf::Color::Green,
+			sf::Color::White
 		);
 
 		// Posición inicial en el centro de la pantalla
