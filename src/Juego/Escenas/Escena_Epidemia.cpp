@@ -1,4 +1,4 @@
-#include "Escena_Prueba.hpp"
+#include "Escena_Epidemia.hpp"
 #include <Juego/Figuras/Figuras.hpp>
 #include <Juego/objetos/Texto.hpp>
 #include <Motor/Render/Render.hpp>
