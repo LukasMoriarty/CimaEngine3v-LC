@@ -35,7 +35,7 @@ namespace IVJ
 		vibora = std::make_shared<EnteVibora>(
 			50.f,  // tam_lado (tamaño del triángulo)
 			sf::Color::Green,
-			sf::Color::White
+			sf::Color::Black
 		);
 
 		// Posición inicial en el centro de la pantalla
