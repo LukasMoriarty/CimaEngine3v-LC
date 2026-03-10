@@ -58,36 +58,36 @@ namespace IVJ
 	}
 
 	void EnteVibora::actualizarParte(std::shared_ptr<ICParte> parte,
-                          const CE::Vector2D& objetivo,
-                          float dt)
+						  const CE::Vector2D& objetivo,
+						  float dt)
 	{
-	    if (!parte || !parte->parte) return;
+		if (!parte || !parte->parte) return;
 
-	    // Calcular dirección hacia el objetivo (Usamos ->posicion)
-	    CE::Vector2D direccion = objetivo - parte->pos->posicion;
-	    float distancia = direccion.longitud();
+		// Calcular dirección hacia el objetivo (Usamos ->posicion)
+		CE::Vector2D direccion = objetivo - parte->pos->posicion;
+		float distancia = direccion.longitud();
 
-	    // Si está muy cerca, no moverse
-	    if (distancia < 1.0f) return;
+		// Si está muy cerca, no moverse
+		if (distancia < 1.0f) return;
 
-	    // Normalizar la dirección
-	    direccion.normalizacion();
+		// Normalizar la dirección
+		direccion.normalizacion();
 
-    	// Velocidad de seguimiento (ajustable)
-    	float velocidad = 150.0f;
+		// Velocidad de seguimiento (ajustable)
+		float velocidad = 150.0f;
 
-	    // Calcular nuevo movimiento
-	    CE::Vector2D movimiento = direccion;
-	    movimiento.escala(velocidad * dt);
+		// Calcular nuevo movimiento
+		CE::Vector2D movimiento = direccion;
+		movimiento.escala(velocidad * dt);
 
-	    // Actualizar posición (Usamos ->posicion)
-	    parte->pos->posicion = parte->pos->posicion + movimiento;
+		// Actualizar posición (Usamos ->posicion)
+		parte->pos->posicion = parte->pos->posicion + movimiento;
 
-	    // Actualizar la posición de la figura visual (Usamos ->posicion.x y ->posicion.y)
-	    if (parte->parte)
-	    {
-	       parte->parte->setPosicion(parte->pos->posicion.x, parte->pos->posicion.y);
-	    }
+		// Actualizar la posición de la figura visual (Usamos ->posicion.x y ->posicion.y)
+		if (parte->parte)
+		{
+		   parte->parte->setPosicion(parte->pos->posicion.x, parte->pos->posicion.y);
+		}
 	}
 
 	void EnteVibora::draw(sf::RenderTarget& target, sf::RenderStates state) const
