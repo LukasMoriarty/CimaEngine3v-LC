@@ -166,6 +166,13 @@ namespace CE
              * @param y Coordenada Y en píxeles
              */
             void setPosicion(float x, float y);
+
+            /**
+             * @brief Centra el objeto en ventana obteniendo el width y height de la pantalla
+             * @param w Ancho de la ventana en píxeles
+             * @param h Alto de la ventana en píxeles
+             */
+            void centrarObjeto(float w, float h);
             
             /**
              * @brief Actualiza la lógica del objeto cada frame.

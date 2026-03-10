@@ -19,6 +19,13 @@ namespace CE
         transform->posicion.y = y;
     }
 
+    void Objeto::centrarObjeto(float w, float h) {
+        transform->pos_prev = transform->posicion;
+        transform->posicion.x = w / 2.0f;
+        transform->posicion.y = h / 2.0f;
+    }
+
+
     Objeto& Objeto::addComponente(const std::shared_ptr<IComponentes>& componente)
     {
         componentes.push_back(componente);

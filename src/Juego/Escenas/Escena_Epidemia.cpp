@@ -19,7 +19,11 @@ namespace IVJ
 
         //Inicializar
         auto rect = std::make_shared<Rectangulo>(100.f,20.f,sf::Color::Red,sf::Color::Black);
-        rect->setPosicion(200.f,300.f);
+
+        auto windowSize = CE::Render::Get().GetVentana().getSize();
+		float x = static_cast<float>(windowSize.x);
+		float y = static_cast<float>(windowSize.y);
+        rect->centrarObjeto(x,y);
 
         auto texto = std::make_shared<IVJ::Texto>(CE::GestorAssets::Get().getFont("default_font"),"Escena Epidemia");
         texto->setFontSize(30u);
@@ -51,6 +55,7 @@ namespace IVJ
     }
     void Escena_Epidemia::onRender()
     {
+		CE::Render::Get().OnClearColor(sf::Color(255,255,255));
         for(auto& obj: objetos.getPool())
         {
             CE::Render::Get().AddToDraw(*obj);

@@ -29,14 +29,14 @@ namespace IVJ
     {
         std::cout<<"Inicializando Juego\n";
 
+        //crear el jugador
+        jugador = std::make_shared<Entidad>();
+        jugador->getStats()->hp = 100;
+
         CE::GestorEscenas::Get().registrarEscena("Prueba",std::make_shared<Escena_Prueba>(jugador));
         CE::GestorEscenas::Get().registrarEscena("SS",std::make_shared<Escena_SS>(jugador));
         CE::GestorEscenas::Get().registrarEscena("Menu",std::make_shared<Escena_Menu>());
         CE::GestorEscenas::Get().registrarEscena("Epidemia",std::make_shared<Escena_Epidemia>(jugador));
-
-        //crear el jugador
-        jugador = std::make_shared<Entidad>();
-        jugador->getStats()->hp = 100;
 
         // CE::GestorEscenas::Get().cambiarEscena("Prueba"); //ejecuta onInit()A
         CE::GestorEscenas::Get().cambiarEscena("SS");
