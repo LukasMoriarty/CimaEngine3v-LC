@@ -4,6 +4,8 @@
 #include <memory>
 
 #include "Juego/objetos/Entidad.hpp"
+#include "Juego/Sistemas/Sistemas.hpp"
+#include "Motor/Camaras/CamarasGestor.hpp"
 
 namespace IVJ
 {
@@ -13,6 +15,13 @@ namespace IVJ
     }
     void Escena_Camara::onInit()
     {
+        // asignar primero que nada la camara, porque podemos entrar y salir de escenas
+        // asi la camara regresa a la que deberia en la escena
+        // id = 1 = LERP es en el orden que se agreguen
+        CE::GestorCamaras::Get().setCamaraActiva(1);
+        // indicar a quien persigue
+        CE::GestorCamaras::Get().getCamaraActiva().lockEnObjeto(jugador_ref);
+
         if(!inicializar) return;
 
         registrarBotones(sf::Keyboard::Scancode::W,"arriba");
@@ -41,10 +50,13 @@ namespace IVJ
     }
     void Escena_Camara::onFinal()
     {
+        // resetear la camara a la estatica al salir/cambiar de escena
+        CE::GestorCamaras::Get().setCamaraActiva(0);
     }
     void Escena_Camara::onUpdate(float dt)
     {
         jugador_ref->onUpdate(dt);
+        SistemaMover(jugador_ref, dt);
         for(auto& obj: objetos.getPool())
         {
             obj->onUpdate(dt);
@@ -56,10 +68,26 @@ namespace IVJ
         {
             case CE::Botones::TipoAccion::OnPress:
             {
+                if (accion.getNombre() == "arriba")
+                    jugador_ref->getComponente<CE::IControl>()->arr = true;
+                if (accion.getNombre() == "abajo")
+                    jugador_ref->getComponente<CE::IControl>()->abj = true;
+                if (accion.getNombre() == "derecha")
+                    jugador_ref->getComponente<CE::IControl>()->der = true;
+                if (accion.getNombre() == "izquierda")
+                    jugador_ref->getComponente<CE::IControl>()->izq = true;
                 break;
             }
             case CE::Botones::TipoAccion::OnRelease:
             {
+                if (accion.getNombre() == "arriba")
+                    jugador_ref->getComponente<CE::IControl>()->arr = false;
+                if (accion.getNombre() == "abajo")
+                    jugador_ref->getComponente<CE::IControl>()->abj = false;
+                if (accion.getNombre() == "derecha")
+                    jugador_ref->getComponente<CE::IControl>()->der = false;
+                if (accion.getNombre() == "izquierda")
+                    jugador_ref->getComponente<CE::IControl>()->izq = false;
                 break;
             }
             case CE::Botones::TipoAccion::None:

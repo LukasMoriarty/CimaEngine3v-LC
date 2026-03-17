@@ -17,6 +17,7 @@
 #include <Juego/objetos/Entidad.hpp>
 
 #include "Escenas/Escena_Camara.hpp"
+#include "Motor/Camaras/CamarasGestor.hpp"
 
 
 namespace IVJ
@@ -48,6 +49,14 @@ namespace IVJ
         // CE::GestorEscenas::Get().cambiarEscena("Prueba"); //ejecuta onInit()A
         CE::GestorEscenas::Get().cambiarEscena("Menu");
         escena_actual = &CE::GestorEscenas::Get().getEscenaActual();
+
+        // crear camara LERP
+        CE::GestorCamaras::Get().agregarCamara(
+            std::make_shared<CE::CamaraLERP>(
+                CE::Vector2D{0.f, 0.f}, // posicion
+                CE::Vector2D{1024, 720} // dimensiones
+            )
+        );
     }
     
     void Juego::OnInputs()
