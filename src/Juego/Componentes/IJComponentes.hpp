@@ -2,6 +2,7 @@
 #include "../Maquinas/FSM.hpp"
 #include "../../Motor/Componentes/IComponentes.hpp"
 #include "../../Motor/Primitivos/Objetos.hpp"
+
 namespace IVJ
 {
 
@@ -228,4 +229,86 @@ namespace IVJ
 			int width;
 			int height;
 	};
-}
+
+	/**
+	 * @class IEstadoEpidemia
+	 * @brief Componente que gestiona el estado epidémico de una persona.
+	 *
+	 * Maneja los estados: Normal, Enfermo, Recuperacion, Inmune, Muerto,
+	 * junto con sus tiempos de transición y probabilidades individuales.
+	 *
+	 * Integración en la cuadrícula: cada persona conoce su (fila, columna)
+	 * para que el sistema de contagio pueda localizar sus vecinos.
+	 */
+	class IEstadoEpidemia : public CE::IComponentes
+	{
+	public:
+		/**
+		 * @enum Estado
+		 * @brief Estados posibles de la persona en la simulación.
+		 */
+		enum class Estado
+		{
+			Normal,       ///< Sana, susceptible a infección (sin inmunidad)
+			Enfermo,      ///< Infectada, contagia vecinos cada ~1 s durante 3 s
+			Recuperacion, ///< En recuperación (2 s), no puede ser infectada
+			Inmune,       ///< Inmunidad permanente, nunca podrá ser infectada
+			Muerto        ///< Fallecida, sin interacción
+		};
+
+		/**
+		 * @brief Constructor.
+		 * @param fila    Fila en la cuadrícula (eje Y)
+		 * @param columna Columna en la cuadrícula (eje X)
+		 */
+		explicit IEstadoEpidemia(int fila, int columna);
+		~IEstadoEpidemia() override = default;
+
+		/** @brief Devuelve true si la persona puede ser infectada ahora. */
+		bool puedeSerInfectado() const
+		{
+			return estado_actual == Estado::Normal && !tiene_inmunidad_parcial;
+		}
+
+		/** @brief Infecta a la persona si está en condiciones de ser infectada. */
+		void infectar()
+		{
+			if (!puedeSerInfectado()) return;
+			estado_actual       = Estado::Enfermo;
+			timer_estado        = 0.f;
+			timer_tick          = 0.f;
+			ticks_realizados    = 0;
+			pendiente_contagiar = false;
+		}
+
+	public:
+		Estado estado_actual{Estado::Normal};
+
+		// ── Timers ────────────────────────────────────────────────
+		float timer_estado{0.f};        ///< Tiempo acumulado en el estado actual
+		float timer_tick{0.f};          ///< Contador para el siguiente tick de contagio (~1 s)
+		int   ticks_realizados{0};      ///< Ticks de contagio realizados (máx 3)
+
+		// ── Probabilidades individuales ───────────────────────────
+		float prob_contagio{0.f};             ///< Prob. de ser infectado por vecino (0.15–0.30)
+		float prob_inmunidad_permanente{0.f}; ///< Prob. de inmunidad permanente al recuperarse (0.01–0.10)
+
+		// ── Inmunidad parcial ─────────────────────────────────────
+		bool  tiene_inmunidad_parcial{false};
+		float timer_inmunidad_parcial{0.f};
+
+		// ── Posición en la cuadrícula ─────────────────────────────
+		int fila{0};
+		int columna{0};
+
+		// ── Flag interno del sistema ──────────────────────────────
+		bool pendiente_contagiar{false}; ///< Activado cuando un tick de contagio se dispara
+
+		// ── Constantes de duración ────────────────────────────────
+		static constexpr float DUR_ENFERMO           = 3.f;  ///< Duración del estado enfermo (s)
+		static constexpr float DUR_RECUPERACION      = 2.f;  ///< Duración de la recuperación (s)
+		static constexpr float DUR_INMUNIDAD_PARCIAL = 2.f;  ///< Duración de inmunidad parcial (s)
+		static constexpr float PROB_MUERTE           = 0.10f; ///< Probabilidad de morir al recuperarse
+		static constexpr float TICK_INTERVALO        = 1.f;  ///< Intervalo entre ticks de contagio (s)
+	};
+} // namespace IVJ

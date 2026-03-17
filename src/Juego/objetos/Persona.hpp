@@ -7,36 +7,53 @@ namespace IVJ
 {
 	/**
 	 * @class Persona
-	 * @brief Representa la persona, que tiene estados de salud y de color en funcion a su salud
+	 * @brief Representa a una persona en la simulación.
+	 *
+	 * En la escena de epidemia, la Persona es un elemento estático de la
+	 * cuadrícula. Su apariencia visual cambia automáticamente cada frame
+	 * según el componente IEstadoEpidemia que tenga adjunto:
+	 *
+	 *  - Normal (sin inmunidad) → relleno gris claro, contorno oscuro
+	 *  - Normal (inmunidad parcial) → relleno cian claro
+	 *  - Enfermo                → relleno rojo-naranja
+	 *  - Recuperación           → relleno azul-morado
+	 *  - Inmune (permanente)    → relleno verde
+	 *  - Muerto                 → relleno gris oscuro
 	 */
 	class Persona : public Rectangulo
 	{
 	public:
 		/**
-		 * @brief Constructor de la persona
-		 * @param alto Alto del rectángulo que representa a la persona
-		 * @param ancho Ancho del rectángulo que representa a la persona
-		 * @param relleno Color de relleno
-		 * @param contorno Color de contorno
+		 * @brief Constructor.
+		 * @param alto     Alto del rectángulo
+		 * @param ancho    Ancho del rectángulo
+		 * @param relleno  Color inicial de relleno
+		 * @param contorno Color inicial de contorno
 		 */
 		explicit Persona(float alto, float ancho,
-						   const sf::Color& relleno,
-						   const sf::Color& contorno);
+						 const sf::Color& relleno,
+						 const sf::Color& contorno);
 
 		~Persona() override = default;
 
 		/**
-		 * @brief Actualiza la lógica de la víbora cada frame
-		 * @param dt Delta time en segundos
+		 * @brief Actualiza la lógica de la persona cada frame.
 		 *
-		 * Esta función coordina el movimiento de todas las partes
-		 * del cuerpo para que sigan a la cabeza.
+		 * - Si tiene velocidad (uso como entidad móvil): aplica movimiento
+		 *   con rebote en los bordes de ventana.
+		 * - Si tiene IEstadoEpidemia: actualiza color según estado.
+		 * - Si tiene ICPartesCuerpo (uso como víbora): actualiza las partes.
 		 */
 		void onUpdate(float dt) override;
 
-		/**
-		 * @brief Renderiza la víbora completa (cabeza y cuerpo)
-		 */
+		/** @brief Renderiza la persona (cuerpo + rectángulo base). */
 		void draw(sf::RenderTarget& target, sf::RenderStates state) const override;
+
+	private:
+		/**
+		 * @brief Actualiza el color del rectángulo según el estado epidémico.
+		 * @param ep Referencia constante al componente de estado.
+		 */
+		void actualizarColorEpidemia(const IVJ::IEstadoEpidemia& ep);
 	};
 }

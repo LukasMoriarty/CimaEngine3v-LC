@@ -24,7 +24,6 @@ namespace IVJ
 
 	CE::Vector2D& IRayo::getP2()
 	{
-		//int direction = (dir > 0) ? 1 :(dir<0) ? -1 : 0;
 		int direction = (dir > 0) ? 1 : -1;
 		lp2.x = lp1.x + direction * magnitud;
 		lp2.y = lp1.y ;
@@ -45,10 +44,7 @@ namespace IVJ
 	void IDialogo::onInteractuar(CE::Objeto& obj)
 	{
 		(void)obj;
-		//fetch el dialogo del árbol
 		if(!activo) return;
-		//auto control = obj.getComponente<CE::IControl>();
-		//control->setActivo(false);
 	}
 
 	std::wstring IDialogo::agregarSaltoLinea(const std::wstring& str, size_t max_len)
@@ -58,7 +54,7 @@ namespace IVJ
 		while (pos < str.size())
 		{
 			size_t chunk_size = std::min(max_len, str.size() - pos);
-			resultado += str.substr(pos, chunk_size); //extraer un fragmento
+			resultado += str.substr(pos, chunk_size);
 			pos += chunk_size;
 			if (pos < str.size())
 				resultado += L"\n";
@@ -79,7 +75,6 @@ namespace IVJ
 		texto_render.setPosition({(dim.x/3.f)-180.f,130.f});
 		CE::Render::Get().AddToDraw(fondo);
 		CE::Render::Get().AddToDraw(texto_render);
-		//renderizar el dialogo
 	}
 
 	IIndicador::IIndicador(const sf::Texture &ref, float escala,Entidad *p,const sf::Color& c)
@@ -90,8 +85,6 @@ namespace IVJ
 		sprite.setOrigin({dim.x/2.f,dim.y/2.f});
 		parent = p;
 		if(!shader.loadFromFile(ASSETS "/shaders/prueba.frag",sf::Shader::Type::Fragment)) exit(1);
-
-		//blob
 		shader.setUniform("blob",
 		CE::GestorAssets::Get().getTextura("blob"));
 		shader.setUniform("mask_color",sf::Glsl::Vec4(color));
@@ -147,4 +140,8 @@ namespace IVJ
 	ICPartesCuerpo::ICPartesCuerpo(int w, int h)
 		: CE::IComponentes{}, partes{}, width{w}, height{h}
 	{}
-}
+
+	IEstadoEpidemia::IEstadoEpidemia(int f, int c)
+		: CE::IComponentes{}, fila{f}, columna{c}
+	{}
+} // namespace IVJ

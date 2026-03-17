@@ -31,6 +31,19 @@ namespace IVJ
             ~Rectangulo() override {};
             void draw(sf::RenderTarget& target, sf::RenderStates state) const override;
             void onUpdate(float dt) override;
+
+            /**
+             * @brief Actualiza colores de relleno y contorno en tiempo real.
+             * Necesario para que Persona pueda cambiar de color según su estado epidémico.
+             */
+            void setColores(const sf::Color& relleno, const sf::Color& contorno)
+            {
+                f_crelleno  = relleno;
+                f_ccontorno = contorno;
+                rect_img.setFillColor(f_crelleno);
+                rect_img.setOutlineColor(f_ccontorno);
+            }
+
         private:
             sf::RectangleShape rect_img;
         public:

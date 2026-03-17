@@ -3,6 +3,7 @@
 #include "../../Motor/Primitivos/GestorAssets.hpp"
 #include "../objetos/Entidad.hpp"
 #include <math.h>
+#include <cstdlib>
 #include "../../Motor/Utils/Lerp.hpp"
 #include "../../Motor/Render/Render.hpp"
 #include <memory>
@@ -12,8 +13,6 @@ namespace IVJ
 {
     void SistemaControl(CE::Objeto&ente, float dt)
     {
-        //no hay necesidad verificar si tiene, se asume que tiene
-        //control y transformada
         auto p = ente.getTransformada();
         auto c = ente.getComponente<CE::IControl>();
         (void)dt;
@@ -27,19 +26,15 @@ namespace IVJ
             p->velocidad.x=-200;
         if(c->run)
             p->velocidad.escala(2.f);
-
     }
 
     void SistemaMover(const std::vector<std::shared_ptr<CE::Objeto>>& entes, float dt)
     {
-
         for(auto& ente : entes)
         {
-            //todo ente tiene ITransform por lo que no requiere verificación
             auto trans = ente->getTransformada();
             trans->posicion.suma(trans->velocidad.escala(dt));
         }
-
     }
     void SistemaMover(const std::shared_ptr<CE::Objeto>& objeto, float dt)
     {
@@ -58,7 +53,6 @@ namespace IVJ
         auto bB = B.getComponente<CE::IBoundingBox>()->tam;
         auto mB = B.getComponente<CE::IBoundingBox>()->mitad;
         auto pb = B.getTransformada()->posicion;
-        //calculos
         bool H = pa->y-mA.y < pb.y+bB.y - mB.y && pb.y-mB.y < pa->y+bA.y - mA.y;
         bool V = pa->x-mA.x < pb.x+bB.x - mB.x && pb.x-mB.x < pa->x+bA.x - mA.x;
         bool hay_colision = H && V;
@@ -76,7 +70,6 @@ namespace IVJ
         auto prevA = A.getTransformada()->pos_prev;
         auto midB = B.getComponente<CE::IBoundingBox>()->mitad;
         auto *pb = &B.getTransformada()->posicion;
-        //calculos
         float dX = std::abs(pb->x - pa->x);
         float dY = std::abs(pb->y - pa->y);
         float sumMidX = midA.x + midB.x;
@@ -87,25 +80,19 @@ namespace IVJ
         if(resolucion && hay_colision)
             *pa = prevA;
         return hay_colision;
-
-
     }
 
     bool checkRayoHit(CE::Objeto& npc, CE::Vector2D& p1, CE::Vector2D& p2)
     {
         if(!npc.tieneComponente<CE::IBoundingBox>()) return false;
-        
         auto midnpc = npc.getComponente<CE::IBoundingBox>()->mitad;
         auto posnpc = npc.getTransformada()->posicion;
-        auto linea = (p2-p1);//.escala(1.f);
-        //std::cout<<"Mid linea: "<<midlinea<<"\n";
+        auto linea = (p2-p1);
         float dx = std::abs(posnpc.x - p1.x);
         float dy = std::abs(posnpc.y - p1.y);
         float sumMidX = midnpc.x + std::abs(linea.x) ;
         float sumMidY = midnpc.y + std::abs(linea.y) ;
-        
         return (sumMidX - dx >0) && (sumMidY - dy >0);
-        
     }
 
     void SistemaSpawn(CE::Pool& spawns)
@@ -115,19 +102,9 @@ namespace IVJ
             auto respawndata = s->getComponente<CE::IRespawn>();
             if(!respawndata || respawndata->curr_spawn >= respawndata->max_spawn)
                 continue;
-            //respawn
             if(respawndata->timer_actual >= respawndata->timer_maximo)
             {
-                //crear objeto
-                auto malillo = std::make_shared<Entidad>(); //(*(respawndata->prefab));
-                //auto comp = respawndata->prefab->getListaComponentes();
-                //auto comp = respawndata->prefab->getComponente<CE::ISprite>();
-                //for(auto &c : comp)
-                //{
-                    //malillo->copyComponente<CE::ISprite>(comp);
-                    //malillo->copyComponente<CE::IPaths>(respawndata->prefab->getComponente<CE::IPaths>());
-                //}
-                 
+                auto malillo = std::make_shared<Entidad>();
                 malillo->addComponente(std::make_shared<CE::IPaths>(60))
                 .addComponente(std::make_shared<CE::ISprite>(
                             CE::GestorAssets::Get().getTextura("hoja_blue"),68,91,1.f))
@@ -137,37 +114,26 @@ namespace IVJ
                 malillo->getComponente<CE::IPaths>()->addCurva(
                         CE::Vector2D{800.f,300.f},CE::Vector2D{600.f,100.f},CE::Vector2D{500.f,300.f});
 
-
-                //mandar datos al shader
                 auto shader = malillo->getComponente<CE::IShader>();
                 static sf::Texture textura=malillo->getComponente<CE::ISprite>()->m_sprite.getTexture();
-                
                 static sf::Glsl::Vec4 uOutlineColor{1.f,0.f,1.f,1.f};
-                //static  float uEdgeThreshold= 0.15f; //0.15-0.35
-                //static  float uEdgeSoftness = 0.02f;
                 static  float uThickness = 0.15f;
                 auto w = malillo->getComponente<CE::ISprite>()->width;
                 auto h = malillo->getComponente<CE::ISprite>()->height;
                 static sf::Glsl::Vec2 uTexSize{(float)w,(float)h};
-
                 shader->setTextura("uTex",&textura);
                 shader->setVector4("uOutlineColor",&uOutlineColor);
-                //shader->setEscalar("uEdgeThreshold",&uEdgeThreshold);
-                //shader->setEscalar("uEdgeSoftness",&uEdgeSoftness);
                 shader->setEscalar("uThickness",&uThickness);
                 shader->setVector2("uTexSize",&uTexSize);
 
-                //posiciones
                 malillo->getStats()->hp =100;
-                //asumimos que spwan tine un cuadro , tomamos el cuadro como el area
-                int size_x = respawndata->width; 
+                int size_x = respawndata->width;
                 int size_y = respawndata->height;
                 float x0 = s->getTransformada()->posicion.x-size_x/2.f;
                 float y0 = s->getTransformada()->posicion.y-size_y/2.f;
                 float x = x0+(rand()%size_x);
                 float y = y0+(rand()%size_y);
                 malillo->setPosicion(x,y);
-                //spawns.push_back(malillo);
                 spawns.agregarPool(malillo);
                 respawndata->timer_actual=0;
                 respawndata->curr_spawn++;
@@ -186,7 +152,6 @@ namespace IVJ
                 if(path->puntos.size()==0) continue;
                 if(path->id_curva >= num_curvas) continue;
                 float t = (path->frame_actual_curva%(path->frame_total_curva+1))/(float)path->frame_total_curva;
-                //std::cout<<o<<" t: "<<t<<"\n";
                 CE::Vector2D P0 = path->puntos[0+path->id_curva*(path->offset-0)];
                 CE::Vector2D P1 = path->puntos[1+path->id_curva*(path->offset-0)];
                 CE::Vector2D P2 = path->puntos[2+path->id_curva*(path->offset-0)];
@@ -195,11 +160,8 @@ namespace IVJ
                 o->setPosicion(posiciones_actual.x,posiciones_actual.y);
                 if(t == 1.f )
                     path->id_curva++;
-                    //path->frame_actual_curva=0;
-                //std::cout<<"[ "<<o<<" ] "<<path->frame_actual_curva<<"\n";
                 if(path->id_curva == 2 && o->tieneComponente<CE::IShader>())
                 {
-                    //cambiar shader
                     auto shader = o->getComponente<CE::IShader>();
                     shader->cambiarShader("",ASSETS "/shaders/color.frag");
                     static sf::Glsl::Vec4 color{0.f,1.f,0.f,1.f};
@@ -208,7 +170,6 @@ namespace IVJ
                 }
                 else
                 {
-                    //cambiar shader
                     auto shader = o->getComponente<CE::IShader>();
                     shader->cambiarShader("",ASSETS "/shaders/contorno.frag");
                     static sf::Glsl::Vec4 outlinecolor{0.f,1.f,0.f,1.f};
@@ -218,13 +179,11 @@ namespace IVJ
                     shader->setVector4("uOutlineColor",&outlinecolor);
                     shader->setEscalar("uThickness",&thickness);
                     shader->setVector2("uTexSize",&size);
-                    
                 }
             }
         }
     }
 
-    //Dialogos
     void SistemaDialogos(IVJ::IDialogo* dialogo,CE::Objeto& obj)
     {
         if(!dialogo) return;
@@ -240,8 +199,6 @@ namespace IVJ
         return distancia <= distancia_maxima;
     }
 
-
-    //DEBUG
     void pintarLinea(CE::Vector2D& p1, CE::Vector2D& p2, const sf::Color& color)
     {
         sf::CircleShape cp1{2.f};
@@ -250,7 +207,6 @@ namespace IVJ
         cp2.setFillColor({0,0,0,255});
         cp1.setPosition({p1.x,p1.y});
         cp2.setPosition({p2.x,p2.y});
-        //pintar lineas de guía
         for(float t=0;t<=1;t+=0.0015)
         {
             sf::CircleShape pixel{1};
@@ -274,7 +230,6 @@ namespace IVJ
         componente->angulo += 3.1416f * dt;
     }
 
-    //lab 2 y 3
     void SistemaRectanguloMoverUpDown(CE::Objeto &ente, float dt) {
         if (!ente.getComponente<IArribaAbajo>()) return;
         auto componente = ente.getComponente<IArribaAbajo>();
@@ -302,7 +257,6 @@ namespace IVJ
         float freq = componente->freq;
         float phase = componente->phase;
         pos.x += amp * sin(freq * phase);
-        // tambien desplazar en x
         pos.y += amp/2 * cos(2 * freq * phase);
         componente->phase += dt;
         ente.setPosicion(pos.x, pos.y);
@@ -322,5 +276,161 @@ namespace IVJ
         ente.setPosicion(pos.x, pos.y);
     }
 
-}
+    void SistemaEpidemia(CE::Pool& pool, int columnas, float dt)
+    {
+        auto& objetos = pool.getPool();
+        int total  = static_cast<int>(objetos.size());
+        int filas  = (columnas > 0) ? total / columnas : 0;
 
+        using Estado = IVJ::IEstadoEpidemia::Estado;
+
+        // actualizar timers y transiciones de estado
+        for (auto& obj : objetos)
+        {
+            auto ep = obj->getComponente<IVJ::IEstadoEpidemia>();
+            if (!ep) continue;
+
+            ep->pendiente_contagiar = false;
+
+            switch (ep->estado_actual)
+            {
+                // ────────────────────────────────────────────────
+                case Estado::Enfermo:
+                {
+                    ep->timer_estado += dt;
+                    ep->timer_tick   += dt;
+
+                    // Dispara un tick de contagio cada segundo (máx 3)
+                    while (ep->timer_tick  >= IVJ::IEstadoEpidemia::TICK_INTERVALO
+                        && ep->ticks_realizados < 3)
+                    {
+                        ep->timer_tick       -= IVJ::IEstadoEpidemia::TICK_INTERVALO;
+                        ep->ticks_realizados++;
+                        ep->pendiente_contagiar = true;
+                    }
+
+                    // Tras 3 s → recuperación
+                    if (ep->timer_estado >= IVJ::IEstadoEpidemia::DUR_ENFERMO)
+                    {
+                        ep->estado_actual    = Estado::Recuperacion;
+                        ep->timer_estado     = 0.f;
+                        ep->ticks_realizados = 0;
+                        ep->timer_tick       = 0.f;
+                    }
+                    break;
+                }
+
+                // ────────────────────────────────────────────────
+                case Estado::Recuperacion:
+                {
+                    ep->timer_estado += dt;
+                    if (ep->timer_estado >= IVJ::IEstadoEpidemia::DUR_RECUPERACION)
+                    {
+                        ep->timer_estado = 0.f;
+
+                        // Muere?
+                        float r_muerte = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+                        if (r_muerte < IVJ::IEstadoEpidemia::PROB_MUERTE)
+                        {
+                            ep->estado_actual   = Estado::Muerto;
+                            obj->getStats()->hp = 0;
+                        }
+                        else
+                        {
+                            // Obtiene inmunidad permanente?
+                            float r_inm = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+                            if (r_inm < ep->prob_inmunidad_permanente)
+                            {
+                                ep->estado_actual = Estado::Inmune;
+                            }
+                            else
+                            {
+                                // Inmunidad parcial temporal (2 s)
+                                ep->estado_actual           = Estado::Normal;
+                                ep->tiene_inmunidad_parcial = true;
+                                ep->timer_inmunidad_parcial = 0.f;
+                            }
+                        }
+                    }
+                    break;
+                }
+
+                // ────────────────────────────────────────────────
+                case Estado::Normal:
+                {
+                    // Descontar inmunidad parcial
+                    if (ep->tiene_inmunidad_parcial)
+                    {
+                        ep->timer_inmunidad_parcial += dt;
+                        if (ep->timer_inmunidad_parcial >= IVJ::IEstadoEpidemia::DUR_INMUNIDAD_PARCIAL)
+                        {
+                            ep->tiene_inmunidad_parcial    = false;
+                            ep->timer_inmunidad_parcial    = 0.f;
+                        }
+                    }
+                    break;
+                }
+
+                // Inmune y Muerto no hacen nada
+                case Estado::Inmune:
+                case Estado::Muerto:
+                default:
+                    break;
+            }
+        }
+
+        // contagio a vecinos adyacentes (arriba, abajo, izquierda, derecha)
+        // Solo las personas con pendiente_contagiar = true intentan infectar
+        for (auto& obj : objetos)
+        {
+            auto ep = obj->getComponente<IVJ::IEstadoEpidemia>();
+            if (!ep || !ep->pendiente_contagiar) continue;
+
+            int f = ep->fila;
+            int c = ep->columna;
+
+            // Deltas para: arriba, abajo, izquierda, derecha
+            const int df[4] = { -1,  1,  0,  0 };
+            const int dc[4] = {  0,  0, -1,  1 };
+
+            for (int k = 0; k < 4; ++k)
+            {
+                int vf = f + df[k];
+                int vc = c + dc[k];
+
+                // Comprobar límites de la cuadrícula
+                if (vf < 0 || vf >= filas || vc < 0 || vc >= columnas) continue;
+
+                int idx = vf * columnas + vc;
+                if (idx < 0 || idx >= total) continue;
+
+                auto ep_v = objetos[idx]->getComponente<IVJ::IEstadoEpidemia>();
+                if (!ep_v || !ep_v->puedeSerInfectado()) continue;
+
+                // Probabilidad individual del vecino susceptible
+                float r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+                if (r < ep_v->prob_contagio)
+                {
+                    ep_v->infectar();
+                }
+            }
+        }
+    }
+
+    bool SistemaEpidemiaTerminada(CE::Pool& pool)
+    {
+        using Estado = IVJ::IEstadoEpidemia::Estado;
+        for (auto& obj : pool.getPool())
+        {
+            auto ep = obj->getComponente<IVJ::IEstadoEpidemia>();
+            if (!ep) continue;
+            if (ep->estado_actual == Estado::Enfermo ||
+                ep->estado_actual == Estado::Recuperacion)
+            {
+                return false;  // Todavía hay casos activos
+            }
+        }
+        return true;  // No quedan enfermos ni en recuperación
+    }
+
+} // namespace IVJ

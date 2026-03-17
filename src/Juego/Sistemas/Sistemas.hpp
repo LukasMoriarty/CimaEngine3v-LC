@@ -13,14 +13,10 @@ namespace IVJ
     [[maybe_unused]]bool SistemaColAABB(CE::Objeto& A,CE::Objeto& B, bool resolucion =false);
     [[maybe_unused]]bool SistemaColAABBMid(CE::Objeto& A, CE::Objeto& B, bool resolucion =false);
 
-
     [[maybe_unused]]void SistemaSpawn(CE::Pool& spwans);
-
     [[maybe_unused]]void SistemaPaths(std::vector<std::shared_ptr<CE::Objeto>>& obj);
-
     [[maybe_unused]]bool checkRayoHit(CE::Objeto& npc, CE::Vector2D& p1, CE::Vector2D& p2);
 
-    //void SistemaDialogos(CE::Objeto& npc);
     [[maybe_unused]]void SistemaDialogos(IVJ::IDialogo* dialogo, CE::Objeto& obj);
 
     bool revisarDistanciaInteraccion(CE::Objeto& jugador, CE::Objeto& npc, float distancia_maxima);
@@ -34,4 +30,7 @@ namespace IVJ
     [[maybe_unused]] void SistemaRectanguloMoverUpDown(CE::Objeto &ente, float dt);
     [[maybe_unused]] void SistemaTrianguloWave(CE::Objeto &ente, float dt);
     [[maybe_unused]] void SistemaCirculoMoverEnCirculos(CE::Objeto &ente, float dt);
+
+    [[maybe_unused]] void SistemaEpidemia(CE::Pool& pool, int columnas, float dt);
+    [[maybe_unused]] bool SistemaEpidemiaTerminada(CE::Pool& pool);
 }
