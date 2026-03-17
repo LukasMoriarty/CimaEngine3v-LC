@@ -32,6 +32,18 @@ namespace IVJ
             if(mq->fsm)
                 mq->fsm->onUpdate(*this,dt);
         }
+
+        if (tieneComponente<ITriangulo>()) {
+            auto fig = getComponente<ITriangulo>();
+            auto pos = getTransformada()->posicion;
+            // dibujar triangulo en posicion correcta
+            fig->tri_shape.setPosition({pos.x,pos.y});
+            // aplicar rotacion dependiento de la direccion
+            auto r = sf::radians(fig->angulo);
+            fig->tri_shape.setRotation(r);
+        }
+
+
         transform->pos_prev =  transform->posicion;
 
     }
@@ -92,6 +104,10 @@ namespace IVJ
             else
                 target.draw(sprite->m_sprite);
         }
-    }
 
+        if (tieneComponente<ITriangulo>()) {
+            auto fig = getComponente<ITriangulo>();
+            target.draw(fig->tri_shape);
+        }
+    }
 }

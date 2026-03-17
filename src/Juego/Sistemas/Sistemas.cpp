@@ -36,10 +36,36 @@ namespace IVJ
             trans->posicion.suma(trans->velocidad.escala(dt));
         }
     }
-    void SistemaMover(const std::shared_ptr<CE::Objeto>& objeto, float dt)
-    {
+
+    void SistemaMover(const std::shared_ptr<CE::Objeto>& objeto, float dt) {
         auto trans = objeto->getTransformada();
-        trans->posicion.suma(trans->velocidad.escala(dt));
+        auto control = objeto->getComponente<CE::IControl>();
+
+        // si no tiene control o el control no esta activo, salir
+        if (!control || !control->isActivo()) return;
+
+        // definir cual va a ser la velocidad correcta dependiendo
+        // del boton del control presionado
+        auto vel = CE::Vector2D{0.f, 0.f};
+        if (control->arr)
+            vel.y = -trans->velocidad.y;
+        if (control->abj)
+            vel.y = trans->velocidad.y;
+        if (control->der)
+            vel.x = trans->velocidad.x;
+        if (control->izq)
+            vel.x = -trans->velocidad.x;
+
+        // calcular la direccion usando un triangulo rectangulo
+        if (objeto->getComponente<ITriangulo>()) {
+            auto n = vel;
+            n.normalizacion();
+            if (vel.x != 0 || vel.y != 0)
+                objeto->getComponente<ITriangulo>()->angulo = std::atan2(n.x, -n.y);
+        }
+
+        // actualizar posicion del ente
+        trans->posicion.suma(vel.escala(dt));
     }
 
     bool SistemaColAABB(CE::Objeto& A, CE::Objeto& B, bool resolucion)
@@ -120,7 +146,7 @@ namespace IVJ
                 static  float uThickness = 0.15f;
                 auto w = malillo->getComponente<CE::ISprite>()->width;
                 auto h = malillo->getComponente<CE::ISprite>()->height;
-                static sf::Glsl::Vec2 uTexSize{(float)w,(float)h};
+                static sf::Glsl::Vec2 uTexSize{static_cast<float>(w),static_cast<float>(h)};
                 shader->setTextura("uTex",&textura);
                 shader->setVector4("uOutlineColor",&uOutlineColor);
                 shader->setEscalar("uThickness",&uThickness);
@@ -151,7 +177,7 @@ namespace IVJ
                 int num_curvas = path->puntos.size()/3;
                 if(path->puntos.size()==0) continue;
                 if(path->id_curva >= num_curvas) continue;
-                float t = (path->frame_actual_curva%(path->frame_total_curva+1))/(float)path->frame_total_curva;
+                float t = (path->frame_actual_curva%(path->frame_total_curva+1))/static_cast<float>(path->frame_total_curva);
                 CE::Vector2D P0 = path->puntos[0+path->id_curva*(path->offset-0)];
                 CE::Vector2D P1 = path->puntos[1+path->id_curva*(path->offset-0)];
                 CE::Vector2D P2 = path->puntos[2+path->id_curva*(path->offset-0)];
@@ -287,35 +313,35 @@ namespace IVJ
         // actualizar timers y transiciones de estado
         for (auto& obj : objetos)
         {
-            auto ep = obj->getComponente<IVJ::IEstadoEpidemia>();
-            if (!ep) continue;
+            auto epidemia = obj->getComponente<IVJ::IEstadoEpidemia>();
+            if (!epidemia) continue;
 
-            ep->pendiente_contagiar = false;
+            epidemia->pendiente_contagiar = false;
 
-            switch (ep->estado_actual)
+            switch (epidemia->estado_actual)
             {
                 // ────────────────────────────────────────────────
                 case Estado::Enfermo:
                 {
-                    ep->timer_estado += dt;
-                    ep->timer_tick   += dt;
+                    epidemia->timer_estado += dt;
+                    epidemia->timer_tick   += dt;
 
                     // Dispara un tick de contagio cada segundo (máx 3)
-                    while (ep->timer_tick  >= IVJ::IEstadoEpidemia::TICK_INTERVALO
-                        && ep->ticks_realizados < 3)
+                    while (epidemia->timer_tick  >= IVJ::IEstadoEpidemia::TICK_INTERVALO
+                        && epidemia->ticks_realizados < 3)
                     {
-                        ep->timer_tick       -= IVJ::IEstadoEpidemia::TICK_INTERVALO;
-                        ep->ticks_realizados++;
-                        ep->pendiente_contagiar = true;
+                        epidemia->timer_tick       -= IVJ::IEstadoEpidemia::TICK_INTERVALO;
+                        epidemia->ticks_realizados++;
+                        epidemia->pendiente_contagiar = true;
                     }
 
                     // Tras 3 s → recuperación
-                    if (ep->timer_estado >= IVJ::IEstadoEpidemia::DUR_ENFERMO)
+                    if (epidemia->timer_estado >= IVJ::IEstadoEpidemia::DUR_ENFERMO)
                     {
-                        ep->estado_actual    = Estado::Recuperacion;
-                        ep->timer_estado     = 0.f;
-                        ep->ticks_realizados = 0;
-                        ep->timer_tick       = 0.f;
+                        epidemia->estado_actual    = Estado::Recuperacion;
+                        epidemia->timer_estado     = 0.f;
+                        epidemia->ticks_realizados = 0;
+                        epidemia->timer_tick       = 0.f;
                     }
                     break;
                 }
@@ -323,32 +349,32 @@ namespace IVJ
                 // ────────────────────────────────────────────────
                 case Estado::Recuperacion:
                 {
-                    ep->timer_estado += dt;
-                    if (ep->timer_estado >= IVJ::IEstadoEpidemia::DUR_RECUPERACION)
+                    epidemia->timer_estado += dt;
+                    if (epidemia->timer_estado >= IVJ::IEstadoEpidemia::DUR_RECUPERACION)
                     {
-                        ep->timer_estado = 0.f;
+                        epidemia->timer_estado = 0.f;
 
                         // Muere?
                         float r_muerte = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
                         if (r_muerte < IVJ::IEstadoEpidemia::PROB_MUERTE)
                         {
-                            ep->estado_actual   = Estado::Muerto;
+                            epidemia->estado_actual   = Estado::Muerto;
                             obj->getStats()->hp = 0;
                         }
                         else
                         {
-                            // Obtiene inmunidad permanente?
+                            // Calcula si se obtiene inmunidad permanente
                             float r_inm = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-                            if (r_inm < ep->prob_inmunidad_permanente)
+                            if (r_inm < epidemia->prob_inmunidad_permanente)
                             {
-                                ep->estado_actual = Estado::Inmune;
+                                epidemia->estado_actual = Estado::Inmune;
                             }
                             else
                             {
                                 // Inmunidad parcial temporal (2 s)
-                                ep->estado_actual           = Estado::Normal;
-                                ep->tiene_inmunidad_parcial = true;
-                                ep->timer_inmunidad_parcial = 0.f;
+                                epidemia->estado_actual           = Estado::Normal;
+                                epidemia->tiene_inmunidad_parcial = true;
+                                epidemia->timer_inmunidad_parcial = 0.f;
                             }
                         }
                     }
@@ -359,13 +385,13 @@ namespace IVJ
                 case Estado::Normal:
                 {
                     // Descontar inmunidad parcial
-                    if (ep->tiene_inmunidad_parcial)
+                    if (epidemia->tiene_inmunidad_parcial)
                     {
-                        ep->timer_inmunidad_parcial += dt;
-                        if (ep->timer_inmunidad_parcial >= IVJ::IEstadoEpidemia::DUR_INMUNIDAD_PARCIAL)
+                        epidemia->timer_inmunidad_parcial += dt;
+                        if (epidemia->timer_inmunidad_parcial >= IVJ::IEstadoEpidemia::DUR_INMUNIDAD_PARCIAL)
                         {
-                            ep->tiene_inmunidad_parcial    = false;
-                            ep->timer_inmunidad_parcial    = 0.f;
+                            epidemia->tiene_inmunidad_parcial    = false;
+                            epidemia->timer_inmunidad_parcial    = 0.f;
                         }
                     }
                     break;
@@ -390,11 +416,12 @@ namespace IVJ
             int c = ep->columna;
 
             // Deltas para: arriba, abajo, izquierda, derecha
-            const int df[4] = { -1,  1,  0,  0 };
-            const int dc[4] = {  0,  0, -1,  1 };
 
             for (int k = 0; k < 4; ++k)
             {
+                constexpr int dc[4] = {  0,  0, -1,  1 };
+                constexpr int df[4] = { -1,  1,  0,  0 };
+
                 int vf = f + df[k];
                 int vc = c + dc[k];
 
@@ -432,5 +459,4 @@ namespace IVJ
         }
         return true;  // No quedan enfermos ni en recuperación
     }
-
 } // namespace IVJ

@@ -144,4 +144,12 @@ namespace IVJ
 	IEstadoEpidemia::IEstadoEpidemia(int f, int c)
 		: CE::IComponentes{}, fila{f}, columna{c}
 	{}
+
+	ITriangulo::ITriangulo(float r, float ang)
+		:CE::IComponentes{},
+		tri_shape{r, 3},
+		angulo{ang}
+	{
+		tri_shape.setOrigin({r/2.f,r/2.f});
+	}
 } // namespace IVJ

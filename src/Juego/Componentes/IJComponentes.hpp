@@ -249,11 +249,11 @@ namespace IVJ
 		 */
 		enum class Estado
 		{
-			Normal,       ///< Sana, susceptible a infección (sin inmunidad)
-			Enfermo,      ///< Infectada, contagia vecinos cada ~1 s durante 3 s
-			Recuperacion, ///< En recuperación (2 s), no puede ser infectada
-			Inmune,       ///< Inmunidad permanente, nunca podrá ser infectada
-			Muerto        ///< Fallecida, sin interacción
+			Normal,       /// Sana, susceptible a infección (sin inmunidad)
+			Enfermo,      /// Infectada, contagia vecinos cada segundo durante 3s
+			Recuperacion, /// En recuperación (2s), no puede ser infectada
+			Inmune,       /// Inmunidad permanente, nunca podrá ser infectada
+			Muerto        /// Fallecida, sin interacción
 		};
 
 		/**
@@ -284,31 +284,36 @@ namespace IVJ
 	public:
 		Estado estado_actual{Estado::Normal};
 
-		// ── Timers ────────────────────────────────────────────────
 		float timer_estado{0.f};        ///< Tiempo acumulado en el estado actual
 		float timer_tick{0.f};          ///< Contador para el siguiente tick de contagio (~1 s)
 		int   ticks_realizados{0};      ///< Ticks de contagio realizados (máx 3)
 
-		// ── Probabilidades individuales ───────────────────────────
 		float prob_contagio{0.f};             ///< Prob. de ser infectado por vecino (0.15–0.30)
 		float prob_inmunidad_permanente{0.f}; ///< Prob. de inmunidad permanente al recuperarse (0.01–0.10)
 
-		// ── Inmunidad parcial ─────────────────────────────────────
 		bool  tiene_inmunidad_parcial{false};
 		float timer_inmunidad_parcial{0.f};
 
-		// ── Posición en la cuadrícula ─────────────────────────────
+		// Posicion
 		int fila{0};
 		int columna{0};
 
-		// ── Flag interno del sistema ──────────────────────────────
+		// Flag
 		bool pendiente_contagiar{false}; ///< Activado cuando un tick de contagio se dispara
 
-		// ── Constantes de duración ────────────────────────────────
 		static constexpr float DUR_ENFERMO           = 3.f;  ///< Duración del estado enfermo (s)
 		static constexpr float DUR_RECUPERACION      = 2.f;  ///< Duración de la recuperación (s)
 		static constexpr float DUR_INMUNIDAD_PARCIAL = 2.f;  ///< Duración de inmunidad parcial (s)
 		static constexpr float PROB_MUERTE           = 0.10f; ///< Probabilidad de morir al recuperarse
 		static constexpr float TICK_INTERVALO        = 1.f;  ///< Intervalo entre ticks de contagio (s)
+	};
+
+	class ITriangulo : public CE::IComponentes {
+		public:
+			explicit ITriangulo(float r, float ang);
+			~ITriangulo() override{};
+		public:
+			sf::CircleShape tri_shape;
+			float angulo;
 	};
 } // namespace IVJ
