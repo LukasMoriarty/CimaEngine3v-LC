@@ -8,8 +8,6 @@ set(BIN "${CMAKE_SOURCE_DIR}/bin")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${BIN}/${CMAKE_BUILD_TYPE}")
 
-
-
 add_compile_definitions(ASSETS="${CMAKE_SOURCE_DIR}/assets")
 #bandera para DEBUG O RELEASE
 add_compile_definitions("DEBUG=$<CONFIG:Debug>")
@@ -19,20 +17,16 @@ message("Descargando SFML")
 include(FetchContent)
 Set(FETCHCONTENT_QUIET FALSE)
 
-if(WIN32)
 FetchContent_Declare(
-    SFML
-    GIT_REPOSITORY http://github.com/SFML/SFML.git
-    GIT_TAG 3.0.x)
+        SFML
+        GIT_REPOSITORY https://github.com/SFML/SFML.git
+        GIT_TAG 3.0.x)
 FetchContent_MakeAvailable(SFML)
-else()
-    find_package(SFML 3 COMPONENTS System Window Graphics Audio REQUIRED)
-endif()
 message("Descargando IMGUI")
 
 FetchContent_Declare(
     imgui
-    GIT_REPOSITORY http://github.com/ocornut/imgui.git
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
     GIT_TAG v1.91.9b-docking
     GIT_PROGRESS TRUE
     )
@@ -42,7 +36,7 @@ message("Descargando ImguiSFML")
 
 FetchContent_Declare(
     imgui-sfml
-    GIT_REPOSITORY http://github.com/SFML/imgui-sfml.git
+    GIT_REPOSITORY https://github.com/SFML/imgui-sfml.git
     GIT_TAG v3.0
     GIT_PROGRESS TRUE
     )
