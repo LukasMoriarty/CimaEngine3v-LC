@@ -2,6 +2,9 @@
 #include <Motor/Inputs/Botones.hpp>
 #include <Motor/Render/Render.hpp>
 #include <memory>
+
+#include "Juego/objetos/Entidad.hpp"
+
 namespace IVJ
 {
     Escena_Camara::Escena_Camara(std::shared_ptr<Entidad>& pref)
@@ -21,6 +24,18 @@ namespace IVJ
         registrarBotones(sf::Keyboard::Scancode::D,"derecha");
         registrarBotones(sf::Keyboard::Scancode::Right,"derecha");
         registrarBotones(sf::Keyboard::Scancode::Enter,"aceptar");
+
+        auto trans = jugador_ref->getTransformada();
+        trans->velocidad = CE::Vector2D{120.f, 120.f};
+        jugador_ref->setPosicion(300.f, 300.f);
+
+        auto triangulo = std::make_shared<ITriangulo>(40.f, 0.f);
+        triangulo->tri_shape.setFillColor(sf::Color{255,191,0});
+        triangulo->tri_shape.setOutlineColor(sf::Color::Black);
+        triangulo->tri_shape.setOutlineThickness(3.f);
+
+        jugador_ref->addComponente(triangulo);
+        jugador_ref->addComponente(std::make_shared<CE::IControl>());
 
         inicializar=false;
     }

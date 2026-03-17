@@ -16,6 +16,8 @@
 #include <Juego/Escenas/Escena_Epidemia.hpp>
 #include <Juego/objetos/Entidad.hpp>
 
+#include "Escenas/Escena_Camara.hpp"
+
 
 namespace IVJ
 {
@@ -37,11 +39,15 @@ namespace IVJ
         CE::GestorEscenas::Get().registrarEscena("SS",std::make_shared<Escena_SS>(jugador));
         CE::GestorEscenas::Get().registrarEscena("Menu",std::make_shared<Escena_Menu>());
         CE::GestorEscenas::Get().registrarEscena("Epidemia",std::make_shared<Escena_Epidemia>(jugador));
+        CE::GestorEscenas::Get().registrarEscena("EscenaCamara", std::make_shared<Escena_Camara>(jugador));
+
+        // crear el jugador
+        jugador = std::make_shared<Entidad>();
+        jugador->getStats()->hp = 100;
 
         // CE::GestorEscenas::Get().cambiarEscena("Prueba"); //ejecuta onInit()A
-        CE::GestorEscenas::Get().cambiarEscena("SS");
+        CE::GestorEscenas::Get().cambiarEscena("Menu");
         escena_actual = &CE::GestorEscenas::Get().getEscenaActual();
-        
     }
     
     void Juego::OnInputs()
