@@ -57,6 +57,15 @@ namespace IVJ
                 CE::Vector2D{1024, 720} // dimensiones
             )
         );
+
+        // SnapVentana
+        CE::GestorCamaras::Get().agregarCamara(
+            std::make_shared<CE::CamaraSnapVentana>(
+                CE::Vector2D{0.f, 0.f}, // posicion
+                CE::Vector2D{1024,720}, // dimensiones
+                CE::Vector2D{500,300}   // ventana
+            )
+        );
     }
     
     void Juego::OnInputs()

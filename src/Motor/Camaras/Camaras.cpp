@@ -2,8 +2,7 @@
 #include "../GUI/GLogger.hpp"
 #include "../Utils/Lerp.hpp"
 
-namespace CE
-{
+namespace CE {
     int Camara::num_camaras =0;
     Camara::Camara(float x, float y,float w, float h)
         :cam_width{w},cam_height{h},esta_activa{false}
@@ -103,5 +102,39 @@ namespace CE
         m_transform->posicion = lerp(pos_init,pos_lock,vel*dt);
         GLogger::Get().agregarLog("("+std::to_string(m_transform->posicion.x)+","+std::to_string(m_transform->posicion.y)+")",
                 GLogger::Niveles::LOG_SEVERO);
+    }
+
+    CamaraSnapVentana::CamaraSnapVentana(const Vector2D &pos, const Vector2D &dim, const Vector2D &vdim)
+        : Camara{pos,dim}, m_vdim{vdim}
+    {}
+
+    void CamaraSnapVentana::onUpdate(float dt) {
+        // llamar comportamiento base
+        Camara::onUpdate(dt);
+        // si no esta siguiendo a nadie
+        if (!m_lockObj.lock()) return;
+        if (!lock)  // si no se le ha asignado el jugador
+        {
+            m_transform->posicion = m_lockObj.lock()->getTransformada()->posicion;
+            lock = true;
+        }
+        // verificaciones
+        auto jpos = m_lockObj.lock()->getTransformada()->posicion;
+        float ld = {m_transform->posicion.x + m_vdim.x/2.f};    // lado derecho
+        float li = {m_transform->posicion.x - m_vdim.x/2.f};    // lado izquierdo
+        float lup = {m_transform->posicion.y - m_vdim.y/2.f};   // lado arriba
+        float ldn = {m_transform->posicion.y + m_vdim.y/2.f};   // lado abajo
+
+        // eje x
+        if (jpos.x >= ld)
+            m_transform->posicion.x += (jpos.x - ld);
+        else if (jpos.x <= li)
+            m_transform->posicion.x += (jpos.x - li);
+
+        // eje y
+        if (jpos.y >= ldn)
+            m_transform->posicion.y += (jpos.y - ldn);
+        else if (jpos.y <= lup)
+            m_transform->posicion.y += (jpos.y - lup);
     }
 }

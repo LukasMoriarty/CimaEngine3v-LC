@@ -179,4 +179,15 @@ namespace CE
             float vel;
     };
 
+    class CamaraSnapVentana : public Camara {
+        public:
+            CamaraSnapVentana(const Vector2D& pos, const Vector2D& dim, const Vector2D& dven);
+            ~CamaraSnapVentana() override{};
+            void onUpdate(float dt) override;
+        public:
+            Vector2D m_vdim;
+        private:
+            bool lock{false};
+    };
+
 }

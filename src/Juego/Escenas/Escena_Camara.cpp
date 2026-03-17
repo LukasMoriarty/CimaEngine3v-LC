@@ -2,7 +2,9 @@
 #include <Motor/Inputs/Botones.hpp>
 #include <Motor/Render/Render.hpp>
 #include <memory>
+#include <cmath>
 
+#include "Juego/Figuras/Figuras.hpp"
 #include "Juego/objetos/Entidad.hpp"
 #include "Juego/Sistemas/Sistemas.hpp"
 #include "Motor/Camaras/CamarasGestor.hpp"
@@ -13,12 +15,11 @@ namespace IVJ
         :CE::Escena{},jugador_ref{pref}
     {
     }
-    void Escena_Camara::onInit()
-    {
+    void Escena_Camara::onInit() {
         // asignar primero que nada la camara, porque podemos entrar y salir de escenas
         // asi la camara regresa a la que deberia en la escena
         // id = 1 = LERP es en el orden que se agreguen
-        CE::GestorCamaras::Get().setCamaraActiva(1);
+        CE::GestorCamaras::Get().setCamaraActiva(2);
         // indicar a quien persigue
         CE::GestorCamaras::Get().getCamaraActiva().lockEnObjeto(jugador_ref);
 
@@ -46,7 +47,20 @@ namespace IVJ
         jugador_ref->addComponente(triangulo);
         jugador_ref->addComponente(std::make_shared<CE::IControl>());
 
-        inicializar=false;
+        // objetos para mostrar movimiento
+        int montes_count = 100;
+        float dstd = 20.f;
+        for (int i = 0; i < montes_count; i++) {
+            // gauss
+            double por = std::exp(-0.5*(((i - montes_count / 2.f)*(i - montes_count / 2.f))/(dstd*dstd)));
+            int inc = 200;
+            auto monte = std::make_shared<Rectangulo>(
+                200.f, 200.f + (inc * por),
+                sf::Color{184,134,11}, sf::Color::Black);
+            monte->setPosicion(100 + (i * 200), 100 - (inc * por / 2.f));
+            objetos.agregarPool(monte);
+        }
+        inicializar = false;
     }
     void Escena_Camara::onFinal()
     {
@@ -101,5 +115,18 @@ namespace IVJ
         CE::Render::Get().AddToDraw(*jugador_ref);
         for(auto& obj: objetos.getPool())
             CE::Render::Get().AddToDraw(*obj);
+
+#if DEBUG
+        auto cam = &CE::GestorCamaras::Get().getCamaraActiva();
+        auto csv = (CE::CamaraSnapVentana*) cam;
+        auto csvpos = csv->getTransformada().posicion;
+        sf::RectangleShape debugcam{{csv->m_vdim.x, csv->m_vdim.y}};
+        debugcam.setOrigin({csv->m_vdim.x/2.f, csv->m_vdim.y/2.f});
+        debugcam.setPosition({csvpos.x, csvpos.y});
+        debugcam.setOutlineThickness(3.f);
+        debugcam.setOutlineColor(sf::Color::Yellow);
+        debugcam.setFillColor(sf::Color::Transparent);
+        CE::Render::Get().AddToDraw(debugcam);
+#endif
     }
 }
