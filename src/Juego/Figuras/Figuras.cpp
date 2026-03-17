@@ -21,13 +21,6 @@ namespace IVJ {
     {
         state.transform *= getTransform();
         target.draw(rect_img);
-        sf::CircleShape pivote{10.f};
-        pivote.setFillColor(f_ccontorno);
-        pivote.setOrigin({10.f,10.f});
-        pivote.setPosition(rect_img.getPosition());
-
-        target.draw(pivote);
-
     }
     void Rectangulo::onUpdate(float dt)
     {

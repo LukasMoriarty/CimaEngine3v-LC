@@ -11,28 +11,53 @@ namespace IVJ
         : CE::Escena{}, jugador_ref{pref}
     {
     }
-            
+
     void Escena_Epidemia::onInit()
     {
-        if(!inicializar)
+        if (!inicializar)
             return;
 
-        //Inicializar
-        auto rect = std::make_shared<Rectangulo>(100.f,20.f,sf::Color::Red,sf::Color::Black);
-
+        // 1. Obtener las dimensiones de la ventana dinámicamente
         auto windowSize = CE::Render::Get().GetVentana().getSize();
-		float x = static_cast<float>(windowSize.x);
-		float y = static_cast<float>(windowSize.y);
-        rect->centrarObjeto(x,y);
+
+        // 2. Definir las variables de tu cuadrícula
+        int columnas = 15;
+        int filas = 15;
+        float tam_celda = 30.f;
+
+        // 3. Calcular el tamaño total de la cuadrícula completa
+        float ancho_total_cuadricula = columnas * tam_celda;
+        float alto_total_cuadricula = filas * tam_celda;
+
+        // 4. Calcular los márgenes (offsets) para centrarla
+        float offset_x = (windowSize.x - ancho_total_cuadricula) / 2.0f;
+        float offset_y = (windowSize.y - alto_total_cuadricula) / 2.0f;
+
+        // 5. Hacer la cuadrícula 15x15 aplicando los offsets
+        for (int i = 0; i < columnas; ++i)
+        {
+            for (int j = 0; j < filas; ++j)
+            {
+                auto rect = std::make_shared<Rectangulo>(tam_celda, tam_celda, sf::Color::White, sf::Color::Black);
+                rect->setPosicion(
+                    offset_x + (i * tam_celda),
+                    offset_y + (j * tam_celda)
+                );
+
+                objetos.agregarPool(rect);
+            }
+        }
 
         auto texto = std::make_shared<IVJ::Texto>(CE::GestorAssets::Get().getFont("default_font"),"Escena Epidemia");
         texto->setFontSize(30u);
 
-        objetos.agregarPool(rect);
+        texto->setPosicion(windowSize.x / 2.0f - 100.f, 20.f);
+
         objetos.agregarPool(texto);
             
         inicializar=0;
     }
+
     void Escena_Epidemia::onFinal()
     {
     
