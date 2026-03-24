@@ -41,10 +41,6 @@ namespace IVJ
 		CE::GestorEscenas::Get().registrarEscena("Epidemia",std::make_shared<Escena_Epidemia>(jugador));
 		CE::GestorEscenas::Get().registrarEscena("EscenaCamara", std::make_shared<Escena_Camara>(jugador));
 
-		// crear el jugador
-		jugador = std::make_shared<Entidad>();
-		jugador->getStats()->hp = 100;
-
 		// CE::GestorEscenas::Get().cambiarEscena("Prueba"); //ejecuta onInit()A
 		CE::GestorEscenas::Get().cambiarEscena("Menu");
 		escena_actual = &CE::GestorEscenas::Get().getEscenaActual();

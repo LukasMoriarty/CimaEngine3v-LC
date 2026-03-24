@@ -141,7 +141,7 @@ namespace CE
 	}
 
 	CamaraSnapLR::CamaraSnapLR(const Vector2D& pos, const Vector2D& dim, const Vector2D& vdim)
-	:Camara{pos,dim},m_vdim{vdim}, vel{4.f}
+	:Camara{pos,dim},m_vdim{vdim}, vel{10.f}
 	{
 		nombre = "Camara SNAP MARIO WORLD #"+std::to_string(Camara::num_camaras);
 	}

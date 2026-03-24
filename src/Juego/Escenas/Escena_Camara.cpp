@@ -37,7 +37,7 @@ namespace IVJ
 		registrarBotones(sf::Keyboard::Scancode::Enter,"aceptar");
 
 		auto trans = jugador_ref->getTransformada();
-		trans->velocidad = CE::Vector2D{120.f, 120.f};
+		trans->velocidad = CE::Vector2D{1000.f, 1000.f};
 		jugador_ref->setPosicion(300.f, 300.f);
 
 		auto triangulo = std::make_shared<ITriangulo>(40.f, 0.f);
