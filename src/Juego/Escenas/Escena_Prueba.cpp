@@ -7,53 +7,54 @@
 
 namespace IVJ
 {
-    Escena_Prueba::Escena_Prueba(std::shared_ptr<Entidad>& pref)
-        : CE::Escena{}, jugador_ref{pref}
-    {
-    }
-            
-    void Escena_Prueba::onInit()
-    {
-        if(!inicializar)
-            return;
+	Escena_Prueba::Escena_Prueba(std::shared_ptr<Entidad>& pref)
+		: CE::Escena{}, jugador_ref{pref}
+	{}
 
-        //Inicializar todo lo que contendra la escena 
-        auto rect = std::make_shared<Rectangulo>(100.f,20.f,sf::Color::Red,sf::Color::Black);
-        rect->setPosicion(200.f,300.f);
+	void Escena_Prueba::onInit()
+	{
+		if(!inicializar)
+			return;
 
-        auto texto = std::make_shared<IVJ::Texto>(CE::GestorAssets::Get().getFont("default_font"),"Escena de Prueba");
-        texto->setFontSize(30u);
+		//Inicializar lo que contendra la escena
+		auto rect = std::make_shared<Rectangulo>(100.f,20.f,sf::Color::Red,sf::Color::Black);
+		rect->setPosicion(200.f,300.f);
 
-        objetos.agregarPool(rect);
-        objetos.agregarPool(texto);
-            
-        inicializar=0;
-    }
-    void Escena_Prueba::onFinal()
-    {
-    
-    }
-    void Escena_Prueba::onUpdate(float dt)
-    {   
-        for(auto& obj: objetos.getPool())
-        {
-            obj->onUpdate(dt);
-        }
-        static float timer{0.f};
-        timer+=dt;
-        CE::GLogger::Get().agregarLog("Timer:"+std::to_string(timer),CE::GLogger::Niveles::LOG_DEBUG);
+		auto texto = std::make_shared<IVJ::Texto>(CE::GestorAssets::Get().getFont("default_font"),"Escena de Prueba");
+		texto->setFontSize(30u);
 
-        
-    }
-    void Escena_Prueba::onInputs(const CE::Botones& accion)
-    {
-        (void)accion;
-    }
-    void Escena_Prueba::onRender()
-    {
-        for(auto& obj: objetos.getPool())
-        {
-            CE::Render::Get().AddToDraw(*obj);
-        }
-    }
+		objetos.agregarPool(rect);
+		objetos.agregarPool(texto);
+
+		inicializar=0;
+	}
+
+	void Escena_Prueba::onFinal()
+	{
+
+	}
+
+	void Escena_Prueba::onUpdate(float dt)
+	{
+		for(auto& obj: objetos.getPool())
+		{
+			obj->onUpdate(dt);
+		}
+		static float timer{0.f};
+		timer+=dt;
+		CE::GLogger::Get().agregarLog("Timer:"+std::to_string(timer),CE::GLogger::Niveles::LOG_DEBUG);
+	}
+
+	void Escena_Prueba::onInputs(const CE::Botones& accion)
+	{
+		(void)accion;
+	}
+
+	void Escena_Prueba::onRender()
+	{
+		for(auto& obj: objetos.getPool())
+		{
+			CE::Render::Get().AddToDraw(*obj);
+		}
+	}
 }
