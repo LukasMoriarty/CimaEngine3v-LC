@@ -34,10 +34,12 @@ namespace IVJ
 		registrarBotones(sf::Keyboard::Scancode::Right,"derecha");
 		registrarBotones(sf::Keyboard::Scancode::Enter,"aceptar");
 
+		std::cout << "Cargando mapa..." << std::endl;
 		// cargar mapa 3 layers
 		tiles_layers.push_back(TileMap());	// solo mar
 		tiles_layers.push_back(TileMap());	// las islas
 		tiles_layers.push_back(TileMap());	// los objetos
+		std::cout << "Mapas cargados..." << std::endl;
 
 		if (!tiles_layers[0].loadTileMap(ASSETS "/mapas/playa_layer1.txt"))
 			exit(EXIT_FAILURE);
