@@ -39,6 +39,7 @@ namespace IVJ
 
     void SistemaMover(const std::shared_ptr<CE::Objeto>& objeto, float dt) {
         auto trans = objeto->getTransformada();
+
         auto control = objeto->getComponente<CE::IControl>();
 
         // si no tiene control o el control no esta activo, salir
@@ -57,11 +58,16 @@ namespace IVJ
             vel.x = -trans->velocidad.x;
 
         // calcular la direccion usando un triangulo rectangulo
-        if (objeto->getComponente<ITriangulo>()) {
+        if (objeto->getComponente<ITriangulo>() || objeto->getComponente<CE::ISprite>()) {
             auto n = vel;
             n.normalizacion();
+            auto trian = objeto->getComponente<ITriangulo>(); // nulo
             if (vel.x != 0 || vel.y != 0)
-                objeto->getComponente<ITriangulo>()->angulo = std::atan2(n.x, -n.y);
+            {
+                if (trian)
+                    trian->angulo = std::atan2(n.x, -n.y);
+                trans->angulo = std::atan2(n.x, -n.y);
+            }
         }
 
         // actualizar posicion del ente

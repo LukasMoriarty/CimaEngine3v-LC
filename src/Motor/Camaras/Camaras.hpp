@@ -204,6 +204,7 @@ namespace CE
 			bool lock{false};
 			float vel;
 			float objetivo_x = 0.0f;
+			float objetivo_y = 0.0f;
 			bool en_transicion = false;
 	};
 }

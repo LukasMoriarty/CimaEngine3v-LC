@@ -162,57 +162,91 @@ namespace CE
 		auto jpos = m_lockObj.lock()->getTransformada()->posicion;
 
 		// calculamos los márgenes basados en la posición ACTUAL de la cámara
-		float rrm = (pos_actual.x + m_vdim.x / 2.f);
-		float rlm = (pos_actual.x + m_vdim.x / 5.f);
-		float lrm = (pos_actual.x - m_vdim.x / 5.f);
-		float llm = (pos_actual.x - m_vdim.x / 2.f);
+		float rrm = (pos_actual.x + m_vdim.x / 2.f);	// rrm significa "right right margin", el límite derecho extremo
+		float rlm = (pos_actual.x + m_vdim.x / 5.f);	// rlm significa "right left margin", el límite derecho cercano al centro
+		float lrm = (pos_actual.x - m_vdim.x / 5.f);	// lrm significa "left right margin", el límite izquierdo cercano al centro
+		float llm = (pos_actual.x - m_vdim.x / 2.f);	// llm significa "left left margin", el límite izquierdo extremo
+
+		// calculamos los márgenes para y
+		// float rrm_y = (pos_actual.y + m_vdim.y / 2.f);	// bottom margin
+		float rlm_y = (pos_actual.y + m_vdim.y / 5.f);	// bottom near center
+		float lrm_y = (pos_actual.y - m_vdim.y / 5.f);	// top near center
+		// float llm_y = (pos_actual.y - m_vdim.y / 2.f);	// top margin
 
 		switch (estado) {
 			case 1: // jugador en la zona izquierda, cámara sigue hacia la DERECHA
-				if(jpos.x >= lrm) {
+				if (jpos.x >= lrm)
+				{
 					m_transform->posicion.x += (jpos.x - lrm);
 				}
+				if (jpos.y >= rlm_y)
+				{
+					m_transform->posicion.y += (jpos.y - rlm_y);
+				}
+				if (jpos.y <= lrm_y)
+				{
+					m_transform->posicion.y += (jpos.y - lrm_y);
+				}
 				// si el jugador se da la vuelta y cruza el límite izquierdo
-				if (jpos.x <= llm) {
+				if (jpos.x <= llm)
+				{
 					estado = 3; // iniciar transición a la izquierda
 				}
 				break;
 
 			case 2: // jugador en la zona derecha, cámara sigue hacia la IZQUIERDA
-				if (jpos.x <= rlm) {
+				if (jpos.x <= rlm)
+				{
 					m_transform->posicion.x += (jpos.x - rlm);
 				}
+				if (jpos.y >= rlm_y)
+				{
+					m_transform->posicion.y += (jpos.y - rlm_y);
+				}
+				if (jpos.y <= lrm_y)
+				{
+					m_transform->posicion.y += (jpos.y - lrm_y);
+				}
 				// si el jugador se da la vuelta y cruza el límite derecho
-				if (jpos.x >= rrm) {
+				if (jpos.x >= rrm)
+				{
 					estado = 4; // Iniciar transición a la derecha
 				}
 				break;
 
-			case 3: { // TRANSICIÓN HACIA LA IZQUIERDA
+			case 3:
+			{ // TRANSICIÓN HACIA LA IZQUIERDA
 				// calculamos dinámicamente el objetivo para que el jugador quede en 'rlm'
 				objetivo_x = jpos.x - (m_vdim.x / 5.f);
+				objetivo_y = jpos.y;
 
-				Vector2D pos_objetivo_vec = {objetivo_x, pos_actual.y};
-				m_transform->posicion = lerp(pos_actual, pos_objetivo_vec, vel * dt);
+				Vector2D pos_objetivo_vec = {objetivo_x, objetivo_y};
+				// m_transform->posicion = lerp(pos_actual, pos_objetivo_vec, vel * dt);
+				m_transform->posicion = lerp2(pos_actual, pos_objetivo_vec, pos_objetivo_vec, vel * dt); // usando lerp2 para una transición más suave
 
 				// si la distancia al objetivo es imperceptible, terminamos el Lerp
-				if (std::abs(m_transform->posicion.x - objetivo_x) < 2.0f) {
+				if (std::abs(m_transform->posicion.x - objetivo_x) < 2.0f && std::abs(m_transform->posicion.y - objetivo_y) < 2.0f) {
 					m_transform->posicion.x = objetivo_x;
+					m_transform->posicion.y = objetivo_y;
 					estado = 2; // pasamos al comportamiento de zona derecha
 				}
 				break;
 			}
 
-			case 4: { // TRANSICIÓN HACIA LA DERECHA
+			case 4:
+			{ // TRANSICIÓN HACIA LA DERECHA
 				// calculamos dinámicamente el objetivo para que el jugador quede en 'lrm'
 				objetivo_x = jpos.x + (m_vdim.x / 5.f);
+				objetivo_y = jpos.y;
 
-				Vector2D pos_objetivo_vec = {objetivo_x, pos_actual.y};
-				m_transform->posicion = lerp(pos_actual, pos_objetivo_vec, vel * dt);
+				Vector2D pos_objetivo_vec = {objetivo_x, objetivo_y};
+				// m_transform->posicion = lerp(pos_actual, pos_objetivo_vec, vel * dt);
+				m_transform->posicion = lerp2(pos_actual, pos_objetivo_vec, pos_objetivo_vec, vel * dt); // usando lerp2 para una transición más suave
 
 				// si la distancia al objetivo es imperceptible, terminamos el Lerp
-				if (std::abs(m_transform->posicion.x - objetivo_x) < 2.0f) {
+				if (std::abs(m_transform->posicion.x - objetivo_x) < 2.0f && std::abs(m_transform->posicion.y - objetivo_y) < 2.0f) {
 					m_transform->posicion.x = objetivo_x;
+					m_transform->posicion.y = objetivo_y;
 					estado = 1; // pasamos al comportamiento de zona izquierda
 				}
 				break;

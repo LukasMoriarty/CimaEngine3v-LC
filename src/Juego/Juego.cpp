@@ -13,6 +13,7 @@
 #include <Juego/Escenas/Escena_SS.hpp>
 #include <Juego/Escenas/Escena_Menu.hpp>
 #include <Juego/Escenas/Escena_Epidemia.hpp>
+#include <Juego/Escenas/Escena_Sprite.hpp>
 #include <Juego/objetos/Entidad.hpp>
 
 #include "Escenas/Escena_Camara.hpp"
@@ -40,6 +41,7 @@ namespace IVJ
 		CE::GestorEscenas::Get().registrarEscena("Menu",std::make_shared<Escena_Menu>());
 		CE::GestorEscenas::Get().registrarEscena("Epidemia",std::make_shared<Escena_Epidemia>(jugador));
 		CE::GestorEscenas::Get().registrarEscena("EscenaCamara", std::make_shared<Escena_Camara>(jugador));
+		CE::GestorEscenas::Get().registrarEscena("EscenaSprite", std::make_shared<Escena_Sprite>(jugador));
 
 		// CE::GestorEscenas::Get().cambiarEscena("Prueba"); //ejecuta onInit()A
 		CE::GestorEscenas::Get().cambiarEscena("Menu");
