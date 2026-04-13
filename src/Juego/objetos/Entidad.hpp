@@ -1,6 +1,7 @@
 #pragma once
 #include "../../Motor/Primitivos/Objetos.hpp" 
 #include "../Maquinas/FSM.hpp"
+#include "../Maquinas/FSMBoss.hpp"
 #include <memory>
 
 namespace IVJ
