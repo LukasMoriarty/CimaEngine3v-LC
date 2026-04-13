@@ -7,6 +7,8 @@
 #include <cmath>
 
 #include "Juego/Figuras/Figuras.hpp"
+#include "Juego/Maquinas/Bosses/IdleBoss.hpp"
+#include "Juego/Maquinas/Naves/IdleJugadores.hpp"
 #include "Juego/objetos/Entidad.hpp"
 #include "Juego/Sistemas/Sistemas.hpp"
 #include "Motor/Camaras/CamarasGestor.hpp"
@@ -48,20 +50,33 @@ namespace IVJ
 		if (!tiles_layers[2].loadTileMap(ASSETS "/mapas/playa_layer3.txt"))
 			exit(EXIT_FAILURE);
 
+		// LAB 8 ANIMACIONES
 
 		// CARGAR EL SPRITE
 		CE::GestorAssets::Get().agregarTextura(
-			"naveb",
-			ASSETS "/sprites/jugador/player_b.png",
+			// "naveb",										// LAB 7
+			"nave_sheet",								// LAB 8
+			// ASSETS "/sprites/jugador/player_b.png",		// LAB 7
+			ASSETS "/sprites/naves/player_sheet.png",	// LAB 8
 			CE::Vector2D{0.f, 0.f},
-			CE::Vector2D{64.f,64.f});
+			// CE::Vector2D{64.f,64.f});					// LAB 7
+			CE::Vector2D{320.f, 64.f}					// LAB 8
+		);
+
+		CE::GestorAssets::Get().agregarTextura(
+			"boss_sheet",
+			ASSETS "/sprites/bosses/VileCrustaceanIdleAttack.png",
+			CE::Vector2D{0.f, 0.f},
+			CE::Vector2D{924.f, 260.f}
+			);
 
 		auto trans = jugador_ref->getTransformada();
 		trans->velocidad = CE::Vector2D{500.f, 500.f};
 		jugador_ref->setPosicion(300.f, 300.f);
 
 		auto sprite = std::make_shared<CE::ISprite>(
-			CE::GestorAssets::Get().getTextura("naveb"),
+			// CE::GestorAssets::Get().getTextura("naveb"),	// LAB 7
+			CE::GestorAssets::Get().getTextura("nave_sheet"),
 			64.f, 64.f,
 			1.f);
 
@@ -84,6 +99,35 @@ namespace IVJ
 			objetos.agregarPool(monte);
 		}
 		*/
+
+		// LAB 8 ANIMACIONES
+		auto me = std::make_shared<IMaquinaEstado>();
+		me->fsm = std::make_shared<IdleJugadores>();
+		jugador_ref->addComponente(me);
+		jugador_ref->setFSM(me->fsm);
+
+		// boss entidad
+		auto boss = std::make_shared<Entidad>();
+		auto boss_sprite = std::make_shared<CE::ISprite>(
+			CE::GestorAssets::Get().getTextura("boss_sheet"),
+			154.f, 130.f,
+			1.f
+			);
+		// por el momento no tiene estados, esta vacia la maquina
+		auto boss_me = std::make_shared<IVJ::IMaquinaEstado>();
+		// probar patch con nodo IdleBoss
+		boss_me->fsm = std::make_shared<IdleBoss>(6, 0.25f);
+		auto boss_target = std::make_shared<ITarget>(nullptr);
+		boss_target->setTarget(*jugador_ref);
+
+		boss->addComponente(boss_sprite)
+			.addComponente(boss_me)
+			.addComponente(std::make_shared<IRangoAggro>(500.f))
+			.addComponente(boss_target)
+			.setPosicion(500.f, 500.f);
+
+		objetos.agregarPool(boss);
+
 		inicializar = false;
 	}
 	void Escena_Sprite::onFinal()
@@ -93,11 +137,17 @@ namespace IVJ
 	}
 	void Escena_Sprite::onUpdate(float dt)
 	{
+		jugador_ref->inputFSM();
 		jugador_ref->onUpdate(dt);
 		SistemaMover(jugador_ref, dt);
 		for(auto& obj: objetos.getPool())
 		{
+			obj->inputFSM();
 			obj->onUpdate(dt);
+			if (obj->tieneComponente<ITarget>()) {
+				auto& tpos = *obj->getComponente<ITarget>()->pos;
+				SistemaNPCLookTarget(*obj, tpos);
+			}
 		}
 	}
 	void Escena_Sprite::onInputs(const CE::Botones& accion)
@@ -141,7 +191,17 @@ namespace IVJ
 			CE::Render::Get().AddToDraw(al);
 
 		for(auto& obj: objetos.getPool())
+		{
+			// lab 8 animaciones
+			if (obj->tieneComponente<IRangoAggro>())
+			{
+				auto rango = obj->getComponente<IRangoAggro>();
+				auto pos = obj->getTransformada()->posicion;
+				rango->marcador.setPosition({pos.x, pos.y});
+				CE::Render::Get().AddToDraw(rango->marcador);
+			}
 			CE::Render::Get().AddToDraw(*obj);
+		}
 
 		CE::Render::Get().AddToDraw(*jugador_ref);
 

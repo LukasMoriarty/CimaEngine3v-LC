@@ -465,4 +465,26 @@ namespace IVJ
         }
         return true;  // No quedan enfermos ni en recuperación
     }
+
+    void SistemaNPCLookTarget(CE::Objeto& ente, CE::Vector2D& target)
+    {
+        if (!ente.tieneComponente<IRangoAggro>()) return;
+
+        auto rango = ente.getComponente<IRangoAggro>();
+        if (!rango->estaDentroRango(ente, target)) return;
+
+        auto pos = ente.getTransformada()->posicion;
+        auto ente_a_target = target - pos;
+        ente.getTransformada()->angulo = atan2(
+                ente_a_target.y,
+                ente_a_target.x
+            );
+        // reflejar imagen
+        if (ente_a_target.x < 0)
+            ente.getComponente<CE::ISprite>()->m_sprite.setScale({1,-1});
+        else
+            ente.getComponente<CE::ISprite>()->m_sprite.setScale({1,1});
+
+    }
+
 } // namespace IVJ

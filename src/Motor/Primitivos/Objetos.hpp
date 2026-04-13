@@ -31,7 +31,10 @@ namespace CE
             explicit Objeto();
             
             /** @brief Destructor virtual por defecto */
-            virtual ~Objeto()=default;
+            virtual ~Objeto() = default;
+
+            // PATCH
+            virtual void inputFSM() {};
             
             /**
              * @brief Implementa la interfaz Drawable de SFML.

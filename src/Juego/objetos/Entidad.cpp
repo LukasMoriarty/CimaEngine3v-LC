@@ -58,16 +58,28 @@ namespace IVJ
 	}
 	void Entidad::inputFSM()
 	{
-		if(!getComponente<IMaquinaEstado>() || !getComponente<CE::IControl>() ||
-		   !getComponente<IMaquinaEstado>()->fsm)
+		if(!getComponente<IMaquinaEstado>()
+		|| !getComponente<IMaquinaEstado>()->fsm)
 			return;
 		auto mq = getComponente<IMaquinaEstado>();
-		//crear el nuevo estado , si es nulo no hay nuevo estado aún
-		auto control = *getComponente<CE::IControl>();
-		auto n_estado = mq->fsm->onInputs(control);
-		std::shared_ptr<FSM> estado(n_estado);
-		if(estado)
-			setFSM(estado);
+		//Lab 8 Animaciones: Pequeño facade usando el nombre del nodo
+		if(mq->fsm->nombre.find("IdleBoss") != std::string::npos)
+		{
+			auto target = getComponente<ITarget>()->pos;
+			//usar el nodo correcto de boss
+			auto n_estado = std::static_pointer_cast<FSMBoss>(mq->fsm)->onInputs(*this,*target);
+			std::shared_ptr<FSM> estado(n_estado);
+			if(estado)
+				setFSM(estado);
+		}else
+		{
+			if(!getComponente<CE::IControl>())  return;
+			auto control = *getComponente<CE::IControl>();
+			auto n_estado = mq->fsm->onInputs(control);
+			std::shared_ptr<FSM> estado(n_estado);
+			if(estado)
+				setFSM(estado);
+		}
 	}
 
 	void Entidad::setFSM(const std::shared_ptr<FSM>& mq)

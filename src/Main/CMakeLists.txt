@@ -1,7 +1,6 @@
 project(CimaEngine3v)
 
-add_executable(CimaEngine3v main.cpp
-)
+add_executable(CimaEngine3v main.cpp)
 
 # copiar el archivo de configuración para las ides que sepan 
 # donde estan todos los paths de las librerias y archivos.

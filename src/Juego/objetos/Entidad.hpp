@@ -14,6 +14,6 @@ namespace IVJ
 
             //fsm
             void setFSM(const std::shared_ptr<FSM>& mq);
-            void inputFSM();
+            void inputFSM() override;   // patch
     };
 }

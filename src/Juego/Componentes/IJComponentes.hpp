@@ -316,4 +316,23 @@ namespace IVJ
 			sf::CircleShape tri_shape;
 			float angulo;
 	};
+
+	class ITarget : public CE::IComponentes
+	{
+		public:
+			explicit ITarget(CE::Objeto * target);
+			void setTarget(CE::Objeto& t);
+		public:
+			CE::Vector2D* pos;
+	};
+	class IRangoAggro : public CE::IComponentes
+	{
+		public:
+			explicit IRangoAggro(float radio);
+			virtual ~IRangoAggro(){};
+			bool estaDentroRango(CE::Objeto& parent, CE::Vector2D& target);
+		public:
+			float radio;
+			sf::CircleShape marcador;
+	};
 } // namespace IVJ

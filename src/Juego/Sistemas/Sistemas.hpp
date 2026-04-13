@@ -33,4 +33,7 @@ namespace IVJ
 
     [[maybe_unused]] void SistemaEpidemia(CE::Pool& pool, int columnas, float dt);
     [[maybe_unused]] bool SistemaEpidemiaTerminada(CE::Pool& pool);
+
+    // lab 8
+    [[maybe_unused]] void SistemaNPCLookTarget(CE::Objeto& ente, CE::Vector2D& target);
 }
