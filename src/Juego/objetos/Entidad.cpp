@@ -2,6 +2,8 @@
 #include "../../Motor/Componentes/IComponentes.hpp"
 #include <memory>
 
+#include "../Maquinas/FSMBoss.hpp"
+
 namespace IVJ
 {
 	void Entidad::onUpdate(float dt)

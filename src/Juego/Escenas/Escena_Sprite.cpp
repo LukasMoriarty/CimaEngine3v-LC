@@ -125,6 +125,7 @@ namespace IVJ
 			.addComponente(std::make_shared<IRangoAggro>(500.f))
 			.addComponente(boss_target)
 			.setPosicion(500.f, 500.f);
+		boss->setFSM(boss_me->fsm);
 
 		objetos.agregarPool(boss);
 

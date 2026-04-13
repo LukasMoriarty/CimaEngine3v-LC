@@ -1,5 +1,6 @@
 #include "IdleBoss.hpp"
 #include "Motor/Componentes/IComponentes.hpp"
+#include "AttackBoss.hpp"
 
 namespace IVJ
 {
@@ -18,8 +19,10 @@ namespace IVJ
 		(void) parent; (void) target;
 		auto pos = parent.getTransformada()->posicion;
 		float distancia = pos.distancia(target);
-		if (distancia <200.f)
+		if (distancia <200.f) {
 			std::cout << "Cambiar Animación\n";
+			return new AttackBoss(6, 0.25f);
+		}
 		return nullptr;
 	}
 	void IdleBoss::onEntrar(const Entidad& obj)

@@ -1,12 +1,13 @@
 #pragma once
 #include "../../Motor/Primitivos/Objetos.hpp" 
 #include "../Maquinas/FSM.hpp"
-#include "../Maquinas/FSMBoss.hpp"
+
 #include <memory>
 
 namespace IVJ
 {
     class FSM; //referencia circular
+    class FSMBoss;
     class Entidad: public CE::Objeto
     {
         public:
