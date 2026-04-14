@@ -36,6 +36,7 @@ namespace IVJ
 		registrarBotones(sf::Keyboard::Scancode::Right,"derecha");
 		registrarBotones(sf::Keyboard::Scancode::Enter,"aceptar");
 
+		/*
 		std::cout << "Cargando mapa..." << std::endl;
 		// cargar mapa 3 layers
 		tiles_layers.push_back(TileMap());	// solo mar
@@ -48,6 +49,11 @@ namespace IVJ
 		if (!tiles_layers[1].loadTileMap(ASSETS "/mapas/playa_layer2.txt"))
 			exit(EXIT_FAILURE);
 		if (!tiles_layers[2].loadTileMap(ASSETS "/mapas/playa_layer3.txt"))
+			exit(EXIT_FAILURE);
+		*/
+
+		tiles_layers.push_back(TileMap());
+		if (!tiles_layers[0].loadTileMap(ASSETS "/mapas/lvl_demo_layer.txt"))
 			exit(EXIT_FAILURE);
 
 		// LAB 8 ANIMACIONES
