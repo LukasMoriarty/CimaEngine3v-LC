@@ -108,7 +108,7 @@ namespace IVJ
 							exit(EXIT_SUCCESS);
 							break;
 						case 1:
-							CE::GestorEscenas::Get().cambiarEscena("SS");
+							CE::GestorEscenas::Get().cambiarEscena("EscenaSprite");
 							break;
 					}
 				}

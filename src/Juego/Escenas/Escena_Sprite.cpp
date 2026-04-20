@@ -23,7 +23,7 @@ namespace IVJ
 
 	void Escena_Sprite::onInit()
 	{
-		CE::GestorCamaras::Get().setCamaraActiva(2);
+		CE::GestorCamaras::Get().setCamaraActiva(1);
 		CE::GestorCamaras::Get().getCamaraActiva().lockEnObjeto(jugador_ref);
 		if (!inicializar) return;
 		registrarBotones(sf::Keyboard::Scancode::W,"arriba");
@@ -70,6 +70,14 @@ namespace IVJ
 			CE::Vector2D{320.f, 64.f}					// LAB 8
 		);
 
+		// sprite jugador con cuchillo idle
+		CE::GestorAssets::Get().agregarTextura(
+			"jugador",
+			ASSETS "/sprites/Top_Down_Survivor/knife/survivor-knife.png",
+			CE::Vector2D{0.f, 0.f},
+			CE::Vector2D{3072.f, 2688.f}
+		);
+
 		/*
 
 		CE::GestorAssets::Get().agregarTextura(
@@ -85,13 +93,22 @@ namespace IVJ
 		trans->velocidad = CE::Vector2D{500.f, 500.f};
 		jugador_ref->setPosicion(300.f, 300.f);
 
+		/*
 		auto sprite = std::make_shared<CE::ISprite>(
 			// CE::GestorAssets::Get().getTextura("naveb"),	// LAB 7
 			CE::GestorAssets::Get().getTextura("nave_sheet"),
 			64.f, 64.f,
 			1.f);
+		*/
 
-		jugador_ref->addComponente(sprite);
+		auto sprite2 = std::make_shared<CE::ISprite>(
+			CE::GestorAssets::Get().getTextura("jugador"),
+			384.f, 384.f,
+			.25f
+		);
+
+		//jugador_ref->addComponente(sprite);
+		jugador_ref->addComponente(sprite2);
 		jugador_ref->addComponente(std::make_shared<CE::IControl>());
 
 		/*
@@ -111,11 +128,13 @@ namespace IVJ
 		}
 		*/
 
+
 		// LAB 8 ANIMACIONES
 		auto me = std::make_shared<IMaquinaEstado>();
 		me->fsm = std::make_shared<IdleJugadores>();
 		jugador_ref->addComponente(me);
 		jugador_ref->setFSM(me->fsm);
+
 
 		/*
 
@@ -202,6 +221,8 @@ namespace IVJ
 	}
 	void Escena_Sprite::onRender()
 	{
+		// pintar el fondo de la escena a negro
+		CE::Render::Get().OnClearColor(sf::Color(0, 0, 0));
 		// renderizar los layers primero para pintar el fondo
 		for (auto& al: tiles_layers)
 			CE::Render::Get().AddToDraw(al);
