@@ -53,7 +53,8 @@ namespace IVJ
 		*/
 
 		tiles_layers.push_back(TileMap());
-		if (!tiles_layers[0].loadTileMap(ASSETS "/mapas/lvl_demo_layer.txt"))
+
+		if (!tiles_layers[0].loadTileMap(ASSETS "/mapas/mapa_demo.txt"))
 			exit(EXIT_FAILURE);
 
 		// LAB 8 ANIMACIONES
@@ -69,12 +70,16 @@ namespace IVJ
 			CE::Vector2D{320.f, 64.f}					// LAB 8
 		);
 
+		/*
+
 		CE::GestorAssets::Get().agregarTextura(
 			"boss_sheet",
 			ASSETS "/sprites/bosses/VileCrustaceanIdleAttack.png",
 			CE::Vector2D{0.f, 0.f},
 			CE::Vector2D{924.f, 260.f}
 			);
+
+		*/
 
 		auto trans = jugador_ref->getTransformada();
 		trans->velocidad = CE::Vector2D{500.f, 500.f};
@@ -112,6 +117,8 @@ namespace IVJ
 		jugador_ref->addComponente(me);
 		jugador_ref->setFSM(me->fsm);
 
+		/*
+
 		// boss entidad
 		auto boss = std::make_shared<Entidad>();
 		auto boss_sprite = std::make_shared<CE::ISprite>(
@@ -134,6 +141,8 @@ namespace IVJ
 		boss->setFSM(boss_me->fsm);
 
 		objetos.agregarPool(boss);
+
+		*/
 
 		inicializar = false;
 	}
