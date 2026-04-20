@@ -8,7 +8,9 @@
 
 #include "Juego/Figuras/Figuras.hpp"
 #include "Juego/Maquinas/Bosses/IdleBoss.hpp"
-#include "Juego/Maquinas/Naves/IdleJugadores.hpp"
+// ── Jugador FSM (nuevo) ──────────────────────────────────────────
+#include "Juego/Maquinas/Jugador/IdleJugador.hpp"
+// ────────────────────────────────────────────────────────────────
 #include "Juego/objetos/Entidad.hpp"
 #include "Juego/Sistemas/Sistemas.hpp"
 #include "Motor/Camaras/CamarasGestor.hpp"
@@ -25,52 +27,34 @@ namespace IVJ
 	{
 		CE::GestorCamaras::Get().setCamaraActiva(1);
 		CE::GestorCamaras::Get().getCamaraActiva().lockEnObjeto(jugador_ref);
+
+		// ── ZOOM: reducir el tamaño de la vista para que los tiles
+		//   de 32px se vean más grandes en pantalla.
+		//   Vista de 480×270 → cada tile ocupa ~67px en la ventana de 1600×900.
+		CE::GestorCamaras::Get().getCamaraActiva().setViewSize(240.f, 135.f);
+
 		if (!inicializar) return;
-		registrarBotones(sf::Keyboard::Scancode::W,"arriba");
-		registrarBotones(sf::Keyboard::Scancode::Up,"arriba");
-		registrarBotones(sf::Keyboard::Scancode::S,"abajo");
-		registrarBotones(sf::Keyboard::Scancode::Down,"abajo");
-		registrarBotones(sf::Keyboard::Scancode::A,"izquierda");
-		registrarBotones(sf::Keyboard::Scancode::Left,"izquierda");
-		registrarBotones(sf::Keyboard::Scancode::D,"derecha");
-		registrarBotones(sf::Keyboard::Scancode::Right,"derecha");
-		registrarBotones(sf::Keyboard::Scancode::Enter,"aceptar");
 
-		/*
-		std::cout << "Cargando mapa..." << std::endl;
-		// cargar mapa 3 layers
-		tiles_layers.push_back(TileMap());	// solo mar
-		tiles_layers.push_back(TileMap());	// las islas
-		tiles_layers.push_back(TileMap());	// los objetos
-		std::cout << "Mapas cargados..." << std::endl;
+		registrarBotones(sf::Keyboard::Scancode::W,	 "arriba");
+		registrarBotones(sf::Keyboard::Scancode::Up,	"arriba");
+		registrarBotones(sf::Keyboard::Scancode::S,	 "abajo");
+		registrarBotones(sf::Keyboard::Scancode::Down,  "abajo");
+		registrarBotones(sf::Keyboard::Scancode::A,	 "izquierda");
+		registrarBotones(sf::Keyboard::Scancode::Left,  "izquierda");
+		registrarBotones(sf::Keyboard::Scancode::D,	 "derecha");
+		registrarBotones(sf::Keyboard::Scancode::Right, "derecha");
+		registrarBotones(sf::Keyboard::Scancode::Enter, "aceptar");
+		registrarBotones(sf::Keyboard::Scancode::Space, "atacar"); // <-- ataque
 
-		if (!tiles_layers[0].loadTileMap(ASSETS "/mapas/playa_layer1.txt"))
-			exit(EXIT_FAILURE);
-		if (!tiles_layers[1].loadTileMap(ASSETS "/mapas/playa_layer2.txt"))
-			exit(EXIT_FAILURE);
-		if (!tiles_layers[2].loadTileMap(ASSETS "/mapas/playa_layer3.txt"))
-			exit(EXIT_FAILURE);
-		*/
-
+		// ── Mapa ────────────────────────────────────────────────
 		tiles_layers.push_back(TileMap());
 
-		if (!tiles_layers[0].loadTileMap(ASSETS "/mapas/mapa_demo.txt"))
-			exit(EXIT_FAILURE);
+		tiles_layers[0].loadTileMap(ASSETS "/mapas/mapa_demo.txt");
 
-		// LAB 8 ANIMACIONES
+		tiles_layers[0].atlas_texture.setSmooth(true); // suavizado para que se vea mejor al hacer zoom
 
-		// CARGAR EL SPRITE
-		CE::GestorAssets::Get().agregarTextura(
-			// "naveb",										// LAB 7
-			"nave_sheet",								// LAB 8
-			// ASSETS "/sprites/jugador/player_b.png",		// LAB 7
-			ASSETS "/sprites/naves/player_sheet.png",	// LAB 8
-			CE::Vector2D{0.f, 0.f},
-			// CE::Vector2D{64.f,64.f});					// LAB 7
-			CE::Vector2D{320.f, 64.f}					// LAB 8
-		);
-
-		// sprite jugador con cuchillo idle
+		// ── Textura jugador (survivor-knife) ────────────────────
+		// Hoja completa: 3072×2688, frame: 384×384
 		CE::GestorAssets::Get().agregarTextura(
 			"jugador",
 			ASSETS "/sprites/Top_Down_Survivor/knife/survivor-knife.png",
@@ -78,162 +62,83 @@ namespace IVJ
 			CE::Vector2D{3072.f, 2688.f}
 		);
 
-		/*
-
-		CE::GestorAssets::Get().agregarTextura(
-			"boss_sheet",
-			ASSETS "/sprites/bosses/VileCrustaceanIdleAttack.png",
-			CE::Vector2D{0.f, 0.f},
-			CE::Vector2D{924.f, 260.f}
-			);
-
-		*/
-
+		// ── Jugador ─────────────────────────────────────────────
 		auto trans = jugador_ref->getTransformada();
-		trans->velocidad = CE::Vector2D{500.f, 500.f};
+		trans->velocidad = CE::Vector2D{50.f, 50.f};   // ajustar a escala del mapa
 		jugador_ref->setPosicion(300.f, 300.f);
 
-		/*
+		// Sprite: frame 384×384
 		auto sprite = std::make_shared<CE::ISprite>(
-			// CE::GestorAssets::Get().getTextura("naveb"),	// LAB 7
-			CE::GestorAssets::Get().getTextura("nave_sheet"),
-			64.f, 64.f,
-			1.f);
-		*/
-
-		auto sprite2 = std::make_shared<CE::ISprite>(
 			CE::GestorAssets::Get().getTextura("jugador"),
-			384.f, 384.f,
-			.25f
+			384, 384,
+			0.1f
 		);
-
-		//jugador_ref->addComponente(sprite);
-		jugador_ref->addComponente(sprite2);
+		jugador_ref->addComponente(sprite);
 		jugador_ref->addComponente(std::make_shared<CE::IControl>());
 
-		/*
-		// OBJETOS PARA QUE SE MUESTRE EL MOVIMIENTO
-		int montes_count = 100;
-		float dstd = 20.f;
-		for (int i = 0; i < montes_count; i++)
-		{
-			// GAUSS
-			double por = std::exp(-0.5 * (((i - montes_count / 2.f) * (i - montes_count / 2.f)) / (dstd * dstd)));
-			int inc = 200;
-			auto monte = std::make_shared<Rectangulo>(
-				200.f, 200.f + (inc * por),
-				sf::Color{184, 134, 11}, sf::Color::Black);
-			monte->setPosicion(100 + (i * 200), 100 - (inc * por / 2.f));
-			objetos.agregarPool(monte);
-		}
-		*/
-
-
-		// LAB 8 ANIMACIONES
+		// ── FSM Jugador ─────────────────────────────────────────
+		// 20 frames de idle, 0.05s por frame → animación fluida
 		auto me = std::make_shared<IMaquinaEstado>();
-		me->fsm = std::make_shared<IdleJugadores>();
+		me->fsm = std::make_shared<IdleJugador>(20, 0.05f);
 		jugador_ref->addComponente(me);
 		jugador_ref->setFSM(me->fsm);
 
-
-		/*
-
-		// boss entidad
-		auto boss = std::make_shared<Entidad>();
-		auto boss_sprite = std::make_shared<CE::ISprite>(
-			CE::GestorAssets::Get().getTextura("boss_sheet"),
-			154.f, 130.f,
-			1.f
-			);
-		// por el momento no tiene estados, esta vacia la maquina
-		auto boss_me = std::make_shared<IVJ::IMaquinaEstado>();
-		// probar patch con nodo IdleBoss
-		boss_me->fsm = std::make_shared<IdleBoss>(6, 0.25f);
-		auto boss_target = std::make_shared<ITarget>(nullptr);
-		boss_target->setTarget(*jugador_ref);
-
-		boss->addComponente(boss_sprite)
-			.addComponente(boss_me)
-			.addComponente(std::make_shared<IRangoAggro>(500.f))
-			.addComponente(boss_target)
-			.setPosicion(500.f, 500.f);
-		boss->setFSM(boss_me->fsm);
-
-		objetos.agregarPool(boss);
-
-		*/
-
 		inicializar = false;
 	}
+
 	void Escena_Sprite::onFinal()
 	{
-		// resetear la camara a la estatica al salir/cambiar de escena
 		CE::GestorCamaras::Get().setCamaraActiva(0);
 	}
+
 	void Escena_Sprite::onUpdate(float dt)
 	{
 		jugador_ref->inputFSM();
 		jugador_ref->onUpdate(dt);
 		SistemaMover(jugador_ref, dt);
+
 		for(auto& obj: objetos.getPool())
 		{
 			obj->inputFSM();
 			obj->onUpdate(dt);
-			if (obj->tieneComponente<ITarget>()) {
+			if (obj->tieneComponente<ITarget>())
+			{
 				auto& tpos = *obj->getComponente<ITarget>()->pos;
 				SistemaNPCLookTarget(*obj, tpos);
 			}
 		}
 	}
+
 	void Escena_Sprite::onInputs(const CE::Botones& accion)
 	{
-		switch(accion.getTipo())
-		{
-			case CE::Botones::TipoAccion::OnPress:
-			{
-				if (accion.getNombre() == "arriba")
-					jugador_ref->getComponente<CE::IControl>()->arr = true;
-				if (accion.getNombre() == "abajo")
-					jugador_ref->getComponente<CE::IControl>()->abj = true;
-				if (accion.getNombre() == "derecha")
-					jugador_ref->getComponente<CE::IControl>()->der = true;
-				if (accion.getNombre() == "izquierda")
-					jugador_ref->getComponente<CE::IControl>()->izq = true;
-				break;
-			}
-			case CE::Botones::TipoAccion::OnRelease:
-			{
-				if (accion.getNombre() == "arriba")
-					jugador_ref->getComponente<CE::IControl>()->arr = false;
-				if (accion.getNombre() == "abajo")
-					jugador_ref->getComponente<CE::IControl>()->abj = false;
-				if (accion.getNombre() == "derecha")
-					jugador_ref->getComponente<CE::IControl>()->der = false;
-				if (accion.getNombre() == "izquierda")
-					jugador_ref->getComponente<CE::IControl>()->izq = false;
-				break;
-			}
-			case CE::Botones::TipoAccion::None:
-			{
-				break;
-			}
-		}
+		auto ctrl = jugador_ref->getComponente<CE::IControl>();
+		if (!ctrl) return;
+
+		bool pressed = (accion.getTipo() == CE::Botones::TipoAccion::OnPress);
+
+		if	  (accion.getNombre() == "arriba")	 ctrl->arr  = pressed;
+		else if (accion.getNombre() == "abajo")	  ctrl->abj  = pressed;
+		else if (accion.getNombre() == "derecha")	ctrl->der  = pressed;
+		else if (accion.getNombre() == "izquierda")  ctrl->izq  = pressed;
+		else if (accion.getNombre() == "atacar")	 ctrl->acc  = pressed;
 	}
+
 	void Escena_Sprite::onRender()
 	{
 		// pintar el fondo de la escena a negro
 		CE::Render::Get().OnClearColor(sf::Color(0, 0, 0));
-		// renderizar los layers primero para pintar el fondo
+
+		// Tilemap primero
 		for (auto& al: tiles_layers)
 			CE::Render::Get().AddToDraw(al);
 
+		// Objetos del pool
 		for(auto& obj: objetos.getPool())
 		{
-			// lab 8 animaciones
 			if (obj->tieneComponente<IRangoAggro>())
 			{
 				auto rango = obj->getComponente<IRangoAggro>();
-				auto pos = obj->getTransformada()->posicion;
+				auto pos   = obj->getTransformada()->posicion;
 				rango->marcador.setPosition({pos.x, pos.y});
 				CE::Render::Get().AddToDraw(rango->marcador);
 			}
