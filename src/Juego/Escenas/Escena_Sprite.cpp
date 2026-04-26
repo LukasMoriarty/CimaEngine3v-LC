@@ -1,36 +1,33 @@
 #include "Escena_Sprite.hpp"
-
-#include "Escena_Camara.hpp"
 #include <Motor/Inputs/Botones.hpp>
 #include <Motor/Render/Render.hpp>
-#include <memory>
-#include <cmath>
+#include <Motor/Primitivos/GestorAssets.hpp>
+#include <Motor/Camaras/CamarasGestor.hpp>
+#include <Motor/Utils/AnimLoader.hpp>
 
-#include "Juego/Figuras/Figuras.hpp"
-#include "Juego/Maquinas/Bosses/IdleBoss.hpp"
-#include "Juego/Maquinas/Jugador/IdleJugador.hpp"
-#include "Juego/objetos/Entidad.hpp"
-#include "Juego/Sistemas/Sistemas.hpp"
-#include "Motor/Camaras/CamarasGestor.hpp"
-#include "Motor/Primitivos/GestorAssets.hpp"
-#include "Juego/objetos/TileMap.hpp"
+#include <Juego/Figuras/Figuras.hpp>
+#include <Juego/objetos/Entidad.hpp>
+#include <Juego/objetos/TileMap.hpp>
+#include <Juego/Sistemas/Sistemas.hpp>
+#include <Juego/Componentes/IJComponentes.hpp>
+
+#include <Juego/Maquinas/Pies/IdlePies.hpp>
+
+#include <Juego/Maquinas/Cuerpo/IdleCuerpoKnife.hpp>
+
+#include <memory>
 
 namespace IVJ
 {
-	auto cuerpo = std::make_shared<Entidad>();
-
 	Escena_Sprite::Escena_Sprite(std::shared_ptr<Entidad>& pref)
-		:CE::Escena{},jugador_ref{pref}
+		: CE::Escena{}, jugador_ref{pref}, cuerpo{std::make_shared<Entidad>()}
 	{}
 
 	void Escena_Sprite::onInit()
 	{
+		// Cámara con zoom para que los tiles de 32 px se vean grandes
 		CE::GestorCamaras::Get().setCamaraActiva(1);
 		CE::GestorCamaras::Get().getCamaraActiva().lockEnObjeto(jugador_ref);
-
-		// ── ZOOM: reducir el tamaño de la vista para que los tiles
-		//   de 32px se vean más grandes en pantalla.
-		//   Vista de 480×270 → cada tile ocupa ~67px en la ventana de 1600×900.
 		CE::GestorCamaras::Get().getCamaraActiva().setViewSize(240.f, 135.f);
 
 		if (!inicializar) return;
@@ -46,66 +43,75 @@ namespace IVJ
 		registrarBotones(sf::Keyboard::Scancode::Enter, "aceptar");
 		registrarBotones(sf::Keyboard::Scancode::Space, "atacar"); // <-- ataque
 
-		// ── Mapa ────────────────────────────────────────────────
+		// Tilemap
 		tiles_layers.push_back(TileMap());
-
 		tiles_layers[0].loadTileMap(ASSETS "/mapas/mapa_demo.txt");
+		tiles_layers[0].atlas_texture.setSmooth(false);
 
-		tiles_layers[0].atlas_texture.setSmooth(false); // suavizado para que se vea mejor al hacer zoom
+		CE::GestorAssets::Get().agregarMusica(
+			"musica_fondo",
+			ASSETS "/music/rockstar.flac"
+		);
+		// reproducir musica de fondo (loop)
+		CE::GestorAssets::Get().getMusica("musica_fondo").play();
 
-		// cargar textura pies
+		// Cargar texturas
 		CE::GestorAssets::Get().agregarTextura(
 			"pies",
 			ASSETS "/sprites/Top_Down_Survivor/feet/survivor-feet-atlas.png",
-			CE::Vector2D{0.f, 0.f},
-			CE::Vector2D{3456.f, 3456.f}
-		);
+			CE::Vector2D{0.f, 0.f}, CE::Vector2D{3456.f, 3456.f});
 
 		CE::GestorAssets::Get().agregarTextura(
 			"cuerpoCuchillo",
 			ASSETS "/sprites/Top_Down_Survivor/knife/survivor-knife-atlas.png",
-			CE::Vector2D{0.f, 0.f},
-			CE::Vector2D{3072.f, 2688.f}
-		);
+			CE::Vector2D{0.f, 0.f}, CE::Vector2D{3072.f, 2688.f});
 
-		// Jugador
+		// METADATA DE ANIMACION
+		auto clips_pies = CE::AnimLoader::cargar(
+			ASSETS "/sprites/Top_Down_Survivor/feet/indices_animacion.json");
+		auto clips_knife = CE::AnimLoader::cargar(
+			ASSETS "/sprites/Top_Down_Survivor/knife/indices_animacion.json");
+
+		// PIES (jugador_ref)
 		auto trans = jugador_ref->getTransformada();
-		trans->velocidad = CE::Vector2D{50.f, 50.f};   // ajustar a escala del mapa
+		trans->velocidad = CE::Vector2D{50.f, 50.f};
 		jugador_ref->setPosicion(300.f, 300.f);
 
-		// Sprite: frame 384×384
-		auto pies = std::make_shared<CE::ISprite>(
+		jugador_ref->addComponente(std::make_shared<CE::ISprite>(
 			CE::GestorAssets::Get().getTextura("pies"),
-			384, 384,
-			0.1f
-		);
+			384, 384, 0.1f));
 
-
-		// HACER QUE EL CUERPO SIGA, EN LA MISMA COORDENADA A JUGADOR_REF
-		cuerpo->getTransformada()->posicion = trans->posicion; // posición inicial igual al jugador
-		cuerpo->getTransformada()->velocidad = trans->velocidad; // misma velocidad para que se mueva igual
-		cuerpo->addComponente(std::make_shared<CE::ISprite>(
-			CE::GestorAssets::Get().getTextura("cuerpoCuchillo"),
-			384, 384,
-			0.1f
-		));
-		cuerpo->addComponente(std::make_shared<CE::IControl>()); // para que el cuerpo también reciba inputs (si es necesario)
-
-		auto cuerpoCuchillo = std::make_shared<CE::ISprite>(
-			CE::GestorAssets::Get().getTextura("cuerpoCuchillo"),
-			384, 384,
-			0.1f
-		);
-
-		jugador_ref->addComponente(pies);
 		jugador_ref->addComponente(std::make_shared<CE::IControl>());
 
-		auto maquinaEstado = std::make_shared<IMaquinaEstado>();
-		maquinaEstado->fsm = std::make_shared<IdleJugador>(1, 0.05f);
-		jugador_ref->addComponente(maquinaEstado);
-		cuerpo->addComponente(maquinaEstado);
-		jugador_ref->setFSM(maquinaEstado->fsm);
-		cuerpo->setFSM(maquinaEstado->fsm);
+		auto fsm_pies = std::make_shared<IdlePies>(
+			CE::AnimLoader::getClip(clips_pies, "idle"));
+
+		auto mq_pies = std::make_shared<IMaquinaEstado>();
+		mq_pies->fsm = fsm_pies;
+		jugador_ref->addComponente(mq_pies);
+		jugador_ref->setFSM(fsm_pies);
+
+		// CUERPO
+		// El cuerpo siempre se posiciona igual que los pies (en onUpdate)
+		cuerpo->getTransformada()->posicion = trans->posicion;
+		cuerpo->getTransformada()->velocidad = CE::Vector2D{0.f, 0.f};
+
+		cuerpo->addComponente(std::make_shared<CE::ISprite>(
+			CE::GestorAssets::Get().getTextura("cuerpoCuchillo"),
+			384, 384, 0.1f));
+
+		// El cuerpo necesita IControl para que inputFSM funcione.
+		// Se sincroniza en onUpdate con el control de jugador_ref.
+		cuerpo->addComponente(std::make_shared<CE::IControl>());
+
+		// FSM de cuerpo
+		auto fsm_cuerpo = std::make_shared<IdleCuerpoKnife>(
+			CE::AnimLoader::getClip(clips_knife, "idle_knife"));
+
+		auto mq_cuerpo = std::make_shared<IMaquinaEstado>();
+		mq_cuerpo->fsm = fsm_cuerpo;
+		cuerpo->addComponente(mq_cuerpo);
+		cuerpo->setFSM(fsm_cuerpo);
 
 		inicializar = false;
 	}
@@ -117,14 +123,35 @@ namespace IVJ
 
 	void Escena_Sprite::onUpdate(float dt)
 	{
+		// 1. Sincronizar control del cuerpo con el de los pies
+		//	(ambas entidades reaccionan a los mismos inputs)
+		auto ctrl_pies   = jugador_ref->getComponente<CE::IControl>();
+		auto ctrl_cuerpo = cuerpo->getComponente<CE::IControl>();
+		if (ctrl_pies && ctrl_cuerpo)
+			*ctrl_cuerpo = *ctrl_pies;
+
+		// 2. Procesar transiciones de FSM
 		jugador_ref->inputFSM();
 		cuerpo->inputFSM();
+
+		// 3. Actualizar lógica interna
 		jugador_ref->onUpdate(dt);
 		cuerpo->onUpdate(dt);
-		SistemaMover(jugador_ref, dt);
-		SistemaMover(cuerpo, dt);
 
-		for(auto& obj: objetos.getPool())
+		// 4. Mover pies según input; el cuerpo se arrastra a la misma posición
+		SistemaMover(jugador_ref, dt);
+		cuerpo->getTransformada()->posicion = jugador_ref->getTransformada()->posicion;
+
+		// 5. Sincronizar ángulo (rotación según dirección del movimiento)
+		cuerpo->getTransformada()->angulo = jugador_ref->getTransformada()->angulo;
+		if (cuerpo->getComponente<CE::ISprite>())
+		{
+			cuerpo->getComponente<CE::ISprite>()->m_sprite.setRotation(
+				sf::radians(cuerpo->getTransformada()->angulo));
+		}
+
+		// 6. Actualizar objetos del pool (NPCs, etc.)
+		for (auto& obj : objetos.getPool())
 		{
 			obj->inputFSM();
 			obj->onUpdate(dt);
@@ -143,35 +170,37 @@ namespace IVJ
 
 		bool pressed = (accion.getTipo() == CE::Botones::TipoAccion::OnPress);
 
-		if (accion.getNombre() == "arriba")	 ctrl->arr  = pressed;
-		else if (accion.getNombre() == "abajo")	  ctrl->abj  = pressed;
-		else if (accion.getNombre() == "derecha")	ctrl->der  = pressed;
-		else if (accion.getNombre() == "izquierda")  ctrl->izq  = pressed;
-		else if (accion.getNombre() == "atacar")	 ctrl->acc  = pressed;
+		if (accion.getNombre() == "arriba")	ctrl->arr = pressed;
+		else if (accion.getNombre() == "abajo") ctrl->abj = pressed;
+		else if (accion.getNombre() == "derecha") ctrl->der = pressed;
+		else if (accion.getNombre() == "izquierda") ctrl->izq = pressed;
+		else if (accion.getNombre() == "atacar") ctrl->acc = pressed;
+		// Nota: el control del cuerpo se sincroniza al inicio de onUpdate
 	}
 
 	void Escena_Sprite::onRender()
 	{
-		// pintar el fondo de la escena a negro
 		CE::Render::Get().OnClearColor(sf::Color(0, 0, 0));
 
-		// Tilemap primero
-		for (auto& al: tiles_layers)
+		// Tilemap al fondo
+		for (auto& al : tiles_layers)
 			CE::Render::Get().AddToDraw(al);
 
 		// Objetos del pool
-		for(auto& obj: objetos.getPool())
+		for (auto& obj: objetos.getPool())
 		{
 			if (obj->tieneComponente<IRangoAggro>())
 			{
 				auto rango = obj->getComponente<IRangoAggro>();
-				auto pos   = obj->getTransformada()->posicion;
-				rango->marcador.setPosition({pos.x, pos.y});
+				rango->marcador.setPosition(
+					{obj->getTransformada()->posicion.x,
+					 obj->getTransformada()->posicion.y});
 				CE::Render::Get().AddToDraw(rango->marcador);
 			}
 			CE::Render::Get().AddToDraw(*obj);
 		}
 
+		// Pies primero (debajo), luego cuerpo (encima)
 		CE::Render::Get().AddToDraw(*jugador_ref);
 		CE::Render::Get().AddToDraw(*cuerpo);
 

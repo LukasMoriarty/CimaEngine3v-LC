@@ -4,6 +4,7 @@ import struct
 import math
 import sys
 import os
+import re
 
 def obtener_resolucion_png(ruta_archivo):
     """Lee el encabezado binario del PNG para obtener su ancho y alto sin usar librerías externas."""
@@ -12,7 +13,27 @@ def obtener_resolucion_png(ruta_archivo):
         ancho, alto = struct.unpack('>LL', f.read(8))
         return ancho, alto
 
-# 1. Obtener y ordenar los archivos
+# 0. Auto-padding: renombrar _N.png -> _0N.png para que montage ordene correctamente
+#    Equivalente al comando: perl-rename 's/_([0-9])\.png/_0$1.png/' *.png
+print("🔄 Verificando padding de ceros en nombres de archivo...")
+renombrados = 0
+for archivo in sorted(glob.glob("*.png")):
+    # Detectar sufijo con UN solo dígito: _1.png, _5.png, etc.
+    nuevo = re.sub(r'_(\d)\.png$', r'_0\1.png', archivo)
+    if nuevo != archivo:
+        if os.path.exists(nuevo):
+            print(f"⚠️  Conflicto: '{nuevo}' ya existe, omitiendo '{archivo}'")
+        else:
+            os.rename(archivo, nuevo)
+            print(f"   Renombrado: {archivo} -> {nuevo}")
+            renombrados += 1
+
+if renombrados:
+    print(f"✅ {renombrados} archivo(s) renombrado(s).")
+else:
+    print("   Ningún archivo necesitaba renombrado.")
+
+# 1. Obtener y ordenar los archivos (después del renombrado)
 archivos = sorted(glob.glob("*.png"))
 
 if not archivos:
