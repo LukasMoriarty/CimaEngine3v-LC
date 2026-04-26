@@ -6,8 +6,8 @@
 namespace IVJ
 {
     MoverJugador::MoverJugador(int max_frames, float frame_rate)
-        : FSM{}, sprite{nullptr}, s_w{0}, s_h{0}, num_cols{8},
-          id_frame{35}, first_frame{35}, max_frames{max_frames},
+        : FSM{}, sprite{nullptr}, frameWidth{0}, frameHeight{0}, num_cols{9},
+          id_frame{61}, first_frame{61}, max_frames{max_frames},
           max_frame_time{frame_rate}, cur_frame_time{frame_rate}
     {
         nombre = "MoverJugador";
@@ -16,7 +16,7 @@ namespace IVJ
     FSM* MoverJugador::onInputs(const CE::IControl& control)
     {
         if (!control.arr && !control.abj && !control.der && !control.izq)
-            return new IdleJugador(20, 0.05f);
+            return new IdleJugador(1, 0.05f);
         if (control.acc)
             return new AttackJugador(15, 0.05f);
         return nullptr;
@@ -25,12 +25,12 @@ namespace IVJ
     void MoverJugador::onEntrar(const Entidad& obj)
     {
         auto iSprite = obj.getComponente<CE::ISprite>();
-        sprite   = &iSprite->m_sprite;
-        s_w      = iSprite->width;
-        s_h      = iSprite->height;
+        sprite = &iSprite->m_sprite;
+        frameWidth = iSprite->width;
+        frameHeight = iSprite->height;
 
         auto texSize = iSprite->m_sprite.getTexture().getSize();
-        num_cols = (s_w > 0) ? static_cast<int>(texSize.x) / s_w : 8;
+        num_cols = (frameWidth > 0) ? static_cast<int>(texSize.x) / frameWidth : num_cols;
 
         id_frame       = first_frame;
         cur_frame_time = max_frame_time;
@@ -53,8 +53,8 @@ namespace IVJ
         int row = id_frame / num_cols;
 
         sprite->setTextureRect(sf::IntRect{
-            {col * s_w, row * s_h},
-            {s_w, s_h}
+            {col * frameWidth, row * frameHeight},
+            {frameWidth, frameHeight}
         });
 
         // avanza dentro del rango [first_frame, first_frame + max_frames)

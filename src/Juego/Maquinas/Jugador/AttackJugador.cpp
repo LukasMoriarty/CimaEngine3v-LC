@@ -20,7 +20,7 @@ namespace IVJ
         (void)control;
         // Al terminar el ciclo de ataque volvemos a idle
         if (ataque_completo)
-            return new IdleJugador(20, 0.05f);
+            return new IdleJugador(1, 0.05f);
         return nullptr;
     }
 

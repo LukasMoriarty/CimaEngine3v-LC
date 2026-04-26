@@ -35,7 +35,7 @@ namespace IVJ
         auto texSize = iSprite->m_sprite.getTexture().getSize();
         num_cols = (s_w > 0) ? static_cast<int>(texSize.x) / s_w : 8;
 
-        id_frame       = 0;
+        id_frame = 0;   // idle empieza en 0
         cur_frame_time = max_frame_time;
     }
 

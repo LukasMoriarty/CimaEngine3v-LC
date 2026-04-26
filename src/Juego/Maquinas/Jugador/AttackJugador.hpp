@@ -3,7 +3,6 @@
 
 namespace IVJ
 {
-    // Frames 20-34 (15 frames), fila 2 col 4 hasta fila 4 col 2
     class AttackJugador : public FSM
     {
         public:

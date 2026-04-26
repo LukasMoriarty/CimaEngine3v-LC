@@ -8,9 +8,7 @@
 
 #include "Juego/Figuras/Figuras.hpp"
 #include "Juego/Maquinas/Bosses/IdleBoss.hpp"
-// ── Jugador FSM (nuevo) ──────────────────────────────────────────
 #include "Juego/Maquinas/Jugador/IdleJugador.hpp"
-// ────────────────────────────────────────────────────────────────
 #include "Juego/objetos/Entidad.hpp"
 #include "Juego/Sistemas/Sistemas.hpp"
 #include "Motor/Camaras/CamarasGestor.hpp"
@@ -19,6 +17,8 @@
 
 namespace IVJ
 {
+	auto cuerpo = std::make_shared<Entidad>();
+
 	Escena_Sprite::Escena_Sprite(std::shared_ptr<Entidad>& pref)
 		:CE::Escena{},jugador_ref{pref}
 	{}
@@ -51,37 +51,61 @@ namespace IVJ
 
 		tiles_layers[0].loadTileMap(ASSETS "/mapas/mapa_demo.txt");
 
-		tiles_layers[0].atlas_texture.setSmooth(true); // suavizado para que se vea mejor al hacer zoom
+		tiles_layers[0].atlas_texture.setSmooth(false); // suavizado para que se vea mejor al hacer zoom
 
-		// ── Textura jugador (survivor-knife) ────────────────────
-		// Hoja completa: 3072×2688, frame: 384×384
+		// cargar textura pies
 		CE::GestorAssets::Get().agregarTextura(
-			"jugador",
-			ASSETS "/sprites/Top_Down_Survivor/knife/survivor-knife.png",
+			"pies",
+			ASSETS "/sprites/Top_Down_Survivor/feet/survivor-feet-atlas.png",
+			CE::Vector2D{0.f, 0.f},
+			CE::Vector2D{3456.f, 3456.f}
+		);
+
+		CE::GestorAssets::Get().agregarTextura(
+			"cuerpoCuchillo",
+			ASSETS "/sprites/Top_Down_Survivor/knife/survivor-knife-atlas.png",
 			CE::Vector2D{0.f, 0.f},
 			CE::Vector2D{3072.f, 2688.f}
 		);
 
-		// ── Jugador ─────────────────────────────────────────────
+		// Jugador
 		auto trans = jugador_ref->getTransformada();
 		trans->velocidad = CE::Vector2D{50.f, 50.f};   // ajustar a escala del mapa
 		jugador_ref->setPosicion(300.f, 300.f);
 
 		// Sprite: frame 384×384
-		auto sprite = std::make_shared<CE::ISprite>(
-			CE::GestorAssets::Get().getTextura("jugador"),
+		auto pies = std::make_shared<CE::ISprite>(
+			CE::GestorAssets::Get().getTextura("pies"),
 			384, 384,
 			0.1f
 		);
-		jugador_ref->addComponente(sprite);
+
+
+		// HACER QUE EL CUERPO SIGA, EN LA MISMA COORDENADA A JUGADOR_REF
+		cuerpo->getTransformada()->posicion = trans->posicion; // posición inicial igual al jugador
+		cuerpo->getTransformada()->velocidad = trans->velocidad; // misma velocidad para que se mueva igual
+		cuerpo->addComponente(std::make_shared<CE::ISprite>(
+			CE::GestorAssets::Get().getTextura("cuerpoCuchillo"),
+			384, 384,
+			0.1f
+		));
+		cuerpo->addComponente(std::make_shared<CE::IControl>()); // para que el cuerpo también reciba inputs (si es necesario)
+
+		auto cuerpoCuchillo = std::make_shared<CE::ISprite>(
+			CE::GestorAssets::Get().getTextura("cuerpoCuchillo"),
+			384, 384,
+			0.1f
+		);
+
+		jugador_ref->addComponente(pies);
 		jugador_ref->addComponente(std::make_shared<CE::IControl>());
 
-		// ── FSM Jugador ─────────────────────────────────────────
-		// 20 frames de idle, 0.05s por frame → animación fluida
-		auto me = std::make_shared<IMaquinaEstado>();
-		me->fsm = std::make_shared<IdleJugador>(20, 0.05f);
-		jugador_ref->addComponente(me);
-		jugador_ref->setFSM(me->fsm);
+		auto maquinaEstado = std::make_shared<IMaquinaEstado>();
+		maquinaEstado->fsm = std::make_shared<IdleJugador>(1, 0.05f);
+		jugador_ref->addComponente(maquinaEstado);
+		cuerpo->addComponente(maquinaEstado);
+		jugador_ref->setFSM(maquinaEstado->fsm);
+		cuerpo->setFSM(maquinaEstado->fsm);
 
 		inicializar = false;
 	}
@@ -94,8 +118,11 @@ namespace IVJ
 	void Escena_Sprite::onUpdate(float dt)
 	{
 		jugador_ref->inputFSM();
+		cuerpo->inputFSM();
 		jugador_ref->onUpdate(dt);
+		cuerpo->onUpdate(dt);
 		SistemaMover(jugador_ref, dt);
+		SistemaMover(cuerpo, dt);
 
 		for(auto& obj: objetos.getPool())
 		{
@@ -116,7 +143,7 @@ namespace IVJ
 
 		bool pressed = (accion.getTipo() == CE::Botones::TipoAccion::OnPress);
 
-		if	  (accion.getNombre() == "arriba")	 ctrl->arr  = pressed;
+		if (accion.getNombre() == "arriba")	 ctrl->arr  = pressed;
 		else if (accion.getNombre() == "abajo")	  ctrl->abj  = pressed;
 		else if (accion.getNombre() == "derecha")	ctrl->der  = pressed;
 		else if (accion.getNombre() == "izquierda")  ctrl->izq  = pressed;
@@ -146,6 +173,7 @@ namespace IVJ
 		}
 
 		CE::Render::Get().AddToDraw(*jugador_ref);
+		CE::Render::Get().AddToDraw(*cuerpo);
 
 #if DEBUG
 		auto cam = &CE::GestorCamaras::Get().getCamaraActiva();
