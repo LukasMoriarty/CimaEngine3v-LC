@@ -25,10 +25,9 @@ namespace IVJ
 
 	void Escena_Sprite::onInit()
 	{
-		// Cámara con zoom para que los tiles de 32 px se vean grandes
 		CE::GestorCamaras::Get().setCamaraActiva(1);
 		CE::GestorCamaras::Get().getCamaraActiva().lockEnObjeto(jugador_ref);
-		CE::GestorCamaras::Get().getCamaraActiva().setViewSize(240.f, 135.f);
+		CE::GestorCamaras::Get().getCamaraActiva().setViewSize(800.f, 450.f);
 
 		if (!inicializar) return;
 
@@ -45,15 +44,20 @@ namespace IVJ
 
 		// Tilemap
 		tiles_layers.push_back(TileMap());
-		tiles_layers[0].loadTileMap(ASSETS "/mapas/mapa_demo.txt");
-		tiles_layers[0].atlas_texture.setSmooth(false);
+		tiles_layers.push_back(TileMap());
+		tiles_layers[0].loadTileMap(ASSETS "/mapas/floors.txt");
+		//tiles_layers[1].loadTileMap(ASSETS "/mapas/walls.txt");
+		tiles_layers[1].loadTileMap(ASSETS "/mapas/walls_colisiones.txt", objetos);
+		tiles_layers[0].atlas_texture.setSmooth(true);
+		tiles_layers[1].atlas_texture.setSmooth(true);
 
 		CE::GestorAssets::Get().agregarMusica(
 			"musica_fondo",
-			ASSETS "/music/rockstar.flac"
+			ASSETS "/music/first_wave.mp3"
 		);
 		// reproducir musica de fondo (loop)
 		CE::GestorAssets::Get().getMusica("musica_fondo").play();
+		CE::GestorAssets::Get().getMusica("musica_fondo").setVolume(20.f);
 
 		// Cargar texturas
 		CE::GestorAssets::Get().agregarTextura(
@@ -74,14 +78,17 @@ namespace IVJ
 
 		// PIES (jugador_ref)
 		auto trans = jugador_ref->getTransformada();
-		trans->velocidad = CE::Vector2D{50.f, 50.f};
-		jugador_ref->setPosicion(300.f, 300.f);
+		trans->velocidad = CE::Vector2D{150.f, 150.f};
+		jugador_ref->setPosicion(1750.f, 1750.f);
 
 		jugador_ref->addComponente(std::make_shared<CE::ISprite>(
 			CE::GestorAssets::Get().getTextura("pies"),
-			384, 384, 0.1f));
+			384, 384, .5f));
 
 		jugador_ref->addComponente(std::make_shared<CE::IControl>());
+
+		// caja de colisiones para el jugador
+		jugador_ref->addComponente(std::make_shared<CE::IBoundingBox>(CE::Vector2D{64.f, 64.f}));
 
 		auto fsm_pies = std::make_shared<IdlePies>(
 			CE::AnimLoader::getClip(clips_pies, "idle"));
@@ -98,7 +105,7 @@ namespace IVJ
 
 		cuerpo->addComponente(std::make_shared<CE::ISprite>(
 			CE::GestorAssets::Get().getTextura("cuerpoCuchillo"),
-			384, 384, 0.1f));
+			384, 384, .5f));
 
 		// El cuerpo necesita IControl para que inputFSM funcione.
 		// Se sincroniza en onUpdate con el control de jugador_ref.
@@ -112,6 +119,9 @@ namespace IVJ
 		mq_cuerpo->fsm = fsm_cuerpo;
 		cuerpo->addComponente(mq_cuerpo);
 		cuerpo->setFSM(fsm_cuerpo);
+
+		if (sf::Joystick::isConnected(0))
+			std::cout << "Gamepad conectado: " << sf::Joystick::getIdentification(0).name.toAnsiString() << std::endl;
 
 		inicializar = false;
 	}
@@ -127,6 +137,26 @@ namespace IVJ
 		//	(ambas entidades reaccionan a los mismos inputs)
 		auto ctrl_pies   = jugador_ref->getComponente<CE::IControl>();
 		auto ctrl_cuerpo = cuerpo->getComponente<CE::IControl>();
+
+		// =======================================================
+		// 0. SOPORTE PARA GAMEPAD (Sobrescribe inputs en tiempo real)
+		// =======================================================
+		if (ctrl_pies && sf::Joystick::isConnected(0)) {
+			float x = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::X);
+			float y = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::Y);
+			float deadzone = 25.f; // Evita que Dieter se mueva solo si el joystick está flojo
+
+			// Usamos || (OR) lógico para que funcione YA SEA con el Gamepad o el Teclado.
+			ctrl_pies->der = (x > deadzone) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D);
+			ctrl_pies->izq = (x < -deadzone) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A);
+			ctrl_pies->arr = (y < -deadzone) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W);
+			ctrl_pies->abj = (y > deadzone) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S);
+
+			// El Botón 1 suele ser la 'B' (o botón derecho del pad de acciones).
+			// El Botón 0 suele ser la 'A'. Si ataca con A, cambia el 1 por un 0.
+			ctrl_pies->acc = sf::Joystick::isButtonPressed(0, 10) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
+		}
+
 		if (ctrl_pies && ctrl_cuerpo)
 			*ctrl_cuerpo = *ctrl_pies;
 
@@ -160,6 +190,8 @@ namespace IVJ
 				auto& tpos = *obj->getComponente<ITarget>()->pos;
 				SistemaNPCLookTarget(*obj, tpos);
 			}
+			// se agrega todas las cajas de colisiiones generadas del tilemap al sistema de colisiones
+			SistemaColAABB(*jugador_ref, *obj, true);
 		}
 	}
 
