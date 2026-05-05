@@ -1,16 +1,13 @@
 #pragma once
 #include "../FSMZombie.hpp"
 #include "../../../Motor/Utils/AnimLoader.hpp"
+#include <map>
+#include <string>
 
 namespace IVJ {
-	/**
-	 * @class MoverZombie
-	 * @brief Estado de movimiento del zombie hacia el target (jugador).
-	 * Anima los frames de "move" y persigue al jugador cuando está dentro del rango.
-	 */
 	class MoverZombie : public FSMZombie {
 	public:
-		explicit MoverZombie(CE::AnimClip clip, float frame_rate = 0.05f);
+		explicit MoverZombie(std::map<std::string, CE::AnimClip> clips, float frame_rate = 0.05f);
 		~MoverZombie() override = default;
 
 		FSM* onInputs(Entidad& parent, CE::Vector2D& target) override;
@@ -24,6 +21,7 @@ namespace IVJ {
 		int s_h{0};
 		int num_cols{7};
 
+		std::map<std::string, CE::AnimClip> m_clips;
 		CE::AnimClip m_clip;
 		int id_frame{0};
 

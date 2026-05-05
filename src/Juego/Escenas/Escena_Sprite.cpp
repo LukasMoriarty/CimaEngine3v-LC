@@ -137,8 +137,7 @@ namespace IVJ
 			CE::GestorAssets::Get().getTextura("zombie"),
 			384, 384, .5f));
 
-		auto fsm_zombie = std::make_shared<IdleZombie>(
-			CE::AnimLoader::getClip(clips_zombie, "skeleton-idle"));
+		auto fsm_zombie = std::make_shared<IdleZombie>(clips_zombie, 0.1f);
 
 		auto mq_zombie = std::make_shared<IMaquinaEstado>();
 		mq_zombie->fsm = fsm_zombie;
@@ -147,7 +146,7 @@ namespace IVJ
 
 		zombie->addComponente(std::make_shared<CE::IBoundingBox>(CE::Vector2D{32.f, 32.f}));
 
-		zombie->addComponente(std::make_shared<IRangoAggro>(100.f));
+		zombie->addComponente(std::make_shared<IRangoAggro>(150.f));
 
 		zombie->addComponente(std::make_shared<ITarget>(jugador_ref.get()));
 		//agregar a pool

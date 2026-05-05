@@ -36,4 +36,7 @@ namespace IVJ
 
     // lab 8
     [[maybe_unused]] void SistemaNPCLookTarget(CE::Objeto& ente, CE::Vector2D& target);
+
+    // zombie
+    [[maybe_unused]] void SistemaZombieSeguir(CE::Objeto& zombie, CE::Vector2D& target, float dt);
 }
