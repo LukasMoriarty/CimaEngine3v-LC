@@ -20,7 +20,7 @@ namespace IVJ
 		virtual ~FSMZombie() = default;
 
 		// Ignorado — zombies no usan IControl
-		FSM* onInputs(const CE::IControl& control) override
+		virtual FSM* onInputs(const CE::IControl& control) override
 		{ (void)control; return nullptr; }
 
 		virtual FSM* onInputs(Entidad& self, CE::Vector2D& target) = 0;

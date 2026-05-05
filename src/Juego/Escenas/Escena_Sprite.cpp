@@ -15,6 +15,8 @@
 
 #include <Juego/Maquinas/Cuerpo/IdleCuerpoKnife.hpp>
 
+#include <Juego/Maquinas/Zombie/IdleZombie.hpp>
+
 #include <memory>
 
 namespace IVJ
@@ -70,11 +72,18 @@ namespace IVJ
 			ASSETS "/sprites/Top_Down_Survivor/knife/survivor-knife-atlas.png",
 			CE::Vector2D{0.f, 0.f}, CE::Vector2D{3072.f, 2688.f});
 
+		CE::GestorAssets::Get().agregarTextura(
+			"zombie",
+			ASSETS "/sprites/zombie/zombie-atlas.png",
+			CE::Vector2D{0.f, 0.f}, CE::Vector2D{2688.f, 2688.f});
+
 		// METADATA DE ANIMACION
 		auto clips_pies = CE::AnimLoader::cargar(
 			ASSETS "/sprites/Top_Down_Survivor/feet/indices_animacion.json");
 		auto clips_knife = CE::AnimLoader::cargar(
 			ASSETS "/sprites/Top_Down_Survivor/knife/indices_animacion.json");
+		auto clips_zombie = CE::AnimLoader::cargar(
+			ASSETS "/sprites/zombie/indices_animacion.json");
 
 		// PIES (jugador_ref)
 		auto trans = jugador_ref->getTransformada();
@@ -119,6 +128,30 @@ namespace IVJ
 		mq_cuerpo->fsm = fsm_cuerpo;
 		cuerpo->addComponente(mq_cuerpo);
 		cuerpo->setFSM(fsm_cuerpo);
+
+		// ZOMBIE
+		auto zombie = std::make_shared<Entidad>();
+		zombie->getTransformada()->posicion = CE::Vector2D{2200.f, 2200.f};
+		zombie->getTransformada()->velocidad = CE::Vector2D{0.f, 0.f};
+		zombie->addComponente(std::make_shared<CE::ISprite>(
+			CE::GestorAssets::Get().getTextura("zombie"),
+			384, 384, .5f));
+
+		auto fsm_zombie = std::make_shared<IdleZombie>(
+			CE::AnimLoader::getClip(clips_zombie, "skeleton-idle"));
+
+		auto mq_zombie = std::make_shared<IMaquinaEstado>();
+		mq_zombie->fsm = fsm_zombie;
+		zombie->addComponente(mq_zombie);
+		zombie->setFSM(fsm_zombie);
+
+		zombie->addComponente(std::make_shared<CE::IBoundingBox>(CE::Vector2D{32.f, 32.f}));
+
+		zombie->addComponente(std::make_shared<IRangoAggro>(100.f));
+
+		zombie->addComponente(std::make_shared<ITarget>(jugador_ref.get()));
+		//agregar a pool
+		objetos.agregarPool(zombie);
 
 		if (sf::Joystick::isConnected(0))
 			std::cout << "Gamepad conectado: " << sf::Joystick::getIdentification(0).name.toAnsiString() << std::endl;

@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "../Maquinas/FSMBoss.hpp"
+#include "../Maquinas/FSMZombie.hpp"
 
 namespace IVJ
 {
@@ -64,16 +65,25 @@ namespace IVJ
 		|| !getComponente<IMaquinaEstado>()->fsm)
 			return;
 		auto mq = getComponente<IMaquinaEstado>();
-		//Lab 8 Animaciones: Pequeño facade usando el nombre del nodo
-		if(mq->fsm->nombre.find("IdleBoss") != std::string::npos)
+
+		// Detectar si es Boss o Zombie usando el nombre del FSM
+		if(mq->fsm->nombre.find("Boss") != std::string::npos)
 		{
 			auto target = getComponente<ITarget>()->pos;
-			//usar el nodo correcto de boss
-			auto n_estado = std::static_pointer_cast<FSMBoss>(mq->fsm)->onInputs(*this,*target);
+			auto n_estado = std::static_pointer_cast<FSMBoss>(mq->fsm)->onInputs(*this, *target);
 			std::shared_ptr<FSM> estado(n_estado);
 			if(estado)
 				setFSM(estado);
-		}else
+		}
+		else if(mq->fsm->nombre.find("Zombie") != std::string::npos)
+		{
+			auto target = getComponente<ITarget>()->pos;
+			auto n_estado = std::static_pointer_cast<FSMZombie>(mq->fsm)->onInputs(*this, *target);
+			std::shared_ptr<FSM> estado(n_estado);
+			if(estado)
+				setFSM(estado);
+		}
+		else
 		{
 			if(!getComponente<CE::IControl>())  return;
 			auto control = *getComponente<CE::IControl>();

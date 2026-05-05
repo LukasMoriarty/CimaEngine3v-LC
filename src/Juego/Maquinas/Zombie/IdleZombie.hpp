@@ -1,16 +1,16 @@
 #pragma once
-#include "../FSM.hpp"
+#include "../FSMZombie.hpp"
 #include "../../../Motor/Utils/AnimLoader.hpp"
 
 namespace IVJ {
-	class IdleZombie : public FSM {
+	class IdleZombie : public FSMZombie {
 		public:
 			explicit IdleZombie(CE::AnimClip clip, float frame_rate = 0.05f);
 			~IdleZombie() override = default;
-
+			FSM* onInputs(Entidad& parent, CE::Vector2D& target) override;
 			void onEntrar(const Entidad &obj) override;
-			void onSalida(const Entidad &obj) override;
-			void onUpdate(const Entidad &obj) override;
+			void onSalir(const Entidad &obj) override;
+			void onUpdate(const Entidad &obj, float dt) override;
 		private:
 			sf::Sprite* sprite{nullptr};
 			int s_w{0};
