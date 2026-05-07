@@ -493,7 +493,6 @@ namespace IVJ
 
 	void SistemaZombieSeguir(CE::Objeto& zombie, CE::Vector2D& target_pos, float dt)
 	{
-		(void) dt;
 		auto trans = zombie.getTransformada();
 		auto rango = zombie.getComponente<IRangoAggro>();
 
@@ -501,33 +500,65 @@ namespace IVJ
 
 		float distancia = trans->posicion.distancia(target_pos);
 
-		// 1. Verificación de Rango y "Visión" (Raycast simple si tienes muros)
+		// 1. Verificación de Rango y Visión
 		bool en_rango = rango->estaDentroRango(zombie, target_pos);
-
-		// Suponiendo que checkRayoHit devuelve true si NO hay colisión
 		bool tiene_vision = checkRayoHit(zombie, trans->posicion, target_pos);
 
+		// Variable para definir la velocidad en este frame
+		auto vel = CE::Vector2D{0.f, 0.f};
+
+		// 2. IA de persecución (Decidir hacia dónde moverse)
 		if (en_rango && tiene_vision)
 		{
-			// 2. Cálculos de distancia coherentes con los estados
-			// Si está en distancia de ataque (ej. 45), se detiene para atacar
 			if (distancia < 45.f) {
-				trans->velocidad = {0.f, 0.f};
+				// Está en distancia de ataque, se detiene
+				vel = {0.f, 0.f};
 			}
 			else {
-				// Perseguir
+				// Perseguir al jugador
 				CE::Vector2D direccion = target_pos - trans->posicion;
 				direccion.normalizacion();
 
 				float velocidad_zombie = 80.f; // Ajustable
 				direccion.escala(velocidad_zombie);
-				trans->velocidad = direccion;
+				vel = direccion;
 			}
 		}
 		else {
-			// Si pierde de vista al jugador, el zombie se detiene paulatinamente
-			trans->velocidad.escala(0.95f);
-		}
-	}
+			// Si pierde de vista al jugador, el zombie se detiene paulatinamente (fricción)
+			vel = trans->velocidad;
+			vel.escala(0.95f);
 
+			// Para evitar que se mueva infinitamente con valores microscópicos
+			if (std::abs(vel.x) < 1.f && std::abs(vel.y) < 1.f) {
+				vel = {0.f, 0.f};
+			}
+		}
+
+		// Guardar la velocidad resultante en la transformada
+		trans->velocidad = vel;
+
+		// 3. Calcular la dirección/rotación usando la misma lógica matemática que el jugador
+		if (zombie.tieneComponente<CE::ISprite>())
+		{
+			auto n = vel;
+
+			// Si se está moviendo, rota hacia donde camina
+			if (n.x != 0 || n.y != 0)
+			{
+				n.normalizacion();
+				trans->angulo = std::atan2(n.x, -n.y); // Misma fórmula del jugador
+			}
+			// Si está quieto PERO está atacando al jugador, debe mirarlo fijamente
+			else if (en_rango && tiene_vision && distancia < 45.f)
+			{
+				CE::Vector2D direccion_mirada = target_pos - trans->posicion;
+				direccion_mirada.normalizacion();
+				trans->angulo = std::atan2(direccion_mirada.x, -direccion_mirada.y);
+			}
+		}
+
+		// 4. Actualizar posición del ente
+		trans->posicion.suma(vel.escala(dt));
+	}
 } // namespace IVJ

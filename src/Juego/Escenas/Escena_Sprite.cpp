@@ -97,7 +97,7 @@ namespace IVJ
 		jugador_ref->addComponente(std::make_shared<CE::IControl>());
 
 		// caja de colisiones para el jugador
-		jugador_ref->addComponente(std::make_shared<CE::IBoundingBox>(CE::Vector2D{64.f, 64.f}));
+		jugador_ref->addComponente(std::make_shared<CE::IBoundingBox>(CE::Vector2D{32.f, 32.f}));
 
 		auto fsm_pies = std::make_shared<IdlePies>(
 			CE::AnimLoader::getClip(clips_pies, "idle"));
@@ -146,7 +146,7 @@ namespace IVJ
 
 		zombie->addComponente(std::make_shared<CE::IBoundingBox>(CE::Vector2D{32.f, 32.f}));
 
-		zombie->addComponente(std::make_shared<IRangoAggro>(150.f));
+		zombie->addComponente(std::make_shared<IRangoAggro>(250.f));
 
 		zombie->addComponente(std::make_shared<ITarget>(jugador_ref.get()));
 		//agregar a pool
@@ -221,6 +221,7 @@ namespace IVJ
 			{
 				auto& tpos = *obj->getComponente<ITarget>()->pos;
 				SistemaNPCLookTarget(*obj, tpos);
+				SistemaZombieSeguir(*obj, tpos, dt);
 			}
 			// se agrega todas las cajas de colisiiones generadas del tilemap al sistema de colisiones
 			SistemaColAABB(*jugador_ref, *obj, true);
