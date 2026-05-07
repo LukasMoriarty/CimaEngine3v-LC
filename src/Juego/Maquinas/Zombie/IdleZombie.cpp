@@ -21,7 +21,7 @@ namespace IVJ {
 
         // Si el jugador entra en el rango de detección (200)
         if (distancia < 200.f) {
-            return new MoverZombie(m_clips, 0.05f);
+            return new MoverZombie(m_clips, 0.02f);
         }
         return nullptr;
     }

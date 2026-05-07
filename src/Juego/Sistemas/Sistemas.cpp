@@ -519,7 +519,7 @@ namespace IVJ
 				CE::Vector2D direccion = target_pos - trans->posicion;
 				direccion.normalizacion();
 
-				float velocidad_zombie = 80.f; // Ajustable
+				float velocidad_zombie = 210.f; // Ajustable
 				direccion.escala(velocidad_zombie);
 				vel = direccion;
 			}

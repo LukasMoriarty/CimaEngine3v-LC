@@ -39,6 +39,7 @@ namespace IVJ
 			);
 		strSalir->setPosicion(510.f, 300.f);
 
+		/*
 		auto cuadro = std::make_shared<Rectangulo>(
 			150, 150,
 			sf::Color::White,
@@ -59,18 +60,30 @@ namespace IVJ
 		auto circ = std::make_shared<Circulo>(75.f, sf::Color::Magenta, sf::Color::Black);
 		circ->addComponente(std::make_shared<ICirculos>(2.f, 1.f));
 		circ->setPosicion(600, 300);
+		*/
 
 		objetos.agregarPool(marcador);
 		objetos.agregarPool(strIniciar);
 		objetos.agregarPool(strSalir);
-		objetos.agregarPool(cuadro);
-		objetos.agregarPool(rect);
-		objetos.agregarPool(trian);
-		objetos.agregarPool(circ);
+		//objetos.agregarPool(cuadro);
+		//objetos.agregarPool(rect);
+		//objetos.agregarPool(trian);
+		//objetos.agregarPool(circ);
+
+		CE::GestorAssets::Get().agregarMusica(
+			"menumusic",
+			ASSETS "/music/menumusic.mp3"
+		);
+		CE::GestorAssets::Get().getMusica("menumusic").setVolume(10.f);
+		CE::GestorAssets::Get().getMusica("menumusic").play();
+		CE::GestorAssets::Get().getMusica("menumusic").setLooping(true);
+
 		inicializar=false;
 	}
 	void Escena_Menu::onFinal()
 	{
+		// detener la musica de meun
+		CE::GestorAssets::Get().getMusica("menumusic").stop();
 	}
 	void Escena_Menu::onUpdate(float dt)
 	{
@@ -78,10 +91,10 @@ namespace IVJ
 		for (auto& obj : objetos.getPool())
 		{
 			obj->onUpdate(dt);
-			SistemaGirar(*obj, dt);
-			SistemaRectanguloMoverUpDown(*obj, dt);
-			SistemaTrianguloWave(*obj, dt);
-			SistemaCirculoMoverEnCirculos(*obj, dt);
+			//SistemaGirar(*obj, dt);
+			//SistemaRectanguloMoverUpDown(*obj, dt);
+			//SistemaTrianguloWave(*obj, dt);
+			//SistemaCirculoMoverEnCirculos(*obj, dt);
 		}
 	}
 	void Escena_Menu::onInputs(const CE::Botones& accion)

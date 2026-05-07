@@ -55,7 +55,7 @@ namespace IVJ
 
 		CE::GestorAssets::Get().agregarMusica(
 			"musica_fondo",
-			ASSETS "/music/first_wave.mp3"
+			ASSETS "/music/levelmusic.mp3"
 		);
 		// reproducir musica de fondo (loop)
 		CE::GestorAssets::Get().getMusica("musica_fondo").play();
@@ -87,7 +87,7 @@ namespace IVJ
 
 		// PIES (jugador_ref)
 		auto trans = jugador_ref->getTransformada();
-		trans->velocidad = CE::Vector2D{150.f, 150.f};
+		trans->velocidad = CE::Vector2D{300.f, 300.f};
 		jugador_ref->setPosicion(1750.f, 1750.f);
 
 		jugador_ref->addComponente(std::make_shared<CE::ISprite>(
