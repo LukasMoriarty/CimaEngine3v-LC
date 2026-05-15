@@ -1,12 +1,13 @@
 #pragma once
 #include <Juego/objetos/Entidad.hpp>
 #include <Juego/objetos/TileMap.hpp>
-#include <SFML/Graphics/Shader.hpp>
-#include <SFML/Graphics/RectangleShape.hpp>
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/Graphics/Image.hpp>
 #include <Motor/Primitivos/Escena.hpp>
+#include <SFML/Graphics/Image.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/Shader.hpp>
+#include <SFML/Graphics/Texture.hpp>
 #include <memory>
+#include <unordered_set>
 
 namespace IVJ
 {
@@ -42,5 +43,10 @@ namespace IVJ
 			sf::RectangleShape fog_rect;
 			sf::Texture fog_tex;
 			float fog_tiempo{0.0f};
-		};
+
+			// Attack variables
+			bool ataque_procesado{false};
+			sf::CircleShape ataque_hitbox;
+			std::unordered_set<CE::Objeto *> objs_golpeados;
+	};
 } // namespace IVJ
