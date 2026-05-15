@@ -38,5 +38,9 @@ namespace IVJ
     [[maybe_unused]] void SistemaNPCLookTarget(CE::Objeto& ente, CE::Vector2D& target);
 
     // zombie
-    [[maybe_unused]] void SistemaZombieSeguir(CE::Objeto& zombie, CE::Vector2D& target, float dt);
+    [[maybe_unused]] bool checkLOS(const CE::Vector2D& p1, const CE::Vector2D& p2, const std::vector<std::shared_ptr<CE::Objeto>>& obstaculos, CE::Objeto* ignore = nullptr);
+
+
+    [[maybe_unused]] void SistemaZombieSeguir(CE::Objeto& zombie, CE::Vector2D& target, const std::vector<std::shared_ptr<CE::Objeto>>& obstaculos, float dt);
+
 }

@@ -7,7 +7,8 @@
 namespace IVJ {
 	class IdleZombie : public FSMZombie {
 	public:
-		explicit IdleZombie(std::map<std::string, CE::AnimClip> clips, float frame_rate = 0.05f);
+		explicit IdleZombie(std::map<std::string, CE::AnimClip> clips, float frame_rate = ZombieConst::FRAME_RATE_MOVE);
+
 		~IdleZombie() override = default;
 
 		FSM* onInputs(Entidad& parent, CE::Vector2D& target) override;

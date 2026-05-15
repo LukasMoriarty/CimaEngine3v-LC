@@ -22,10 +22,16 @@ namespace IVJ {
 
         // Solo transicionamos si la animación de ataque ya se completó
         if (ataque_completo) {
-            if (distancia > 80.f) {
-                return new MoverZombie(m_clips, 0.05f);
+            if (distancia > ZombieConst::RANGO_AGGRO) {
+                return new IdleZombie(m_clips, ZombieConst::FRAME_RATE_MOVE);
             }
-            return new IdleZombie(m_clips, 0.1f);
+            if (distancia > ZombieConst::DISTANCIA_ATAQUE) {
+                return new MoverZombie(m_clips, ZombieConst::FRAME_RATE_MOVE);
+            }
+            // Si sigue cerca, se queda en Idle o repite ataque? 
+            // El usuario dijo "ayudame a estandarizar y estabilizar el framerate... siempre tenga el mismo framerate de cuando termina de atacar"
+            // Generalmente de ataque se vuelve a mover o idle.
+            return new IdleZombie(m_clips, ZombieConst::FRAME_RATE_MOVE);
         }
         return nullptr;
     }
@@ -44,6 +50,11 @@ namespace IVJ {
         id_frame = m_clip.first_frame;
         cur_frame_time = max_frame_time;
         ataque_completo = false;
+
+        // Estrictamente velocidad 0 al atacar
+        if (obj.tieneComponente<CE::ITransform>()) {
+            obj.getTransformada()->velocidad = {0.f, 0.f};
+        }
     }
 
     void AtacarZombie::onSalir(const Entidad& obj) {
@@ -52,7 +63,14 @@ namespace IVJ {
 
     void AtacarZombie::onUpdate(const Entidad &obj, float dt) {
         (void) obj;
-        if (!sprite || ataque_completo) return;
+        if (!sprite) return;
+
+        // Forzar velocidad 0 cada frame de ataque por si acaso
+        if (obj.tieneComponente<CE::ITransform>()) {
+            obj.getTransformada()->velocidad = {0.f, 0.f};
+        }
+
+        if (ataque_completo) return;
 
         cur_frame_time -= dt;
         if (cur_frame_time <= 0.f) {

@@ -6,6 +6,26 @@
 namespace IVJ
 {
 
+// ------------------- Memory Component -------------------
+class IMemoriaZombie : public CE::IComponentes
+{
+public:
+    IMemoriaZombie() = default;
+    ~IMemoriaZombie() override = default;
+
+    // Store last known player position when visible
+    void setUltimaPosicion(const CE::Vector2D& pos) { ultimaPosicion = pos; tieneMemoria = true; }
+    const CE::Vector2D& getUltimaPosicion() const { return ultimaPosicion; }
+    bool tieneMemoriaActiva() const { return tieneMemoria; }
+    void clearMemoria() { tieneMemoria = false; }
+
+private:
+    CE::Vector2D ultimaPosicion{0.f, 0.f};
+    bool tieneMemoria{false};
+};
+
+
+
 	template <typename T>
 	class Cola
 	{
@@ -334,5 +354,12 @@ namespace IVJ
 		public:
 			float radio;
 			sf::CircleShape marcador;
+	};
+
+	class IEntorno : public CE::IComponentes
+	{
+		public:
+			explicit IEntorno(const std::vector<std::shared_ptr<CE::Objeto>>* pool) : pool(pool) {}
+			const std::vector<std::shared_ptr<CE::Objeto>>* pool;
 	};
 } // namespace IVJ

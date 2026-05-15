@@ -2,12 +2,13 @@
 #include "../FSMZombie.hpp"
 #include "../../../Motor/Utils/AnimLoader.hpp"
 #include <map>
+
 #include <string>
 
 namespace IVJ {
 	class MoverZombie : public FSMZombie {
 	public:
-		explicit MoverZombie(std::map<std::string, CE::AnimClip> clips, float frame_rate = 0.05f);
+		explicit MoverZombie(std::map<std::string, CE::AnimClip> clips, float frame_rate = ZombieConst::FRAME_RATE_MOVE);
 		~MoverZombie() override = default;
 
 		FSM* onInputs(Entidad& parent, CE::Vector2D& target) override;

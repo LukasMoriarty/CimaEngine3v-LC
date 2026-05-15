@@ -8,6 +8,7 @@
 #include "../../Motor/Render/Render.hpp"
 #include <memory>
 #include <Juego/Componentes/IJComponentes.hpp>
+#include <Juego/Maquinas/FSMZombie.hpp>
 
 namespace IVJ
 {
@@ -491,74 +492,164 @@ namespace IVJ
 		// podrías usar el signo de ente_a_target.x, pero para FSM Top-Down la rotación es mejor.
 	}
 
-	void SistemaZombieSeguir(CE::Objeto& zombie, CE::Vector2D& target_pos, float dt)
+	/*
+	 * checkLOS: Verifica si hay línea de visión directa entre p1 y p2, considerando obstáculos.
+	 */
+	bool checkLOS(const CE::Vector2D& p1, const CE::Vector2D& p2, const std::vector<std::shared_ptr<CE::Objeto>>& obstaculos, CE::Objeto* ignore)
+	{
+		for (auto& obs : obstaculos)
+		{
+			if (obs.get() == ignore) continue;
+			if (!obs->tieneComponente<CE::IBoundingBox>()) continue;
+
+			auto bb = obs->getComponente<CE::IBoundingBox>();
+			auto trans = obs->getTransformada();
+
+			// Definir los límites del AABB (considerando el offset 'mitad')
+			float minX = trans->posicion.x - bb->mitad.x;
+			float maxX = minX + bb->tam.x;
+			float minY = trans->posicion.y - bb->mitad.y;
+			float maxY = minY + bb->tam.y;
+
+			// Algoritmo de intersección Rayo-AABB (Slab method simplificado para t=[0,1])
+			float dx = p2.x - p1.x;
+			float dy = p2.y - p1.y;
+
+			float tmin = 0.f;
+			float tmax = 1.f;
+
+			if (std::abs(dx) > 0.0001f) {
+				float tx1 = (minX - p1.x) / dx;
+				float tx2 = (maxX - p1.x) / dx;
+				tmin = std::max(tmin, std::min(tx1, tx2));
+				tmax = std::min(tmax, std::max(tx1, tx2));
+			} else {
+				if (p1.x < minX || p1.x > maxX) continue;
+			}
+
+			if (std::abs(dy) > 0.0001f) {
+				float ty1 = (minY - p1.y) / dy;
+				float ty2 = (maxY - p1.y) / dy;
+				tmin = std::max(tmin, std::min(ty1, ty2));
+				tmax = std::min(tmax, std::max(ty1, ty2));
+			} else {
+				if (p1.y < minY || p1.y > maxY) continue;
+			}
+
+			if (tmax >= tmin && tmax > 0.f) {
+				return false; // Rayo bloqueado
+			}
+		}
+		return true; // Camino despejado
+	}
+
+	void SistemaZombieSeguir(CE::Objeto& zombie, CE::Vector2D& target_pos, const std::vector<std::shared_ptr<CE::Objeto>>& obstaculos, float dt)
 	{
 		auto trans = zombie.getTransformada();
 		auto rango = zombie.getComponente<IRangoAggro>();
+		auto memoria = zombie.getComponente<IMemoriaZombie>();
 
 		if (!rango) return;
 
-		float distancia = trans->posicion.distancia(target_pos);
+		CE::Vector2D pos_actual = trans->posicion;
+		float distancia_al_objetivo = pos_actual.distancia(target_pos);
 
 		// 1. Verificación de Rango y Visión
 		bool en_rango = rango->estaDentroRango(zombie, target_pos);
-		bool tiene_vision = checkRayoHit(zombie, trans->posicion, target_pos);
+		bool tiene_vision = checkLOS(pos_actual, target_pos, obstaculos, &zombie);
 
-		// Variable para definir la velocidad en este frame
+		// 2. Gestión de Memoria
+		if (memoria) {
+			if (en_rango && tiene_vision) {
+				memoria->setUltimaPosicion(target_pos);
+			}
+		}
+
+		// 3. Decisión de Movimiento
+		CE::Vector2D destino = target_pos;
+		bool persiguiendo = false;
+
+		if (en_rango && tiene_vision) {
+			persiguiendo = true;
+			destino = target_pos;
+		} else if (memoria && memoria->tieneMemoriaActiva()) {
+			persiguiendo = true;
+			destino = memoria->getUltimaPosicion();
+			// Si llegó al último punto visto y ya no ve al jugador, borrar memoria
+			if (pos_actual.distancia(destino) < 10.f) {
+				memoria->clearMemoria();
+				persiguiendo = false;
+			}
+		}
+
 		auto vel = CE::Vector2D{0.f, 0.f};
 
-		// 2. IA de persecución (Decidir hacia dónde moverse)
-		if (en_rango && tiene_vision)
-		{
-			if (distancia < 45.f) {
-				// Está en distancia de ataque, se detiene
+		if (persiguiendo) {
+			if (distancia_al_objetivo < ZombieConst::DISTANCIA_ATAQUE && tiene_vision) {
+				// En rango de ataque, quieto
 				vel = {0.f, 0.f};
-			}
-			else {
-				// Perseguir al jugador
-				CE::Vector2D direccion = target_pos - trans->posicion;
+			} else {
+				// Perseguir destino (jugador o memoria)
+				CE::Vector2D direccion = destino - pos_actual;
 				direccion.normalizacion();
 
-				float velocidad_zombie = 210.f; // Ajustable
-				direccion.escala(velocidad_zombie);
+				// Evitación de obstáculos (Rayos de proximidad)
+				// Lanzamos un rayo corto hacia adelante para detectar si chocará
+				CE::Vector2D offset = direccion;
+				offset.escala(30.f);
+				CE::Vector2D probe = pos_actual + offset;
+				
+				if (!checkLOS(pos_actual, probe, obstaculos, &zombie)) {
+					// Hay una pared enfrente, intentar desviarse (sacarle la vuelta)
+					// Probamos 45 grados a la izquierda y derecha
+					float angulo = std::atan2(direccion.y, direccion.x);
+					
+					CE::Vector2D dirIzq{std::cos(angulo - 0.78f), std::sin(angulo - 0.78f)};
+					CE::Vector2D dirDer{std::cos(angulo + 0.78f), std::sin(angulo + 0.78f)};
+
+					CE::Vector2D probeIzq = dirIzq; probeIzq.escala(40.f);
+					CE::Vector2D probeDer = dirDer; probeDer.escala(40.f);
+
+					if (checkLOS(pos_actual, pos_actual + probeIzq, obstaculos, &zombie)) {
+						direccion = dirIzq;
+					} else if (checkLOS(pos_actual, pos_actual + probeDer, obstaculos, &zombie)) {
+						direccion = dirDer;
+					}
+				}
+
+
+				direccion.escala(ZombieConst::VELOCIDAD);
 				vel = direccion;
 			}
-		}
-		else {
-			// Si pierde de vista al jugador, el zombie se detiene paulatinamente (fricción)
+		} else {
+			// Fricción si se detiene
 			vel = trans->velocidad;
-			vel.escala(0.95f);
+			vel.escala(0.9f);
+			if (vel.longitud() < 1.f) vel = {0.f, 0.f};
 
-			// Para evitar que se mueva infinitamente con valores microscópicos
-			if (std::abs(vel.x) < 1.f && std::abs(vel.y) < 1.f) {
-				vel = {0.f, 0.f};
-			}
 		}
 
-		// Guardar la velocidad resultante en la transformada
 		trans->velocidad = vel;
 
-		// 3. Calcular la dirección/rotación usando la misma lógica matemática que el jugador
-		if (zombie.tieneComponente<CE::ISprite>())
-		{
-			auto n = vel;
+		// 4. Rotación (Mirada)
+		if (zombie.tieneComponente<CE::ISprite>()) {
+			// Si tiene visión directa, SIEMPRE mira al jugador (aunque esté esquivando o quieto)
+			if (tiene_vision && en_rango) {
+				CE::Vector2D mirar = target_pos - pos_actual;
+				mirar.normalizacion();
+				trans->angulo = std::atan2(mirar.x, -mirar.y);
+			} 
+			// Si no tiene visión pero se mueve (hacia memoria o esquivando), mira hacia donde camina
+			else if (vel.longitud() > 0.1f) {
 
-			// Si se está moviendo, rota hacia donde camina
-			if (n.x != 0 || n.y != 0)
-			{
-				n.normalizacion();
-				trans->angulo = std::atan2(n.x, -n.y); // Misma fórmula del jugador
-			}
-			// Si está quieto PERO está atacando al jugador, debe mirarlo fijamente
-			else if (en_rango && tiene_vision && distancia < 45.f)
-			{
-				CE::Vector2D direccion_mirada = target_pos - trans->posicion;
-				direccion_mirada.normalizacion();
-				trans->angulo = std::atan2(direccion_mirada.x, -direccion_mirada.y);
+				CE::Vector2D caminando = vel;
+				caminando.normalizacion();
+				trans->angulo = std::atan2(caminando.x, -caminando.y);
 			}
 		}
 
-		// 4. Actualizar posición del ente
+		// 5. Actualizar Posición
 		trans->posicion.suma(vel.escala(dt));
 	}
+
 } // namespace IVJ
