@@ -47,6 +47,14 @@ namespace IVJ
 		CE::GestorEscenas::Get().cambiarEscena("Menu");
 		escena_actual = &CE::GestorEscenas::Get().getEscenaActual();
 
+		// crear camara default
+		CE::GestorCamaras::Get().agregarCamara(
+			std::make_shared<CE::CamaraTopDownLock>(
+				CE::Vector2D{0.f, 0.f},	// posicion
+				CE::Vector2D{1280, 720}	// dimensiones
+			)
+		);
+
 		// crear camara LERP
 		CE::GestorCamaras::Get().agregarCamara(
 			std::make_shared<CE::CamaraLERP>(

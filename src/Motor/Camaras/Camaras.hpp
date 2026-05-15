@@ -207,4 +207,11 @@ namespace CE
 			float objetivo_y = 0.0f;
 			bool en_transicion = false;
 	};
+
+	class CamaraTopDownLock: public Camara {
+		public:
+			CamaraTopDownLock(const Vector2D& pos, const Vector2D& dim);
+			~CamaraTopDownLock() override{};
+			void onUpdate(float dt) override;
+	};
 }

@@ -256,4 +256,19 @@ namespace CE
 				break;
 		}
 	}
+
+	CamaraTopDownLock::CamaraTopDownLock(const Vector2D& pos, const Vector2D& dim)
+		:Camara{pos,dim}
+	{
+		nombre = "Camara TopDown #"+std::to_string(Camara::num_camaras);
+	}
+	void CamaraTopDownLock::onUpdate(float dt)
+	{
+		Camara::onUpdate(dt);
+		if(!m_lockObj.lock()) return;
+
+		auto pos_lock = m_lockObj.lock()->getTransformada()->posicion;
+
+		m_transform->posicion = pos_lock; // seguimiento directo sin interpolación
+	}
 }

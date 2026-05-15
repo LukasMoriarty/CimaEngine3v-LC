@@ -62,13 +62,14 @@ namespace CE
         io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
         io.ConfigDockingWithShift=true;
 
-        gui_layers.push_back(std::make_shared<GDock>());
-        gui_layers.push_back(std::make_shared<GViewport>());
+        // La renderización del juego ahora se hace directamente sobre la ventana principal
+        // en Motor::OnRenderFrame() usando Render::DrawGameTexture(), lo que garantiza
+        // el bloqueo de aspecto 16:9 sin distorsión.
 #if DEBUG
+        // En modo DEBUG, las herramientas de desarrollo flotan sobre el juego.
         gui_layers.push_back(std::make_shared<GListaObjetos>());
-        //gui_layers.push_back(std::make_shared<GPaths>());
 #endif
-        GestorCamaras::Get().agregarCamara(std::make_shared<Camara>(Vector2D{540,360},Vector2D{1080,720}));
+        GestorCamaras::Get().agregarCamara(std::make_shared<Camara>(CE::Vector2D{540,360},CE::Vector2D{1080,720}));
         GestorCamaras::Get().setCamaraActiva(0);
 
         //font por defecto
@@ -90,6 +91,12 @@ namespace CE
         //GUI inputs
         while(auto eventos=Render::Get().GetVentana().pollEvent())
         {
+            // Manejar redimensionamiento
+            if (const auto* resized = eventos->getIf<sf::Event::Resized>())
+            {
+                Render::Get().HandleResize(resized->size.x, resized->size.y);
+            }
+
             ImGui::SFML::ProcessEvent(Render::Get().GetVentana(),*eventos);
             //mi_app->OnInputs(dt,eventos);
             inputbuffer.pushData(eventos);
@@ -123,6 +130,9 @@ namespace CE
 #endif
 
         Render::Get().OnDisplayTextura();
+        
+        // Dibujamos el juego como fondo antes de ImGUI
+        Render::Get().DrawGameTexture();
 
         //ImGui
 
@@ -135,6 +145,5 @@ namespace CE
         ImGui::SFML::Render(Render::Get().GetVentana());
 
         Render::Get().OnDisplayVentana();
-
     }
 }

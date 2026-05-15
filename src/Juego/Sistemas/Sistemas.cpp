@@ -9,6 +9,8 @@
 #include <memory>
 #include <Juego/Componentes/IJComponentes.hpp>
 #include <Juego/Maquinas/FSMZombie.hpp>
+#include "../../Motor/Camaras/CamarasGestor.hpp"
+#include <SFML/Window/Mouse.hpp>
 
 namespace IVJ
 {
@@ -69,17 +71,23 @@ namespace IVJ
 			}
 		}
 
-		// calcular la dirección usando un triángulo rectángulo (para la rotación)
+		// calcular la dirección para la rotación (omnimovimiento: mirar al cursor)
 		if (objeto->getComponente<ITriangulo>() || objeto->getComponente<CE::ISprite>()) {
-			if (vel.x != 0 || vel.y != 0)
-			{
-				auto n = vel;
-				n.normalizacion();
-				auto trian = objeto->getComponente<ITriangulo>();
-				if (trian)
-					trian->angulo = std::atan2(n.x, -n.y);
-				trans->angulo = std::atan2(n.x, -n.y);
-			}
+			// Obtenemos la posición del ratón proyectada al espacio de juego (1920x1080)
+			CE::Vector2D gamePos = CE::Render::Get().GetMouseGamePos();
+			
+			// Ahora mapeamos esa posición de la textura al mundo usando la cámara
+			sf::Vector2f worldPos = CE::Render::Get().GetTextura().mapPixelToCoords(
+				sf::Vector2i(gamePos.x, gamePos.y), 
+				CE::GestorCamaras::Get().getCamaraActiva().getView());
+			
+			CE::Vector2D targetPos{worldPos.x, worldPos.y};
+			CE::Vector2D dir_mouse = targetPos - trans->posicion;
+
+			auto trian = objeto->getComponente<ITriangulo>();
+			if (trian)
+				trian->angulo = std::atan2(dir_mouse.x, -dir_mouse.y);
+			trans->angulo = std::atan2(dir_mouse.x, -dir_mouse.y);
 		}
 
 		// actualizar posición del ente

@@ -1,7 +1,8 @@
 #pragma once
+#include "Motor/Utils/Vector2D.hpp"
 #include <SFML/Graphics.hpp>
 #include "../Utils/Utils.hpp"
-#include<memory>
+#include <memory>
 
 namespace CE
 {
@@ -43,6 +44,18 @@ namespace CE
              * @param h Nuevo alto
              */
             void AutoResizeTextura(unsigned int  w, unsigned int h);
+
+            /**
+             * @brief Maneja el redimensionamiento de la ventana para mantener el aspect ratio.
+             * @param width Nuevo ancho de la ventana
+             * @param height Nuevo alto de la ventana
+             */
+            void HandleResize(unsigned int width, unsigned int height);
+
+            /**
+             * @brief Dibuja la textura del juego en la ventana manteniendo el aspect ratio.
+             */
+            void DrawGameTexture();
             
             /**
              * @brief Agrega un objeto drawable a la cola de renderizado.
@@ -56,6 +69,12 @@ namespace CE
              * @param shader Estados de renderizado (shader, blend, transform)
              */
             void AddToDraw(const sf::Drawable &obj, sf::RenderStates shader);
+            
+            /**
+             * @brief Obtiene la posición del ratón en coordenadas del juego (16:9).
+             * @return Vector2D con las coordenadas locales al espacio de juego 1920x1080.
+             */
+            CE::Vector2D GetMouseGamePos();
             
             /**
              * @brief Establece el color de limpieza de la ventana.
@@ -99,5 +118,8 @@ namespace CE
             
             /** @brief Instancia singleton del renderizador */
             static inline Render* instancia =nullptr;
+
+            /** @brief View de la ventana para mantener el aspecto */
+            sf::View window_view;
     };
 }
