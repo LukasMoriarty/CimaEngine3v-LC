@@ -149,12 +149,29 @@ namespace IVJ
 		if (sf::Joystick::isConnected(0))
 			std::cout << "Gamepad conectado: " << sf::Joystick::getIdentification(0).name.toAnsiString() << std::endl;
 
+		// Inicializar shader de niebla
+		if (!fog_shader.loadFromFile(ASSETS "/shaders/fog.frag", sf::Shader::Type::Fragment)) {
+			std::cerr << "No se pudo cargar el shader fog.frag" << std::endl;
+		}
+		
+		sf::Image transImage;
+		transImage.resize(sf::Vector2u(16, 16), sf::Color::Transparent);
+		if (!fog_tex.loadFromImage(transImage)) {
+			std::cerr << "Error al cargar transImage a fog_tex" << std::endl;
+		}
+		
+		fog_rect.setSize({4000.f, 4000.f});
+		fog_rect.setPosition({0.f, 0.f});
+		fog_rect.setTexture(&fog_tex);
+
 		inicializar = false;
 	}
 
 	void Escena_Sprite::onFinal() { CE::GestorCamaras::Get().setCamaraActiva(0); }
 
 	void Escena_Sprite::onUpdate(float dt) {
+		fog_tiempo += dt;
+
 		// 1. Sincronizar control del cuerpo con el de los pies
 		//	(ambas entidades reaccionan a los mismos inputs)
 		auto ctrl_pies = jugador_ref->getComponente<CE::IControl>();
@@ -260,6 +277,22 @@ namespace IVJ
 		// Pies primero (debajo), luego cuerpo (encima)
 		CE::Render::Get().AddToDraw(*jugador_ref);
 		CE::Render::Get().AddToDraw(*cuerpo);
+
+		// Configurar y dibujar el shader de niebla (efecto tenebroso)
+		if (sf::Shader::isAvailable()) {
+			sf::Vector2f playerPos = {jugador_ref->getTransformada()->posicion.x, jugador_ref->getTransformada()->posicion.y};
+			fog_shader.setUniform("lampPos", sf::Vector2f(playerPos.x / 4000.f, playerPos.y / 4000.f));
+			fog_shader.setUniform("lampRadio", 0.05f); // ~200px
+			fog_shader.setUniform("lampSoft", 0.04f); // Suavizado del borde
+			fog_shader.setUniform("fogColor", sf::Glsl::Vec4(0.01f, 0.01f, 0.01f, 0.98f)); // Oscuro casi negro
+			fog_shader.setUniform("tiempo", fog_tiempo * 0.5f); // Humo denso y lento
+			fog_shader.setUniform("ruido_escala", 15.0f);
+			fog_shader.setUniform("ruido_min", 0.3f);
+			fog_shader.setUniform("ruido_max", 0.7f);
+			fog_shader.setUniform("opacidad_offset", 0.2f);
+
+			CE::Render::Get().AddToDraw(fog_rect, &fog_shader);
+		}
 
 #if DEBUG
 		auto cam = &CE::GestorCamaras::Get().getCamaraActiva();

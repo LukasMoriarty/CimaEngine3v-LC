@@ -1,6 +1,10 @@
 #pragma once
 #include <Juego/objetos/Entidad.hpp>
 #include <Juego/objetos/TileMap.hpp>
+#include <SFML/Graphics/Shader.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/Image.hpp>
 #include <Motor/Primitivos/Escena.hpp>
 #include <memory>
 
@@ -32,5 +36,11 @@ namespace IVJ
 			sf::Glsl::Vec4 zombie_outline_color{1.f, 0.f, 0.f, 1.f};
 			float zombie_outline_thickness{0.015f};
 			sf::Vector2f zombie_tex_size{384.f, 384.f};
+
+			// Fog effect
+			sf::Shader fog_shader;
+			sf::RectangleShape fog_rect;
+			sf::Texture fog_tex;
+			float fog_tiempo{0.0f};
 		};
 } // namespace IVJ
