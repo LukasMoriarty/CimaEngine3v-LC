@@ -18,3 +18,7 @@ src/.DS_Store
 src/Motor/.DS_Store
 documentacion/
 documentacion/*
+
+.gitignore
+.idea/codeStyles/codeStyleConfig.xml
+.idea/editor.xml
