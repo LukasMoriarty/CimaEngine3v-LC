@@ -15,17 +15,18 @@
 
 #include <Juego/Maquinas/Cuerpo/IdleCuerpoKnife.hpp>
 
+#include <Juego/Maquinas/Cuerpo/AtacarCuerpoKnife.hpp>
 #include <Juego/Maquinas/Zombie/IdleZombie.hpp>
 
+#include <algorithm>
+#include <cmath>
 #include <memory>
 
-namespace IVJ
-{
+namespace IVJ {
 	Escena_Sprite::Escena_Sprite(std::shared_ptr<Entidad> &pref) :
 		CE::Escena{}, jugador_ref{pref}, cuerpo{std::make_shared<Entidad>()} {}
 
-	void Escena_Sprite::onInit()
-	{
+	void Escena_Sprite::onInit() {
 		CE::GestorCamaras::Get().setCamaraActiva(1);
 		CE::GestorCamaras::Get().getCamaraActiva().lockEnObjeto(jugador_ref);
 		CE::GestorCamaras::Get().getCamaraActiva().setViewSize(800.f, 450.f);
@@ -79,6 +80,8 @@ namespace IVJ
 		auto trans = jugador_ref->getTransformada();
 		trans->velocidad = CE::Vector2D{200.f, 200.f};
 		jugador_ref->setPosicion(1750.f, 1750.f);
+		jugador_ref->getStats()->hp = 100;
+		jugador_ref->getStats()->hp_max = 100;
 
 		jugador_ref->addComponente(
 				std::make_shared<CE::ISprite>(CE::GestorAssets::Get().getTextura("pies"), 384, 384, .5f));
@@ -121,6 +124,8 @@ namespace IVJ
 		auto zombie = std::make_shared<Entidad>();
 		zombie->getTransformada()->posicion = CE::Vector2D{2200.f, 2200.f};
 		zombie->getTransformada()->velocidad = CE::Vector2D{0.f, 0.f};
+		zombie->getStats()->hp = 100;
+		zombie->getStats()->hp_max = 100;
 		zombie->addComponente(
 				std::make_shared<CE::ISprite>(CE::GestorAssets::Get().getTextura("zombie"), 384, 384, .5f));
 
@@ -135,6 +140,14 @@ namespace IVJ
 		zombie->addComponente(std::make_shared<IRangoAggro>(ZombieConst::RANGO_AGGRO));
 		zombie->addComponente(std::make_shared<IEntorno>(&objetos.getPool()));
 		zombie->addComponente(std::make_shared<ITarget>(jugador_ref.get()));
+
+		// Text HP debug
+		auto texto_hp = std::make_shared<CE::ITexto>(CE::GestorAssets::Get().getFont("default_font"), "HP: 100");
+		texto_hp->m_texto.setCharacterSize(20);
+		texto_hp->m_texto.setFillColor(sf::Color::Red);
+		texto_hp->m_texto.setOutlineColor(sf::Color::Black);
+		texto_hp->m_texto.setOutlineThickness(1.f);
+		zombie->addComponente(texto_hp);
 
 		// Basic Shader for Player: Outline
 		auto zombie_shader = std::make_shared<CE::IShader>("", ASSETS "/shaders/contorno.frag");
@@ -153,13 +166,13 @@ namespace IVJ
 		if (!fog_shader.loadFromFile(ASSETS "/shaders/fog.frag", sf::Shader::Type::Fragment)) {
 			std::cerr << "No se pudo cargar el shader fog.frag" << std::endl;
 		}
-		
+
 		sf::Image transImage;
 		transImage.resize(sf::Vector2u(16, 16), sf::Color::Transparent);
 		if (!fog_tex.loadFromImage(transImage)) {
 			std::cerr << "Error al cargar transImage a fog_tex" << std::endl;
 		}
-		
+
 		fog_rect.setSize({4000.f, 4000.f});
 		fog_rect.setPosition({0.f, 0.f});
 		fog_rect.setTexture(&fog_tex);
@@ -183,28 +196,28 @@ namespace IVJ
 		// presionada no deje el flag pegado en true.
 		if (ctrl_pies)
 		{
-		    ctrl_pies->arr = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::W) ||
-		                      sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Up);
-		    ctrl_pies->abj = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::S) ||
-		                      sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Down);
-		    ctrl_pies->izq = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A) ||
-		                      sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Left);
-		    ctrl_pies->der = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D) ||
-		                      sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Right);
-		    ctrl_pies->acc = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Space);
-		    ctrl_pies->run = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::LControl);
+			ctrl_pies->arr = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::W) ||
+							 sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Up);
+			ctrl_pies->abj = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::S) ||
+							 sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Down);
+			ctrl_pies->izq = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A) ||
+							 sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Left);
+			ctrl_pies->der = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D) ||
+							 sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Right);
+			ctrl_pies->acc = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Space);
+			ctrl_pies->run = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::LControl);
 
-		    // Gamepad: se combina (OR) con el estado del teclado
-		    if (sf::Joystick::isConnected(0)) {
-		        float x = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::X);
-		        float y = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::Y);
-		        constexpr float deadzone = 25.f;
-		        ctrl_pies->der = ctrl_pies->der || (x >  deadzone);
-		        ctrl_pies->izq = ctrl_pies->izq || (x < -deadzone);
-		        ctrl_pies->arr = ctrl_pies->arr || (y < -deadzone);
-		        ctrl_pies->abj = ctrl_pies->abj || (y >  deadzone);
-		        ctrl_pies->acc = ctrl_pies->acc || sf::Joystick::isButtonPressed(0, 10);
-		    }
+			// Gamepad: se combina (OR) con el estado del teclado
+			if (sf::Joystick::isConnected(0)) {
+				float x = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::X);
+				float y = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::Y);
+				constexpr float deadzone = 25.f;
+				ctrl_pies->der = ctrl_pies->der || (x > deadzone);
+				ctrl_pies->izq = ctrl_pies->izq || (x < -deadzone);
+				ctrl_pies->arr = ctrl_pies->arr || (y < -deadzone);
+				ctrl_pies->abj = ctrl_pies->abj || (y > deadzone);
+				ctrl_pies->acc = ctrl_pies->acc || sf::Joystick::isButtonPressed(0, 10);
+			}
 		}
 
 		if (ctrl_pies && ctrl_cuerpo)
@@ -228,8 +241,70 @@ namespace IVJ
 			cuerpo->getComponente<CE::ISprite>()->m_sprite.setRotation(sf::radians(cuerpo->getTransformada()->angulo));
 		}
 
+		// LOGICA DE ATAQUE
+		auto fsm_cuerpo = cuerpo->getComponente<IMaquinaEstado>()->fsm;
+		auto *ataque = dynamic_cast<AtacarCuerpoKnife *>(fsm_cuerpo.get());
+
+		if (ataque)
+		{
+			if (!ataque_procesado)
+			{
+				ataque_procesado = true;
+				objs_golpeados.clear();
+			}
+
+			auto mp = CE::Render::Get().GetMouseGamePos();
+			sf::Vector2f wPos = CE::Render::Get().GetTextura().mapPixelToCoords(
+					sf::Vector2i((int) mp.x, (int) mp.y), CE::GestorCamaras::Get().getCamaraActiva().getView());
+
+			auto &pos = jugador_ref->getTransformada()->posicion;
+			float dx = wPos.x - pos.x;
+			float dy = wPos.y - pos.y;
+			float dist = std::sqrt(dx * dx + dy * dy);
+			float nx = 0;
+			float ny = 0;
+			if (dist > 0) {
+				nx = dx / dist;
+				ny = dy / dist;
+			}
+
+			ataque_hitbox.setRadius(32.f);
+			ataque_hitbox.setOrigin({32.f, 32.f});
+			ataque_hitbox.setPosition({pos.x + nx * 32.f, pos.y + ny * 32.f});
+			ataque_hitbox.setFillColor(sf::Color(255, 0, 0, 100));
+
+			for (auto &obj: objetos.getPool()) {
+				if (obj != jugador_ref && obj != cuerpo && obj->tieneComponente<ITarget>()) {
+					if (objs_golpeados.find(obj.get()) == objs_golpeados.end()) {
+						float zdx = obj->getTransformada()->posicion.x - ataque_hitbox.getPosition().x;
+						float zdy = obj->getTransformada()->posicion.y - ataque_hitbox.getPosition().y;
+						if (std::sqrt(zdx * zdx + zdy * zdy) < 48.f) {
+							objs_golpeados.insert(obj.get());
+							if (obj->getStats()->hp > 0) {
+								int new_hp = obj->getStats()->hp - 15;
+								obj->getStats()->hp = (new_hp < 0) ? 0 : new_hp;
+								if (obj->tieneComponente<CE::ITexto>()) {
+									obj->getComponente<CE::ITexto>()->m_texto.setString(
+											"HP: " + std::to_string(obj->getStats()->hp));
+								}
+							}
+						}
+					}
+				}
+			}
+		} else {
+			ataque_procesado = false;
+		}
+
 		// 6. Actualizar objetos del pool (NPCs, etc.)
-		for (auto &obj: objetos.getPool()) {
+		auto &pool = objetos.getPool();
+		pool.erase(std::remove_if(pool.begin(), pool.end(),
+								  [](const std::shared_ptr<CE::Objeto> &e) {
+									  return e->tieneComponente<ITarget>() && e->getStats()->hp <= 0;
+								  }),
+				   pool.end());
+
+		for (auto &obj: pool) {
 			obj->inputFSM();
 			obj->onUpdate(dt);
 			if (obj->tieneComponente<ITarget>()) {
@@ -283,15 +358,30 @@ namespace IVJ
 				CE::Render::Get().AddToDraw(rango->marcador);
 			}
 			CE::Render::Get().AddToDraw(*obj);
+
+#if DEBUG
+			if (obj->tieneComponente<CE::ITexto>()) {
+				auto texto = obj->getComponente<CE::ITexto>();
+				texto->m_texto.setPosition({obj->getTransformada()->posicion.x - 30.f,
+										   obj->getTransformada()->posicion.y - 60.f});
+				CE::Render::Get().AddToDraw(texto->m_texto);
+			}
+#endif
 		}
 
 		// Pies primero (debajo), luego cuerpo (encima)
 		CE::Render::Get().AddToDraw(*jugador_ref);
 		CE::Render::Get().AddToDraw(*cuerpo);
 
+		// Si el ataque está en proceso, dibujar la hitbox (efecto visual)
+		if (ataque_procesado) {
+			CE::Render::Get().AddToDraw(ataque_hitbox);
+		}
+
 		// Configurar y dibujar el shader de niebla (efecto tenebroso)
 		if (sf::Shader::isAvailable()) {
-			sf::Vector2f playerPos = {jugador_ref->getTransformada()->posicion.x, jugador_ref->getTransformada()->posicion.y};
+			sf::Vector2f playerPos = {jugador_ref->getTransformada()->posicion.x,
+									  jugador_ref->getTransformada()->posicion.y};
 			fog_shader.setUniform("lampPos", sf::Vector2f(playerPos.x / 4000.f, playerPos.y / 4000.f));
 			fog_shader.setUniform("lampRadio", 0.05f); // ~200px
 			fog_shader.setUniform("lampSoft", 0.04f); // Suavizado del borde
