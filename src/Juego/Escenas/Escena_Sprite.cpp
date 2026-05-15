@@ -177,23 +177,34 @@ namespace IVJ
 		auto ctrl_pies = jugador_ref->getComponente<CE::IControl>();
 		auto ctrl_cuerpo = cuerpo->getComponente<CE::IControl>();
 
-		// SOPORTE PARA GAMEPAD (Sobrescribe inputs en tiempo real)
-		if (ctrl_pies && sf::Joystick::isConnected(0)) {
-			float x = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::X);
-			float y = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::Y);
-			float deadzone = 25.f; // Evita que Dieter se mueva solo si el joystick está flojo
+		// Polling del teclado SIEMPRE cada frame (evita teclas pegadas).
+		// Usar Scancode (independiente del layout) y cubrir ambos mapeos
+		// (WASD + flechas) para que soltar una tecla mientras la otra sigue
+		// presionada no deje el flag pegado en true.
+		if (ctrl_pies)
+		{
+		    ctrl_pies->arr = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::W) ||
+		                      sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Up);
+		    ctrl_pies->abj = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::S) ||
+		                      sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Down);
+		    ctrl_pies->izq = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::A) ||
+		                      sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Left);
+		    ctrl_pies->der = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::D) ||
+		                      sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Right);
+		    ctrl_pies->acc = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Space);
+		    ctrl_pies->run = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::LControl);
 
-			// Usamos || (OR) lógico para que funcione YA SEA con el Gamepad o el
-			// Teclado.
-			ctrl_pies->der = (x > deadzone) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D);
-			ctrl_pies->izq = (x < -deadzone) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A);
-			ctrl_pies->arr = (y < -deadzone) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W);
-			ctrl_pies->abj = (y > deadzone) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S);
-
-			// El Botón 1 suele ser la 'B' (o botón derecho del pad de acciones).
-			// El Botón 0 suele ser la 'A'. Si ataca con A, cambia el 1 por un 0.
-			ctrl_pies->acc =
-					sf::Joystick::isButtonPressed(0, 10) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space);
+		    // Gamepad: se combina (OR) con el estado del teclado
+		    if (sf::Joystick::isConnected(0)) {
+		        float x = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::X);
+		        float y = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::Y);
+		        constexpr float deadzone = 25.f;
+		        ctrl_pies->der = ctrl_pies->der || (x >  deadzone);
+		        ctrl_pies->izq = ctrl_pies->izq || (x < -deadzone);
+		        ctrl_pies->arr = ctrl_pies->arr || (y < -deadzone);
+		        ctrl_pies->abj = ctrl_pies->abj || (y >  deadzone);
+		        ctrl_pies->acc = ctrl_pies->acc || sf::Joystick::isButtonPressed(0, 10);
+		    }
 		}
 
 		if (ctrl_pies && ctrl_cuerpo)
