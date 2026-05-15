@@ -15,6 +15,14 @@ namespace IVJ
 	{
 		if (!control.arr && !control.abj && !control.der && !control.izq)
 			return new IdlePies(CE::AnimClip{0, 1}); // idle: frame 0
+
+		// Cambio dinámico entre correr y caminar
+		if (control.run && m_clip.first_frame != 1)
+			return new MoverPies(CE::AnimClip{1, 20}, 0.02f); // run (más rápido)
+
+		if (!control.run && m_clip.first_frame != 61)
+			return new MoverPies(CE::AnimClip{61, 20}); // walk (normal)
+
 		return nullptr;
 	}
 

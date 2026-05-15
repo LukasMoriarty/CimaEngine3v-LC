@@ -15,13 +15,10 @@ namespace IVJ
     {
         if (control.arr || control.abj || control.der || control.izq)
         {
-            // La animación walk se pasa desde Escena_Sprite al crear el FSM
-            // MoverPies la recibe en su constructor; usamos un clip placeholder
-            // que Escena_Sprite reemplaza al crear el estado inicial.
-            // En transición, MoverPies debe construirse con el clip correcto.
-            // Para eso, compartimos la referencia al mapa en Escena_Sprite.
-            // Ver comentario en Escena_Sprite::onInit sobre cómo pasar clips.
-            return new MoverPies(CE::AnimClip{61, 20}); // walk: frames 61-80
+            if (control.run)
+                return new MoverPies(CE::AnimClip{1, 20}, 0.02f); // run: frames 1-20 (más rápido)
+            else
+                return new MoverPies(CE::AnimClip{61, 20}); // walk: frames 61-80
         }
         return nullptr;
     }

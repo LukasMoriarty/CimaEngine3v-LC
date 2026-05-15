@@ -15,7 +15,7 @@ namespace IVJ
 	{
 		// Solo transiciona cuando el ciclo de ataque terminó
 		if (ataque_completo)
-			return new IdleCuerpoKnife(CE::AnimClip{0, 20});
+			return new IdleCuerpoKnife(CE::AnimClip{0, 20}, 0.1f);
 		return nullptr;
 	}
 

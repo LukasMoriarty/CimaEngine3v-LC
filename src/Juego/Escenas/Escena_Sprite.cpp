@@ -43,6 +43,7 @@ namespace IVJ
 		registrarBotones(sf::Keyboard::Scancode::Right, "derecha");
 		registrarBotones(sf::Keyboard::Scancode::Enter, "aceptar");
 		registrarBotones(sf::Keyboard::Scancode::Space, "atacar"); // <-- ataque
+		registrarBotones(sf::Keyboard::Scancode::LControl, "correr");
 
 		// Tilemap
 		tiles_layers.push_back(TileMap());
@@ -76,7 +77,7 @@ namespace IVJ
 
 		// PIES (jugador_ref)
 		auto trans = jugador_ref->getTransformada();
-		trans->velocidad = CE::Vector2D{300.f, 300.f};
+		trans->velocidad = CE::Vector2D{200.f, 200.f};
 		jugador_ref->setPosicion(1750.f, 1750.f);
 
 		jugador_ref->addComponente(
@@ -132,7 +133,6 @@ namespace IVJ
 
 		zombie->addComponente(std::make_shared<CE::IBoundingBox>(CE::Vector2D{16.f, 16.f}));
 		zombie->addComponente(std::make_shared<IRangoAggro>(ZombieConst::RANGO_AGGRO));
-		zombie->addComponente(std::make_shared<IMemoriaZombie>());
 		zombie->addComponente(std::make_shared<IEntorno>(&objetos.getPool()));
 		zombie->addComponente(std::make_shared<ITarget>(jugador_ref.get()));
 
@@ -235,6 +235,8 @@ namespace IVJ
 			ctrl->izq = pressed;
 		else if (accion.getNombre() == "atacar")
 			ctrl->acc = pressed;
+		else if (accion.getNombre() == "correr")
+			ctrl->run = pressed;
 		// Nota: el control del cuerpo se sincroniza al inicio de onUpdate
 	}
 

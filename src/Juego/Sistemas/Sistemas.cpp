@@ -46,32 +46,43 @@ namespace IVJ
 		// si no tiene control o el control no esta activo, salir
 		if (!control || !control->isActivo()) return;
 
-		// definir cual va a ser la velocidad correcta dependiendo
-		// del boton del control presionado
-		auto vel = CE::Vector2D{0.f, 0.f};
-		if (control->arr)
-			vel.y = -trans->velocidad.y;
-		if (control->abj)
-			vel.y = trans->velocidad.y;
-		if (control->der)
-			vel.x = trans->velocidad.x;
-		if (control->izq)
-			vel.x = -trans->velocidad.x;
+		// Calcular la dirección basada en los inputs
+		auto dir = CE::Vector2D{0.f, 0.f};
+		if (control->arr) dir.y -= 1.f;
+		if (control->abj) dir.y += 1.f;
+		if (control->der) dir.x += 1.f;
+		if (control->izq) dir.x -= 1.f;
 
-		// calcular la direccion usando un triangulo rectangulo
+		auto vel = CE::Vector2D{0.f, 0.f};
+
+		// Si hay movimiento, normalizar para que las diagonales no sean más rápidas
+		if (dir.longitud() > 0.f) {
+			dir.normalizacion();
+
+			// Definir la velocidad final usando la velocidad base del transform
+			vel.x = dir.x * trans->velocidad.x;
+			vel.y = dir.y * trans->velocidad.y;
+
+			// Si el botón de correr está presionado, multiplicar la velocidad por 1.5x
+			if (control->run) {
+				vel.escala(1.5f);
+			}
+		}
+
+		// calcular la dirección usando un triángulo rectángulo (para la rotación)
 		if (objeto->getComponente<ITriangulo>() || objeto->getComponente<CE::ISprite>()) {
-			auto n = vel;
-			n.normalizacion();
-			auto trian = objeto->getComponente<ITriangulo>(); // nulo
 			if (vel.x != 0 || vel.y != 0)
 			{
+				auto n = vel;
+				n.normalizacion();
+				auto trian = objeto->getComponente<ITriangulo>();
 				if (trian)
 					trian->angulo = std::atan2(n.x, -n.y);
 				trans->angulo = std::atan2(n.x, -n.y);
 			}
 		}
 
-		// actualizar posicion del ente
+		// actualizar posición del ente
 		trans->posicion.suma(vel.escala(dt));
 	}
 
@@ -547,7 +558,6 @@ namespace IVJ
 	{
 		auto trans = zombie.getTransformada();
 		auto rango = zombie.getComponente<IRangoAggro>();
-		auto memoria = zombie.getComponente<IMemoriaZombie>();
 
 		if (!rango) return;
 
@@ -558,13 +568,6 @@ namespace IVJ
 		bool en_rango = rango->estaDentroRango(zombie, target_pos);
 		bool tiene_vision = checkLOS(pos_actual, target_pos, obstaculos, &zombie);
 
-		// 2. Gestión de Memoria
-		if (memoria) {
-			if (en_rango && tiene_vision) {
-				memoria->setUltimaPosicion(target_pos);
-			}
-		}
-
 		// 3. Decisión de Movimiento
 		CE::Vector2D destino = target_pos;
 		bool persiguiendo = false;
@@ -572,14 +575,6 @@ namespace IVJ
 		if (en_rango && tiene_vision) {
 			persiguiendo = true;
 			destino = target_pos;
-		} else if (memoria && memoria->tieneMemoriaActiva()) {
-			persiguiendo = true;
-			destino = memoria->getUltimaPosicion();
-			// Si llegó al último punto visto y ya no ve al jugador, borrar memoria
-			if (pos_actual.distancia(destino) < 10.f) {
-				memoria->clearMemoria();
-				persiguiendo = false;
-			}
 		}
 
 		auto vel = CE::Vector2D{0.f, 0.f};

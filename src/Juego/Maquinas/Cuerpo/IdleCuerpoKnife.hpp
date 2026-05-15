@@ -15,7 +15,7 @@ namespace IVJ
     class IdleCuerpoKnife : public FSM
     {
     public:
-        explicit IdleCuerpoKnife(CE::AnimClip clip, float frame_rate = 0.05f);
+        explicit IdleCuerpoKnife(CE::AnimClip clip, float frame_rate = 0.1f);
         ~IdleCuerpoKnife() override = default;
 
         FSM* onInputs(const CE::IControl& control) override;
