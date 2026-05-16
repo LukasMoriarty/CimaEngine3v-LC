@@ -55,7 +55,16 @@ namespace IVJ {
 		tiles_layers[0].atlas_texture.setSmooth(true);
 		tiles_layers[1].atlas_texture.setSmooth(true);
 
-		CE::GestorAssets::Get().agregarMusica("musica_fondo", ASSETS "/music/levelmusic.mp3");
+		CE::GestorAssets::Get().agregarSonido("slash01", ASSETS "/sfx/machete_slash_flesh_attack_01.wav");
+		CE::GestorAssets::Get().agregarSonido("slash02", ASSETS "/sfx/machete_slash_flesh_attack_02.wav");
+		CE::GestorAssets::Get().agregarSonido("slash03", ASSETS "/sfx/machete_slash_flesh_attack_03.wav");
+		CE::GestorAssets::Get().agregarSonido("slash04", ASSETS "/sfx/machete_slash_flesh_attack_04.wav");
+		CE::GestorAssets::Get().agregarSonido("swing01", ASSETS "/sfx/machete_swing_01.wav");
+		CE::GestorAssets::Get().agregarSonido("swing02", ASSETS "/sfx/machete_swing_02.wav");
+		CE::GestorAssets::Get().agregarSonido("swing03", ASSETS "/sfx/machete_swing_03.wav");
+		CE::GestorAssets::Get().agregarSonido("swing04", ASSETS "/sfx/machete_swing_04.wav");
+
+		CE::GestorAssets::Get().agregarMusica("musica_fondo", ASSETS "/music/pausemusic.mp3");
 		// reproducir musica de fondo (loop)
 		CE::GestorAssets::Get().getMusica("musica_fondo").play();
 		CE::GestorAssets::Get().getMusica("musica_fondo").setVolume(20.f);
@@ -218,10 +227,32 @@ namespace IVJ {
 				ctrl_pies->abj = ctrl_pies->abj || (y > deadzone);
 				ctrl_pies->acc = ctrl_pies->acc || sf::Joystick::isButtonPressed(0, 10);
 			}
+
+				if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+				ctrl_pies->acc = true;
+			}
 		}
 
 		if (ctrl_pies && ctrl_cuerpo)
 			*ctrl_cuerpo = *ctrl_pies;
+
+		// 2a. Calcular dirección normalizada hacia el mouse para FSM de animación
+		auto mp = CE::Render::Get().GetMouseGamePos();
+		sf::Vector2f wPos = CE::Render::Get().GetTextura().mapPixelToCoords(
+				sf::Vector2i((int) mp.x, (int) mp.y), CE::GestorCamaras::Get().getCamaraActiva().getView());
+
+		auto &pos = jugador_ref->getTransformada()->posicion;
+		float dx = wPos.x - pos.x;
+		float dy = wPos.y - pos.y;
+		float dist = std::sqrt(dx * dx + dy * dy);
+		float mouse_nx = 0.f, mouse_ny = 0.f;
+		if (dist > 0.f) {
+			mouse_nx = dx / dist;
+			mouse_ny = dy / dist;
+		}
+		// Pasar la dirección del mouse al jugador para que el FSM la use
+		jugador_ref->setMouseDirection(mouse_nx, mouse_ny);
+		cuerpo->setMouseDirection(mouse_nx, mouse_ny);
 
 		// 2. Procesar transiciones de FSM
 		jugador_ref->inputFSM();
@@ -253,17 +284,21 @@ namespace IVJ {
 				objs_golpeados.clear();
 			}
 
-			auto mp = CE::Render::Get().GetMouseGamePos();
+			/*
+			auto mp = CE::Render::Get().GetMouseGamePos();	// mp es mouse position: posición del mouse en coordenadas de ventana
+			// wPos es la posición del mouse convertida a coordenadas del mundo (ajustada por la cámara)
 			sf::Vector2f wPos = CE::Render::Get().GetTextura().mapPixelToCoords(
 					sf::Vector2i((int) mp.x, (int) mp.y), CE::GestorCamaras::Get().getCamaraActiva().getView());
 
 			auto &pos = jugador_ref->getTransformada()->posicion;
-			float dx = wPos.x - pos.x;
-			float dy = wPos.y - pos.y;
-			float dist = std::sqrt(dx * dx + dy * dy);
-			float nx = 0;
-			float ny = 0;
-			if (dist > 0) {
+			float dx = wPos.x - pos.x;	// dx es la diferencia en x entre la posición del mouse y la posición del jugador
+			float dy = wPos.y - pos.y;	// dy es la diferencia en y entre la posición del mouse y la posición del jugador
+			float dist = std::sqrt(dx * dx + dy * dy);	// dist es la distancia entre el mouse y el jugador, usando Pitágoras
+			*/
+
+			float nx = 0;	// nx: componente normalizado en x de la dirección del ataque
+			float ny = 0;	// ny: componente normalizado en y de la dirección del ataque
+			if (dist > 0) {	// Para evitar división por cero, solo normalizamos si la distancia es mayor que cero
 				nx = dx / dist;
 				ny = dy / dist;
 			}
@@ -298,11 +333,9 @@ namespace IVJ {
 
 		// 6. Actualizar objetos del pool (NPCs, etc.)
 		auto &pool = objetos.getPool();
-		pool.erase(std::remove_if(pool.begin(), pool.end(),
-								  [](const std::shared_ptr<CE::Objeto> &e) {
-									  return e->tieneComponente<ITarget>() && e->getStats()->hp <= 0;
-								  }),
-				   pool.end());
+		std::erase_if(pool, [](const std::shared_ptr<CE::Objeto> &e) {
+			return e->tieneComponente<ITarget>() && e->getStats()->hp <= 0;
+		});
 
 		for (auto &obj: pool) {
 			obj->inputFSM();
@@ -336,8 +369,9 @@ namespace IVJ {
 			ctrl->der = pressed;
 		else if (accion.getNombre() == "izquierda")
 			ctrl->izq = pressed;
-		else if (accion.getNombre() == "atacar")
+		else if (accion.getNombre() == "atacar") {
 			ctrl->acc = pressed;
+		}
 		else if (accion.getNombre() == "correr")
 			ctrl->run = pressed;
 		// Nota: el control del cuerpo se sincroniza al inicio de onUpdate

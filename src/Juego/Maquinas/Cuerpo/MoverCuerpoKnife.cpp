@@ -15,7 +15,7 @@ namespace IVJ
 	FSM* MoverCuerpoKnife::onInputs(const CE::IControl& control)
 	{
 		if (control.acc)
-			return new AtacarCuerpoKnife(CE::AnimClip{20, 15}, 0.075f);
+			return new AtacarCuerpoKnife(CE::AnimClip{20, 15}, 0.04f);
 
 		if (!control.arr && !control.abj && !control.der && !control.izq)
 			return new IdleCuerpoKnife(CE::AnimClip{0, 20}, 0.1f);

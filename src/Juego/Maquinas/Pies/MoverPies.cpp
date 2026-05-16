@@ -1,6 +1,7 @@
 #include "MoverPies.hpp"
 #include "IdlePies.hpp"
 #include "Motor/Componentes/IComponentes.hpp"
+#include <cmath>
 
 namespace IVJ
 {
@@ -13,15 +14,81 @@ namespace IVJ
 
 	FSM* MoverPies::onInputs(const CE::IControl& control)
 	{
+		// Versión sin información del mouse: elegir "walk" por defecto.
 		if (!control.arr && !control.abj && !control.der && !control.izq)
 			return new IdlePies(CE::AnimClip{0, 1}); // idle: frame 0
 
-		// Cambio dinámico entre correr y caminar
-		if (control.run && m_clip.first_frame != 1)
-			return new MoverPies(CE::AnimClip{1, 20}, 0.02f); // run (más rápido)
+		CE::AnimClip desired{61, 20};
+		float desired_rate = 0.05f;
 
-		if (!control.run && m_clip.first_frame != 61)
-			return new MoverPies(CE::AnimClip{61, 20}); // walk (normal)
+		// Si el jugador está corriendo, mantener la misma animación pero más rápida.
+		if (control.run) {
+			desired_rate = 0.02f;
+		}
+
+		// Si la animación actual no coincide con la deseada (por ejemplo, estamos en run frames), cambiar.
+		if (m_clip.first_frame != desired.first_frame || std::abs(max_frame_time - desired_rate) > 1e-6f)
+			return new MoverPies(desired, desired_rate);
+
+		return nullptr;
+	}
+
+	FSM* MoverPies::onInputs(const CE::IControl& control, float mouse_nx, float mouse_ny)
+	{
+		// Si no hay movimiento, ir a idle
+		if (!control.arr && !control.abj && !control.der && !control.izq)
+			return new IdlePies(CE::AnimClip{0, 1}); // idle: frame 0
+
+		// Calcular la dirección de movimiento del control
+		float move_x = 0.f, move_y = 0.f;
+		if (control.der) move_x += 1.f;
+		if (control.izq) move_x -= 1.f;
+		if (control.arr) move_y -= 1.f;
+		if (control.abj) move_y += 1.f;
+
+		// Normalizar dirección de movimiento
+		if (float move_len = std::sqrt(move_x * move_x + move_y * move_y); move_len > 0.f) {
+			move_x /= move_len;
+			move_y /= move_len;
+		}
+
+		// Calcular producto punto entre dirección del mouse y dirección de movimiento
+		float dot = mouse_nx * move_x + mouse_ny * move_y;
+
+		// Calcular componente perpendicular (para detectar strafe)
+		float perp = mouse_nx * move_y - mouse_ny * move_x;
+
+		// Decidir animación basándose en el ángulo relativo
+		// Si se mueve principalmente hacia una dirección perpendicular al mouse, es strafe
+		// Si se mueve principalmente hacia el mouse o opuesto, es walk
+
+		CE::AnimClip next_clip{61, 20}; // walk por defecto
+		float frame_rate = 0.05f; // framerate normal para walk
+
+		// Aplicar corrección si se está moviendo lateralmente respecto al mouse
+		if (std::abs(perp) > std::abs(dot)) {
+			// Movimiento lateral: strafe
+			if (perp > 0.f) {
+				// Strafe a la derecha
+				next_clip = CE::AnimClip{41, 20};
+			} else {
+				// Strafe a la izquierda
+				next_clip = CE::AnimClip{21, 20};
+			}
+		} else {
+			// Movimiento frontal o trasero: walk
+			next_clip = CE::AnimClip{61, 20};
+		}
+
+		// Si control.run está activo, no hacer fallback a la animación "run".
+		// En su lugar, usar la animación calculada (walk/strafe) pero con framerate más rapido.
+		if (control.run) {
+			frame_rate = 0.02f; // framerate más rápido
+		}
+
+		// Transicionar si el clip o el framerate deseado difieren del actual
+		if (m_clip.first_frame != next_clip.first_frame || std::abs(max_frame_time - frame_rate) > 1e-6f)
+			return new MoverPies(next_clip, frame_rate);
 
 		return nullptr;
 	}

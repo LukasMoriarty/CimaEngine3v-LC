@@ -22,6 +22,20 @@ namespace IVJ
 		~MoverPies() override = default;
 
 		FSM* onInputs(const CE::IControl& control) override;
+		/**
+		 * @brief Procesa inputs considerando la dirección del mouse para elegir animación.
+		 * @param control Estado de controles (arr, abj, izq, der, run)
+		 * @param mouse_nx Componente X normalizada de la dirección al mouse (-1 a 1)
+		 * @param mouse_ny Componente Y normalizada de la dirección al mouse (-1 a 1)
+		 * @return Puntero a nuevo FSM si hay transición, nullptr si no
+		 *
+		 * Selecciona automáticamente entre:
+		 * - Walk (frames 61-80) si se mueve hacia/contra la dirección del mouse
+		 * - Strafe Left (frames 21-40) si se mueve perpendicular a izquierda
+		 * - Strafe Right (frames 41-60) si se mueve perpendicular a derecha
+		 * - Run (frames 1-20) si control.run está activado
+		 */
+		FSM* onInputs(const CE::IControl& control, float mouse_nx, float mouse_ny) override;
 		void onEntrar(const Entidad& obj)          override;
 		void onSalir(const Entidad& obj)           override;
 		void onUpdate(const Entidad& obj, float dt) override;

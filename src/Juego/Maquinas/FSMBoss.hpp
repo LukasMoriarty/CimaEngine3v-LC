@@ -14,6 +14,13 @@ namespace IVJ
 		//puente, facade, estrategia, comando, adaptador )
 		virtual FSM* onInputs(const CE::IControl& control) override
 		{(void)control;return nullptr;};
+
+		// Sobrecarga con parámetros del mouse (simplemente ignora y delega)
+		virtual FSM* onInputs(const CE::IControl& control, [[maybe_unused]] float mouse_nx, [[maybe_unused]] float mouse_ny) override
+		{
+			return onInputs(control);
+		}
+
 		//el input que usaremos
 		virtual FSM* onInputs(Entidad& parent, CE::Vector2D& target)=0;
 		virtual void onEntrar(const Entidad& obj) override=0;

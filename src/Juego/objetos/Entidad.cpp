@@ -87,7 +87,10 @@ namespace IVJ
 		{
 			if(!getComponente<CE::IControl>())  return;
 			auto control = *getComponente<CE::IControl>();
-			auto n_estado = mq->fsm->onInputs(control);
+
+			// Intentar llamar a onInputs con información del mouse si está disponible
+			// (mouse_dir_x/y fueron establecidos previamente con setMouseDirection)
+			auto n_estado = mq->fsm->onInputs(control, mouse_dir_x, mouse_dir_y);
 			std::shared_ptr<FSM> estado(n_estado);
 			if(estado)
 				setFSM(estado);

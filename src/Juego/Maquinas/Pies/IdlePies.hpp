@@ -22,6 +22,17 @@ namespace IVJ
 		~IdlePies() override = default;
 
 		FSM* onInputs(const CE::IControl& control) override;
+		/**
+		 * @brief Procesa inputs considerando la dirección del mouse.
+		 * @param control Estado de controles
+		 * @param mouse_nx Componente X normalizada de la dirección al mouse
+		 * @param mouse_ny Componente Y normalizada de la dirección al mouse
+		 * @return Puntero a MoverPies si hay movimiento, nullptr si sigue en idle
+		 *
+		 * Elige automáticamente la animación de movimiento apropiada según
+		 * la dirección relativa del mouse con respecto al movimiento.
+		 */
+		FSM* onInputs(const CE::IControl& control, float mouse_nx, float mouse_ny) override;
 		void onEntrar(const Entidad& obj)        override;
 		void onSalir(const Entidad& obj)         override;
 		void onUpdate(const Entidad& obj, float dt) override;

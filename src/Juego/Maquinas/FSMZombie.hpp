@@ -35,6 +35,12 @@ namespace IVJ
 		virtual FSM* onInputs(const CE::IControl& control) override
 		{ (void)control; return nullptr; }
 
+		// Sobrecarga con parámetros del mouse (simplemente ignora y delega)
+		virtual FSM* onInputs(const CE::IControl& control, [[maybe_unused]] float mouse_nx, [[maybe_unused]] float mouse_ny) override
+		{
+			return onInputs(control);
+		}
+
 		virtual FSM* onInputs(Entidad& self, CE::Vector2D& target) = 0;
 
 		virtual void onEntrar(const Entidad& obj) override = 0;

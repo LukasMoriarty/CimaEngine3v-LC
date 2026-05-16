@@ -1,6 +1,7 @@
 #include "IdlePies.hpp"
 #include "MoverPies.hpp"
 #include "Motor/Componentes/IComponentes.hpp"
+#include <cmath>
 
 namespace IVJ
 {
@@ -21,6 +22,54 @@ namespace IVJ
                 return new MoverPies(CE::AnimClip{61, 20}); // walk: frames 61-80
         }
         return nullptr;
+    }
+
+    FSM* IdlePies::onInputs(const CE::IControl& control, float mouse_nx, float mouse_ny)
+    {
+        // Si no hay movimiento, seguir en idle
+        if (!control.arr && !control.abj && !control.der && !control.izq)
+            return nullptr;
+
+        // Calcular la dirección de movimiento del control
+        float move_x = 0.f, move_y = 0.f;
+        if (control.der) move_x += 1.f;
+        if (control.izq) move_x -= 1.f;
+        if (control.arr) move_y -= 1.f;
+        if (control.abj) move_y += 1.f;
+
+        // Normalizar dirección de movimiento
+        float move_len = std::sqrt(move_x * move_x + move_y * move_y);
+        if (move_len > 0.f) {
+            move_x /= move_len;
+            move_y /= move_len;
+        }
+
+        // Calcular producto punto y perpendicular
+        float dot = mouse_nx * move_x + mouse_ny * move_y;
+        float perp = mouse_nx * move_y - mouse_ny * move_x;
+
+        CE::AnimClip next_clip{61, 20}; // walk por defecto
+        float frame_rate = 0.05f;
+
+        // Decidir qué animación usar
+        if (std::abs(perp) > std::abs(dot)) {
+            // Movimiento lateral: strafe
+            if (perp > 0.f) {
+                next_clip = CE::AnimClip{41, 20}; // Strafe derecha
+            } else {
+                next_clip = CE::AnimClip{21, 20}; // Strafe izquierda
+            }
+        } else {
+            // Movimiento frontal o trasero: walk
+            next_clip = CE::AnimClip{61, 20};
+        }
+
+        // Si está corriendo, usar run en su lugar
+        if (control.run) {
+            frame_rate = 0.02f;
+        }
+
+        return new MoverPies(next_clip, frame_rate);
     }
 
     void IdlePies::onEntrar(const Entidad& obj)
