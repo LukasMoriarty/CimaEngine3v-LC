@@ -5,7 +5,7 @@
 
 namespace IVJ
 {
-	bool TileMap::loadTileMap(const std::string& atlas_path, CE::Pool& objetos)
+	bool TileMap::loadTileMap(const std::string& atlas_path, CE::Pool& objetos, CE::Pool& spawn_pool)
 	{
 		std::ifstream archivo {atlas_path};
 		std::string info;
@@ -30,6 +30,35 @@ namespace IVJ
 			{
 				if (!(archivo >> id >> col)) break;
 
+				// If it's a spawn tile, create a spawn zone object
+				if (col == 's')
+				{
+					// Use an Entidad (concrete subclass of CE::Objeto) for spawn zones
+					auto spawn_zone = std::make_shared<Entidad>();
+					spawn_zone->setPosicion(i * static_cast<float>(tile_w) + tile_w / 2.f,
+											 j * static_cast<float>(tile_h) + tile_h / 2.f);
+
+					// IRespawn constructors available:
+					//  IRespawn(std::vector<std::shared_ptr<IComponentes>>& lista_comp, int max);
+					//  IRespawn(int max,int w, int h, IVJ::Entidad *pre );
+					// The previous code attempted to pass a Vector2D + timers which does not match
+					// any constructor. Create the respawn component with the (max,w,h,prefab)
+					// constructor and then set timer values explicitly.
+					auto resp = std::make_shared<CE::IRespawn>(
+							5,            // max_spawn
+							tile_w,      // width (pixels)
+							tile_h,      // height (pixels)
+							static_cast<IVJ::Entidad*>(nullptr) // no prefab
+					);
+
+					// Configure timers (previously passed as parameters)
+					resp->timer_maximo = 120; // frames between spawns
+					resp->timer_actual = 0;
+
+					spawn_zone->addComponente(resp);
+					spawn_pool.agregarPool(spawn_zone);
+				}
+
 				if(id != -1)
 				{
 					sf::Vertex *trian = &tiles_vertex[(i + j * map_c) * 6];
@@ -48,19 +77,19 @@ namespace IVJ
 						objetos.agregarPool(bloque);
 					}
 
-					trian[0].position = sf::Vector2f(i*tile_w, j*tile_h);
-					trian[1].position = sf::Vector2f((i+1)*tile_w, j*tile_h);
-					trian[2].position = sf::Vector2f(i*tile_w, (j+1)*tile_h);
-					trian[3].position = sf::Vector2f(i*tile_w, (j+1)*tile_h);
-					trian[4].position = sf::Vector2f((i+1)*tile_w, j*tile_h);
-					trian[5].position = sf::Vector2f((i+1)*tile_w, (j+1)*tile_h);
+					trian[0].position = sf::Vector2f(i * static_cast<float>(tile_w), j * static_cast<float>(tile_h));
+					trian[1].position = sf::Vector2f((i + 1) * static_cast<float>(tile_w), j * static_cast<float>(tile_h));
+					trian[2].position = sf::Vector2f(i * static_cast<float>(tile_w), (j + 1) * static_cast<float>(tile_h));
+					trian[3].position = sf::Vector2f(i * static_cast<float>(tile_w), (j + 1) * static_cast<float>(tile_h));
+					trian[4].position = sf::Vector2f((i + 1) * static_cast<float>(tile_w), j * static_cast<float>(tile_h));
+					trian[5].position = sf::Vector2f((i + 1) * static_cast<float>(tile_w), (j + 1) * static_cast<float>(tile_h));
 
-					trian[0].texCoords = sf::Vector2f(tU*tile_w, tV*tile_h);
-					trian[1].texCoords = sf::Vector2f((tU+1)*tile_w, tV*tile_h);
-					trian[2].texCoords = sf::Vector2f(tU*tile_w, (tV+1)*tile_h);
-					trian[3].texCoords = sf::Vector2f(tU*tile_w, (tV+1)*tile_h);
-					trian[4].texCoords = sf::Vector2f((tU+1)*tile_w, tV*tile_h);
-					trian[5].texCoords = sf::Vector2f((tU+1)*tile_w, (tV+1)*tile_h);
+					trian[0].texCoords = sf::Vector2f(tU * static_cast<float>(tile_w), tV * static_cast<float>(tile_h));
+					trian[1].texCoords = sf::Vector2f((tU + 1) * static_cast<float>(tile_w), tV * static_cast<float>(tile_h));
+					trian[2].texCoords = sf::Vector2f(tU * static_cast<float>(tile_w), (tV + 1) * static_cast<float>(tile_h));
+					trian[3].texCoords = sf::Vector2f(tU * static_cast<float>(tile_w), (tV + 1) * static_cast<float>(tile_h));
+					trian[4].texCoords = sf::Vector2f((tU + 1) * static_cast<float>(tile_w), tV * static_cast<float>(tile_h));
+					trian[5].texCoords = sf::Vector2f((tU + 1) * static_cast<float>(tile_w), (tV + 1) * static_cast<float>(tile_h));
 				}
 			}
 		}
@@ -91,31 +120,31 @@ namespace IVJ
 			{
 				if (!(archivo >> id)) break; // Evita error si el archivo es más corto
 
-				if(id != -1) // no ignorar tile
-				{
-					// Referencia al triangulo a dibujar
-					sf::Vertex *trian = &tiles_vertex[(i + j * map_c) * 6];
+													if(id != -1) // no ignorar tile
+													{
+													 // Referencia al triangulo a dibujar
+													 sf::Vertex *trian = &tiles_vertex[(i + j * map_c) * 6];
 
-					// Posición del tile en el atlas
-					int tU = id % max_col;
-					int tV = id / max_col;
+													 // Posición del tile en el atlas
+													 int tU = id % max_col;
+													 int tV = id / max_col;
 
-					// Vertices del triángulo
-					trian[0].position = sf::Vector2f(i*tile_w, j*tile_h);
-					trian[1].position = sf::Vector2f((i+1)*tile_w, j*tile_h);
-					trian[2].position = sf::Vector2f(i*tile_w, (j+1)*tile_h);
-					trian[3].position = sf::Vector2f(i*tile_w, (j+1)*tile_h);
-					trian[4].position = sf::Vector2f((i+1)*tile_w, j*tile_h);
-					trian[5].position = sf::Vector2f((i+1)*tile_w, (j+1)*tile_h);
+													 // Vertices del triángulo
+													 trian[0].position = sf::Vector2f(i * static_cast<float>(tile_w), j * static_cast<float>(tile_h));
+													 trian[1].position = sf::Vector2f((i + 1) * static_cast<float>(tile_w), j * static_cast<float>(tile_h));
+													 trian[2].position = sf::Vector2f(i * static_cast<float>(tile_w), (j + 1) * static_cast<float>(tile_h));
+													 trian[3].position = sf::Vector2f(i * static_cast<float>(tile_w), (j + 1) * static_cast<float>(tile_h));
+													 trian[4].position = sf::Vector2f((i + 1) * static_cast<float>(tile_w), j * static_cast<float>(tile_h));
+													 trian[5].position = sf::Vector2f((i + 1) * static_cast<float>(tile_w), (j + 1) * static_cast<float>(tile_h));
 
-					// Textura del triángulo
-					trian[0].texCoords = sf::Vector2f(tU*tile_w, tV*tile_h);
-					trian[1].texCoords = sf::Vector2f((tU+1)*tile_w, tV*tile_h);
-					trian[2].texCoords = sf::Vector2f(tU*tile_w, (tV+1)*tile_h);
-					trian[3].texCoords = sf::Vector2f(tU*tile_w, (tV+1)*tile_h);
-					trian[4].texCoords = sf::Vector2f((tU+1)*tile_w, tV*tile_h);
-					trian[5].texCoords = sf::Vector2f((tU+1)*tile_w, (tV+1)*tile_h);
-				}
+													 // Textura del triángulo
+													 trian[0].texCoords = sf::Vector2f(tU * static_cast<float>(tile_w), tV * static_cast<float>(tile_h));
+													 trian[1].texCoords = sf::Vector2f((tU + 1) * static_cast<float>(tile_w), tV * static_cast<float>(tile_h));
+													 trian[2].texCoords = sf::Vector2f(tU * static_cast<float>(tile_w), (tV + 1) * static_cast<float>(tile_h));
+													 trian[3].texCoords = sf::Vector2f(tU * static_cast<float>(tile_w), (tV + 1) * static_cast<float>(tile_h));
+													 trian[4].texCoords = sf::Vector2f((tU + 1) * static_cast<float>(tile_w), tV * static_cast<float>(tile_h));
+													 trian[5].texCoords = sf::Vector2f((tU + 1) * static_cast<float>(tile_w), (tV + 1) * static_cast<float>(tile_h));
+													}
 			}
 		}
 		return true;

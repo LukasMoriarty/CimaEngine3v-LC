@@ -8,6 +8,7 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <memory>
 #include <unordered_set>
+#include "Motor/Utils/AnimLoader.hpp"
 
 namespace IVJ
 {
@@ -32,6 +33,12 @@ namespace IVJ
 			/// Cuerpo del jugador — tiene el sprite atlas de knife y su propio FSM.
 			/// Siempre se posiciona encima de jugador_ref (misma posición).
 			std::shared_ptr<Entidad> cuerpo;
+
+			// Pool para gestionar las zonas de spawn de enemigos (reserve capacity)
+			CE::Pool m_spawn_pool{50};
+
+			// Clips de animación de zombie para pasar al sistema de spawn
+			std::map<std::string, CE::AnimClip> clips_zombie;
 
 			// Player outline uniforms
 			sf::Glsl::Vec4 zombie_outline_color{1.f, 0.f, 0.f, 1.f};

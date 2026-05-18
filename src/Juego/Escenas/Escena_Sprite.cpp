@@ -51,7 +51,8 @@ namespace IVJ {
 		tiles_layers.push_back(TileMap());
 		tiles_layers[0].loadTileMap(ASSETS "/mapas/floors.txt");
 		// tiles_layers[1].loadTileMap(ASSETS "/mapas/walls.txt");
-		tiles_layers[1].loadTileMap(ASSETS "/mapas/walls_colisiones.txt", objetos);
+		// pass both the objects pool and the spawn pool to the tilemap loader
+		tiles_layers[1].loadTileMap(ASSETS "/mapas/walls_colisiones.txt", objetos, m_spawn_pool);
 		tiles_layers[0].atlas_texture.setSmooth(true);
 		tiles_layers[1].atlas_texture.setSmooth(true);
 
@@ -83,7 +84,7 @@ namespace IVJ {
 		// METADATA DE ANIMACION
 		auto clips_pies = CE::AnimLoader::cargar(ASSETS "/sprites/Top_Down_Survivor/feet/indices_animacion.json");
 		auto clips_knife = CE::AnimLoader::cargar(ASSETS "/sprites/Top_Down_Survivor/knife/indices_animacion.json");
-		auto clips_zombie = CE::AnimLoader::cargar(ASSETS "/sprites/zombie/indices_animacion.json");
+		clips_zombie = CE::AnimLoader::cargar(ASSETS "/sprites/zombie/indices_animacion.json");
 
 		// PIES (jugador_ref)
 		auto trans = jugador_ref->getTransformada();
@@ -130,45 +131,6 @@ namespace IVJ {
 		cuerpo->addComponente(std::make_shared<IArmaMelee>(32.f, 32.f, 20));
 
 		objetos.agregarPool(cuerpo);
-
-		// ZOMBIE
-		auto zombie = std::make_shared<Entidad>();
-		zombie->getTransformada()->posicion = CE::Vector2D{2200.f, 2200.f};
-		zombie->getTransformada()->velocidad = CE::Vector2D{0.f, 0.f};
-		zombie->getStats()->hp = 100;
-		zombie->getStats()->hp_max = 100;
-		zombie->addComponente(
-				std::make_shared<CE::ISprite>(CE::GestorAssets::Get().getTextura("zombie"), 384, 384, .5f));
-
-		auto fsm_zombie = std::make_shared<IdleZombie>(clips_zombie, 0.1f);
-
-		auto mq_zombie = std::make_shared<IMaquinaEstado>();
-		mq_zombie->fsm = fsm_zombie;
-		zombie->addComponente(mq_zombie);
-		zombie->setFSM(fsm_zombie);
-
-		zombie->addComponente(std::make_shared<CE::IBoundingBox>(CE::Vector2D{16.f, 16.f}));
-		zombie->addComponente(std::make_shared<IRangoAggro>(ZombieConst::RANGO_AGGRO));
-		zombie->addComponente(std::make_shared<IEntorno>(&objetos.getPool()));
-		zombie->addComponente(std::make_shared<ITarget>(jugador_ref.get()));
-
-		// Text HP debug
-		auto texto_hp = std::make_shared<CE::ITexto>(CE::GestorAssets::Get().getFont("default_font"), "HP: 100");
-		texto_hp->m_texto.setCharacterSize(20);
-		texto_hp->m_texto.setFillColor(sf::Color::Red);
-		texto_hp->m_texto.setOutlineColor(sf::Color::Black);
-		texto_hp->m_texto.setOutlineThickness(1.f);
-		zombie->addComponente(texto_hp);
-
-		// Basic Shader for Player: Outline
-		auto zombie_shader = std::make_shared<CE::IShader>("", ASSETS "/shaders/contorno.frag");
-		zombie_shader->setVector4("uOutlineColor", &zombie_outline_color);
-		zombie_shader->setEscalar("uThickness", &zombie_outline_thickness);
-		zombie_shader->setVector2("uTexSize", &zombie_tex_size);
-		zombie->addComponente(zombie_shader);
-
-		// agregar a pool
-		objetos.agregarPool(zombie);
 
 		if (sf::Joystick::isConnected(0))
 			std::cout << "Gamepad conectado: " << sf::Joystick::getIdentification(0).name.toAnsiString() << std::endl;
@@ -277,6 +239,9 @@ namespace IVJ {
 		// Reemplaza tu lógica vieja de colisión por la llamada al nuevo sistema:
 		SistemaAtaqueMelee(*cuerpo, objetos.getPool());
 
+		// 7. Sistema de Spawners
+		SistemaSpawn(objetos, m_spawn_pool, clips_zombie, jugador_ref.get());
+
 		// 6. Actualizar objetos del pool (NPCs, etc.)
 		auto &pool = objetos.getPool();
 		std::erase_if(pool, [](const std::shared_ptr<CE::Objeto> &e) {
@@ -355,8 +320,22 @@ namespace IVJ {
 			if (arma && arma->atacando) {
 				CE::Render::Get().AddToDraw(arma->hitbox_debug);
 			}
-#endif
 		}
+		// Render debug info for spawn zones
+		for (auto &spawn_zone : m_spawn_pool.getPool()) {
+			auto respawn_data = spawn_zone->getComponente<CE::IRespawn>();
+			if (respawn_data) {
+				sf::RectangleShape spawn_rect;
+				spawn_rect.setSize({(float)respawn_data->width, (float)respawn_data->height});
+				spawn_rect.setOrigin({respawn_data->width / 2.f, respawn_data->height / 2.f});
+				spawn_rect.setPosition({spawn_zone->getTransformada()->posicion.x, spawn_zone->getTransformada()->posicion.y});
+				spawn_rect.setFillColor(sf::Color(0, 255, 0, 60)); // Translucent green
+				spawn_rect.setOutlineThickness(1.f);
+				spawn_rect.setOutlineColor(sf::Color::Green);
+				CE::Render::Get().AddToDraw(spawn_rect);
+			}
+		}
+#endif
 
 		// Si el ataque está en proceso, dibujar la hitbox (efecto visual)
 		if (ataque_procesado) {

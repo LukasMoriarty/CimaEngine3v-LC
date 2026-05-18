@@ -3,6 +3,7 @@
 #include "../../Motor/Componentes/IComponentes.hpp"
 #include "../Componentes/IJComponentes.hpp"
 #include "../../Motor/Primitivos/CEPool.hpp"
+#include <Motor/Utils/AnimLoader.hpp>
 #
 
 namespace IVJ
@@ -13,7 +14,7 @@ namespace IVJ
     [[maybe_unused]]bool SistemaColAABB(CE::Objeto& A,CE::Objeto& B, bool resolucion =false);
     [[maybe_unused]]bool SistemaColAABBMid(CE::Objeto& A, CE::Objeto& B, bool resolucion =false);
 
-    [[maybe_unused]]void SistemaSpawn(CE::Pool& spawns);
+    [[maybe_unused]]void SistemaSpawn(CE::Pool& game_pool, CE::Pool& spawn_zones, const std::map<std::string, CE::AnimClip>& zombie_clips, CE::Objeto* player_target);
     [[maybe_unused]]void SistemaPaths(std::vector<std::shared_ptr<CE::Objeto>>& obj);
     [[maybe_unused]]bool checkRayoHit(CE::Objeto& npc, CE::Vector2D& p1, CE::Vector2D& p2);
 

@@ -12,6 +12,8 @@
 #include "../../Motor/Camaras/CamarasGestor.hpp"
 #include <SFML/Window/Mouse.hpp>
 
+#include <Juego/Maquinas/Zombie/IdleZombie.hpp>
+
 namespace IVJ
 {
 	void SistemaControl(CE::Objeto&ente, float dt)
@@ -147,46 +149,70 @@ namespace IVJ
 		return (sumMidX - dx >0) && (sumMidY - dy >0);
 	}
 
-	void SistemaSpawn(CE::Pool& spawns)
+	void SistemaSpawn(CE::Pool& game_pool, CE::Pool& spawn_zones, const std::map<std::string, CE::AnimClip>& zombie_clips, CE::Objeto* player_target)
 	{
-		for(auto &s : spawns.getPool())
+		for(auto &s : spawn_zones.getPool())
 		{
 			auto respawndata = s->getComponente<CE::IRespawn>();
 			if(!respawndata || respawndata->curr_spawn >= respawndata->max_spawn)
 				continue;
 			if(respawndata->timer_actual >= respawndata->timer_maximo)
 			{
-				auto malillo = std::make_shared<Entidad>();
-				malillo->addComponente(std::make_shared<CE::IPaths>(60))
-				.addComponente(std::make_shared<CE::ISprite>(
-							CE::GestorAssets::Get().getTextura("hoja_blue"),68,91,1.f))
-				.addComponente(std::make_shared<CE::IShader>("",ASSETS "/shaders/contorno.frag"));
-				malillo->getComponente<CE::IPaths>()->addCurva(
-						CE::Vector2D{500.f,300.f},CE::Vector2D{600.f,500.f},CE::Vector2D{800.f,300.f});
-				malillo->getComponente<CE::IPaths>()->addCurva(
-						CE::Vector2D{800.f,300.f},CE::Vector2D{600.f,100.f},CE::Vector2D{500.f,300.f});
-
-				auto shader = malillo->getComponente<CE::IShader>();
-				static sf::Texture textura=malillo->getComponente<CE::ISprite>()->m_sprite.getTexture();
-				static sf::Glsl::Vec4 uOutlineColor{1.f,0.f,1.f,1.f};
-				static  float uThickness = 0.15f;
-				auto w = malillo->getComponente<CE::ISprite>()->width;
-				auto h = malillo->getComponente<CE::ISprite>()->height;
-				static sf::Glsl::Vec2 uTexSize{static_cast<float>(w),static_cast<float>(h)};
-				shader->setTextura("uTex",&textura);
-				shader->setVector4("uOutlineColor",&uOutlineColor);
-				shader->setEscalar("uThickness",&uThickness);
-				shader->setVector2("uTexSize",&uTexSize);
-
-				malillo->getStats()->hp =100;
+				auto zombie = std::make_shared<Entidad>();
+				// Set initial position
 				int size_x = respawndata->width;
 				int size_y = respawndata->height;
-				float x0 = s->getTransformada()->posicion.x-size_x/2.f;
-				float y0 = s->getTransformada()->posicion.y-size_y/2.f;
-				float x = x0+(rand()%size_x);
-				float y = y0+(rand()%size_y);
-				malillo->setPosicion(x,y);
-				spawns.agregarPool(malillo);
+				float x0 = s->getTransformada()->posicion.x - size_x/2.f;
+				float y0 = s->getTransformada()->posicion.y - size_y/2.f;
+				float x = x0 + (rand() % size_x);
+				float y = y0 + (rand() % size_y);
+				zombie->setPosicion(x,y);
+
+				// Basic Stats
+				zombie->getStats()->hp = 100;
+				zombie->getStats()->hp_max = 100;
+				zombie->getTransformada()->velocidad = CE::Vector2D{0.f, 0.f};
+
+				// Sprite
+				zombie->addComponente(
+					std::make_shared<CE::ISprite>(CE::GestorAssets::Get().getTextura("zombie"), 384, 384, .5f));
+
+				// FSM
+				auto fsm_zombie = std::make_shared<IdleZombie>(zombie_clips, 0.1f);
+				auto mq_zombie = std::make_shared<IMaquinaEstado>();
+				mq_zombie->fsm = fsm_zombie;
+				zombie->addComponente(mq_zombie);
+				zombie->setFSM(fsm_zombie);
+
+				// Bounding Box
+				zombie->addComponente(std::make_shared<CE::IBoundingBox>(CE::Vector2D{16.f, 16.f}));
+				// Aggro Range
+				zombie->addComponente(std::make_shared<IRangoAggro>(ZombieConst::RANGO_AGGRO));
+				// Environment (for LOS)
+				zombie->addComponente(std::make_shared<IEntorno>(&game_pool.getPool()));
+				// Target (player)
+				zombie->addComponente(std::make_shared<ITarget>(player_target));
+
+				// Text HP debug
+				auto texto_hp = std::make_shared<CE::ITexto>(CE::GestorAssets::Get().getFont("default_font"), "HP: 100");
+				texto_hp->m_texto.setCharacterSize(20);
+				texto_hp->m_texto.setFillColor(sf::Color::Red);
+				texto_hp->m_texto.setOutlineColor(sf::Color::Black);
+				texto_hp->m_texto.setOutlineThickness(1.f);
+				zombie->addComponente(texto_hp);
+
+				// Basic Shader: Outline (default red for enemies)
+				auto zombie_outline_color = sf::Glsl::Vec4{1.f, 0.f, 0.f, 1.f};
+				float zombie_outline_thickness = 0.015f;
+				sf::Vector2f zombie_tex_size = {384.f, 384.f};
+
+				auto zombie_shader = std::make_shared<CE::IShader>("", ASSETS "/shaders/contorno.frag");
+				zombie_shader->setVector4("uOutlineColor", &zombie_outline_color);
+				zombie_shader->setEscalar("uThickness", &zombie_outline_thickness);
+				zombie_shader->setVector2("uTexSize", &zombie_tex_size);
+				zombie->addComponente(zombie_shader);
+
+				game_pool.agregarPool(zombie);
 				respawndata->timer_actual=0;
 				respawndata->curr_spawn++;
 			}

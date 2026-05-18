@@ -12,7 +12,7 @@ namespace IVJ
             explicit TileMap()= default;
         public:
             bool loadTileMap(const std::string& atlas_path);
-            bool loadTileMap(const std::string& atlas_path,CE::Pool& objetos);
+            bool loadTileMap(const std::string& atlas_path,CE::Pool& objetos, CE::Pool& spawn_pool);
             virtual void draw(sf::RenderTarget& target,sf::RenderStates state) const;
             // TODO: shaders en tilemap
             bool loadTileMapShaders(const std::string& vert, const std::string& frag);
