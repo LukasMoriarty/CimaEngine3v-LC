@@ -349,8 +349,9 @@ namespace IVJ
 	public:
 		float radio;
 		float offset_adelante; // Distancia frente al personaje
-		int danio;
+		int damage;
 		bool atacando{false};  // Se activa desde la FSM (AtacarCuerpoKnife)
+		bool swing_played{false};	// true mientras el swing SFX ya se disparó este ataque
 
 		// Guarda a quién ya golpeó en este swing para no repetir daño
 		std::unordered_set<CE::Objeto *> objs_golpeados;
@@ -358,8 +359,8 @@ namespace IVJ
 		// Para debug (se dibuja si atacando == true)
 		sf::CircleShape hitbox_debug;
 
-		explicit IArmaMelee(float radio = 48.f, float offset = 48.f, int danio = 15)
-			: CE::IComponentes{}, radio(radio), offset_adelante(offset), danio(danio)
+		explicit IArmaMelee(float radio = 48.f, float offset = 48.f, int damage = 15)
+			: CE::IComponentes{}, radio(radio), offset_adelante(offset), damage(damage)
 		{
 			hitbox_debug.setRadius(radio);
 			hitbox_debug.setOrigin({radio, radio});

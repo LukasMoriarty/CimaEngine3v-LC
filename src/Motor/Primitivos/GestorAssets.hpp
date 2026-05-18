@@ -118,9 +118,6 @@ namespace CE
             
             /** @brief Caché de música cargada (soporta loop) */
             std::map<std::string, std::shared_ptr<sf::Music>> hashMusica;
-            
-            /** @brief Buffer de sonido compartido para carga de efectos */
-            sf::SoundBuffer sound_buffer;
 
     		/** @brief Caché de buffers de sonido para evitar recargas repetidas */
     		std::map<std::string, std::shared_ptr<sf::SoundBuffer>> hashBuffers;

@@ -127,6 +127,8 @@ namespace IVJ {
 		cuerpo->addComponente(mq_cuerpo);
 		cuerpo->setFSM(fsm_cuerpo);
 
+		cuerpo->addComponente(std::make_shared<IArmaMelee>(32.f, 32.f, 20));
+
 		objetos.agregarPool(cuerpo);
 
 		// ZOMBIE
@@ -272,9 +274,6 @@ namespace IVJ {
 			cuerpo->getComponente<CE::ISprite>()->m_sprite.setRotation(sf::radians(cuerpo->getTransformada()->angulo));
 		}
 
-		// Le damos 48px de radio, 48px de offset hacia adelante y 25 de daño
-		cuerpo->addComponente(std::make_shared<IArmaMelee>(48.f, 48.f, 25));
-
 		// Reemplaza tu lógica vieja de colisión por la llamada al nuevo sistema:
 		SistemaAtaqueMelee(*cuerpo, objetos.getPool());
 
@@ -331,6 +330,10 @@ namespace IVJ {
 		for (auto &al: tiles_layers)
 			CE::Render::Get().AddToDraw(al);
 
+		// Pies primero (debajo), luego cuerpo (encima)
+		CE::Render::Get().AddToDraw(*jugador_ref);
+		CE::Render::Get().AddToDraw(*cuerpo);
+
 		// Objetos del pool
 		for (auto &obj: objetos.getPool()) {
 			if (obj->tieneComponente<IRangoAggro>()) {
@@ -354,10 +357,6 @@ namespace IVJ {
 			}
 #endif
 		}
-
-		// Pies primero (debajo), luego cuerpo (encima)
-		CE::Render::Get().AddToDraw(*jugador_ref);
-		CE::Render::Get().AddToDraw(*cuerpo);
 
 		// Si el ataque está en proceso, dibujar la hitbox (efecto visual)
 		if (ataque_procesado) {
