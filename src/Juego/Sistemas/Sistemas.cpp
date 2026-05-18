@@ -13,6 +13,7 @@
 #include <SFML/Window/Mouse.hpp>
 
 #include <Juego/Maquinas/Zombie/IdleZombie.hpp>
+#include <Juego/Maquinas/FX/BloodSplash.hpp>
 
 namespace IVJ
 {
@@ -681,7 +682,7 @@ namespace IVJ
 		trans->posicion.suma(vel.escala(dt));
 	}
 
-	void SistemaAtaqueMelee(CE::Objeto& atacante, const std::vector<std::shared_ptr<CE::Objeto>>& posibles_victimas)
+	void SistemaAtaqueMelee(CE::Objeto& atacante, CE::Pool& game_pool)
 	{
 	    if (!atacante.tieneComponente<IArmaMelee>()) return;
 
@@ -691,13 +692,6 @@ namespace IVJ
 			arma->objs_golpeados.clear();
 			arma->swing_played = false; // listo para el próximo ataque
 			return;
-		}
-
-		// Sonido de swing: se reproduce una sola vez al comenzar cada ataque
-		if (!arma->swing_played) {
-			std::string skey = "swing0" + std::to_string((std::rand() % 4) + 1);
-			CE::GestorAssets::Get().getSonido(skey).play();
-			arma->swing_played = true;
 		}
 
 		auto trans = atacante.getTransformada();
@@ -715,8 +709,9 @@ namespace IVJ
 	    bool ha_golpeado = false;
 
 	    // 2. Comprobar colisiones
-	    for (const auto& obj_ptr : posibles_victimas) {
-	        CE::Objeto& obj = *obj_ptr;
+		// We'll iterate the game's pool to consider potential victims
+		for (const auto& obj_ptr : game_pool.getPool()) {
+			CE::Objeto& obj = *obj_ptr;
 
 	        // Ignorar a sí mismo y a objetos muertos o sin vida
 	        if (&obj == &atacante) continue;
@@ -738,23 +733,64 @@ namespace IVJ
 	        {
 	            // IMPACTO
 	            auto stats = obj.getStats(); // o obj.getComponente<IStats>()
-	            if (stats->hp > 0)
-	            {
-	                stats->hp = (stats->hp > arma->damage) ? stats->hp - arma->damage : 0;
-	                arma->objs_golpeados.insert(&obj); // Registrar que ya fue golpeado
-	                ha_golpeado = true;
+	    		if (stats->hp > 0)
+	    		{
+	    			// Apply damage
+	    			stats->hp = (stats->hp > arma->damage) ? stats->hp - arma->damage : 0;
+	    			arma->objs_golpeados.insert(&obj); // Registrar que ya fue golpeado
+	    			ha_golpeado = true;
 
-	                if (obj.tieneComponente<CE::ITexto>()) {
-	                    obj.getComponente<CE::ITexto>()->m_texto.setString("HP: " + std::to_string(stats->hp));
-	                }
-	            }
+	    			if (obj.tieneComponente<CE::ITexto>()) {
+	    				obj.getComponente<CE::ITexto>()->m_texto.setString("HP: " + std::to_string(stats->hp));
+	    			}
+
+	    			// Spawn blood splash FX as a transient entity
+	    			// Ensure the texture is loaded once (GestorAssets caches by key)
+	    			static bool blood_loaded = false;
+	    			if (!blood_loaded) {
+	    				CE::GestorAssets::Get().agregarTextura("blood_splash", ASSETS "/fx/BloodFXBatch1/BloodSplash/bloodsplash-atlas.png",
+	    					CE::Vector2D{0.f, 0.f}, CE::Vector2D{440.f, 279.f});
+	    				blood_loaded = true;
+	    			}
+	    			std::cout << "Blood loaded? " << blood_loaded << std::endl;
+
+					// Create the splash entity
+					auto sangre_ent = std::make_shared<Entidad>();
+					sangre_ent->addComponente(std::make_shared<CE::ISprite>(CE::GestorAssets::Get().getTextura("blood_splash"), 110, 93, 1.f));
+					sangre_ent->setPosicion(pos_enemigo.x, pos_enemigo.y); // Inicialmente en el centro del enemigo
+	    			//sangre_ent->setPosicion(centro_hitbox.x, centro_hitbox.y);
+
+					// Add temporal marker so scene can remove it when finished
+					sangre_ent->addComponente(std::make_shared<ITemporal>());
+
+					// Play animation via BloodSplash FSM (one-shot)
+					CE::AnimClip clip{0, 11};
+					auto fsm_sangre = std::make_shared<BloodSplash>(clip, 0.05f);
+					auto mq = std::make_shared<IMaquinaEstado>();
+					mq->fsm = fsm_sangre;
+					sangre_ent->addComponente(mq);
+					sangre_ent->setFSM(fsm_sangre);
+
+					// Add to the game's pool so it will be updated and rendered
+					game_pool.agregarPool(sangre_ent);
+				}
 	        }
 	    }
 
-		// 3. Efectos de Sonido
-		if (ha_golpeado) {
-			std::string key = "slash0" + std::to_string((std::rand() % 4) + 1);
-			CE::GestorAssets::Get().getSonido(key).play();
+		// Sonido
+		if (!arma->swing_played) {
+			if (ha_golpeado) {
+				std::string key = "slash0" + std::to_string((std::rand() % 4) + 1);
+				CE::GestorAssets::Get().getSonido(key).play();
+				std::cout << "Reproduciendo " << key << std::endl;
+				arma->swing_played = true;
+			}
+			else {
+				std::string skey = "swing0" + std::to_string((std::rand() % 4) + 1);
+				CE::GestorAssets::Get().getSonido(skey).play();
+				std::cout << "Reproduciendo " << skey << std::endl;
+				arma->swing_played = true;
+			}
 		}
 	}
 } // namespace IVJ

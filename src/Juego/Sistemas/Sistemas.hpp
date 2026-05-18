@@ -44,5 +44,5 @@ namespace IVJ
 
     [[maybe_unused]] void SistemaZombieSeguir(CE::Objeto& zombie, CE::Vector2D& target, const std::vector<std::shared_ptr<CE::Objeto>>& obstaculos, float dt);
 
-	[[maybe_unused]] void SistemaAtaqueMelee(CE::Objeto& atacante, const std::vector<std::shared_ptr<CE::Objeto>>& posibles_victimas);
+    [[maybe_unused]] void SistemaAtaqueMelee(CE::Objeto& atacante, CE::Pool& game_pool);
 }

@@ -237,7 +237,7 @@ namespace IVJ {
 		}
 
 		// Reemplaza tu lógica vieja de colisión por la llamada al nuevo sistema:
-		SistemaAtaqueMelee(*cuerpo, objetos.getPool());
+		SistemaAtaqueMelee(*cuerpo, objetos);
 
 		// 7. Sistema de Spawners
 		SistemaSpawn(objetos, m_spawn_pool, clips_zombie, jugador_ref.get());
@@ -245,7 +245,11 @@ namespace IVJ {
 		// 6. Actualizar objetos del pool (NPCs, etc.)
 		auto &pool = objetos.getPool();
 		std::erase_if(pool, [](const std::shared_ptr<CE::Objeto> &e) {
-			return e->tieneComponente<ITarget>() && e->getStats()->hp <= 0;
+			// Remove dead NPCs (targets) and also remove temporary FX whose ITemporal::done is set
+			if (e->tieneComponente<ITarget>() && e->getStats()->hp <= 0) return true;
+			auto temp = e->getComponente<ITemporal>();
+			if (temp && temp->done) return true;
+			return false;
 		});
 
 		for (auto &obj: pool) {

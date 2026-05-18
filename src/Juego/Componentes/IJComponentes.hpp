@@ -203,6 +203,16 @@ namespace IVJ
 			int max_frame;
 	};
 
+	// Simple marker component for short-lived visual effects (e.g. blood splashes).
+	// When 'done' is set to true the scene can remove the object from its pool.
+	class ITemporal : public CE::IComponentes {
+		public:
+			explicit ITemporal() : done(false) {}
+			~ITemporal() override = default;
+		public:
+			bool done;
+	};
+
 	// Componente que representa una parte del cuerpo de la víbora
 	class ICParte : public CE::IComponentes
 	{

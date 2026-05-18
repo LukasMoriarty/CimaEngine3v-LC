@@ -1,0 +1,23 @@
+{
+    "metadata": {
+        "sprite_width": 110,
+        "sprite_height": 93,
+        "total_sprites": 11,
+        "suggested_grid": "4x3",
+        "suggested_atlas_size": "440x279px",
+        "montage_command": "montage *.png -tile 4x -geometry +0+0 -background transparent survivor-atlas.png"
+    },
+    "frames": {
+        "bloodsplash-01.png": 0,
+        "bloodsplash-02.png": 1,
+        "bloodsplash-03.png": 2,
+        "bloodsplash-04.png": 3,
+        "bloodsplash-05.png": 4,
+        "bloodsplash-06.png": 5,
+        "bloodsplash-07.png": 6,
+        "bloodsplash-08.png": 7,
+        "bloodsplash-09.png": 8,
+        "bloodsplash-10.png": 9,
+        "bloodsplash-11.png": 10
+    }
+}
