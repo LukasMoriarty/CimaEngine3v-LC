@@ -44,9 +44,25 @@ namespace IVJ
 			sf::Texture fog_tex;
 			float fog_tiempo{0.0f};
 
-			// Attack variables
+			// ── Attack constants ──────────────────────────────────────────────
+			/**
+			 * @brief Radius (in world units) of the melee attack hitbox.
+			 *
+			 * Tune this single value to adjust reach without hunting for
+			 * magic numbers scattered across the update loop.
+			 * The hitbox is centred ATTACK_HITBOX_RADIUS pixels ahead of the
+			 * player along the mouse direction.
+			 */
+			static constexpr float ATTACK_HITBOX_RADIUS = 48.f;
+
+			// ── Attack runtime state ──────────────────────────────────────────
 			bool ataque_procesado{false};
 			sf::CircleShape ataque_hitbox;
 			std::unordered_set<CE::Objeto *> objs_golpeados;
+
+			// ── Attack SFX state ──────────────────────────────────────────────
+			/// True after the swing SFX has fired for the current attack swing.
+			/// Resets when the player leaves the attack state.
+			bool swing_sfx_played{false};
 	};
 } // namespace IVJ

@@ -278,58 +278,94 @@ namespace IVJ {
 
 		if (ataque)
 		{
+			// ── Entrando al estado de ataque por primera vez en este golpe ──────
 			if (!ataque_procesado)
 			{
-				ataque_procesado = true;
+				ataque_procesado  = true;
+				swing_sfx_played  = false;
 				objs_golpeados.clear();
 			}
 
-			/*
-			auto mp = CE::Render::Get().GetMouseGamePos();	// mp es mouse position: posición del mouse en coordenadas de ventana
-			// wPos es la posición del mouse convertida a coordenadas del mundo (ajustada por la cámara)
-			sf::Vector2f wPos = CE::Render::Get().GetTextura().mapPixelToCoords(
-					sf::Vector2i((int) mp.x, (int) mp.y), CE::GestorCamaras::Get().getCamaraActiva().getView());
-
-			auto &pos = jugador_ref->getTransformada()->posicion;
-			float dx = wPos.x - pos.x;	// dx es la diferencia en x entre la posición del mouse y la posición del jugador
-			float dy = wPos.y - pos.y;	// dy es la diferencia en y entre la posición del mouse y la posición del jugador
-			float dist = std::sqrt(dx * dx + dy * dy);	// dist es la distancia entre el mouse y el jugador, usando Pitágoras
-			*/
+			// ── Reproducir el SFX del golpe una sola vez al inicio de cada golpe ──────────
+			// Elegir un clip aleatorio 01-04.
+			if (!swing_sfx_played)
+			{
+				swing_sfx_played = true;
+				int swing_idx = (rand() % 4) + 1;            // 1..4
+				std::string swing_key = "swing0" + std::to_string(swing_idx);
+				CE::GestorAssets::Get().getSonido(swing_key).play();
+			}
 
 			float nx = 0;	// nx: componente normalizado en x de la dirección del ataque
 			float ny = 0;	// ny: componente normalizado en y de la dirección del ataque
-			if (dist > 0) {	// Para evitar división por cero, solo normalizamos si la distancia es mayor que cero
+			if (dist > 0) {
+				// Para evitar división por cero, solo normalizamos si la distancia es mayor que cero
 				nx = dx / dist;
 				ny = dy / dist;
 			}
 
-			ataque_hitbox.setRadius(32.f);
-			ataque_hitbox.setOrigin({32.f, 32.f});
-			ataque_hitbox.setPosition({pos.x + nx * 32.f, pos.y + ny * 32.f});
+			// ── Construir la caja de golpe (utilizada también para renderizado) ────────────────────
+			ataque_hitbox.setRadius(ATTACK_HITBOX_RADIUS);
+			ataque_hitbox.setOrigin({ATTACK_HITBOX_RADIUS, ATTACK_HITBOX_RADIUS});
+			ataque_hitbox.setPosition({pos.x + nx * ATTACK_HITBOX_RADIUS,
+			                           pos.y + ny * ATTACK_HITBOX_RADIUS});
 			ataque_hitbox.setFillColor(sf::Color(255, 0, 0, 100));
 
-			for (auto &obj: objetos.getPool()) {
-				if (obj != jugador_ref && obj != cuerpo && obj->tieneComponente<ITarget>()) {
-					if (objs_golpeados.find(obj.get()) == objs_golpeados.end()) {
-						float zdx = obj->getTransformada()->posicion.x - ataque_hitbox.getPosition().x;
-						float zdy = obj->getTransformada()->posicion.y - ataque_hitbox.getPosition().y;
-						if (std::sqrt(zdx * zdx + zdy * zdy) < 48.f) {
-							objs_golpeados.insert(obj.get());
-							if (obj->getStats()->hp > 0) {
-								int new_hp = obj->getStats()->hp - 15;
-								obj->getStats()->hp = (new_hp < 0) ? 0 : new_hp;
-								if (obj->tieneComponente<CE::ITexto>()) {
-									obj->getComponente<CE::ITexto>()->m_texto.setString(
-											"HP: " + std::to_string(obj->getStats()->hp));
-								}
+			// ── Verificación de daño: la ventana de daño se abre al cruzar el
+			// midpoint y permanece abierta hasta markDamageDealt(). Usar
+			// shouldDealDamage() evita perder el golpe por jitter de frames.
+			if (ataque->shouldDealDamage())
+			{
+				bool hit_something = false;
+
+				for (auto &obj : objetos.getPool())
+				{
+					if (obj == jugador_ref || obj == cuerpo) continue;
+					if (!obj->tieneComponente<ITarget>())    continue;
+
+					// Saltar objetos ya golpeados en este golpe.
+					if (objs_golpeados.find(obj.get()) != objs_golpeados.end()) continue;
+
+					float zdx = obj->getTransformada()->posicion.x - ataque_hitbox.getPosition().x;
+					float zdy = obj->getTransformada()->posicion.y - ataque_hitbox.getPosition().y;
+
+					if (std::sqrt(zdx * zdx + zdy * zdy) < ATTACK_HITBOX_RADIUS + 16.f)
+					{
+						objs_golpeados.insert(obj.get());
+						hit_something = true;
+
+						if (obj->getStats()->hp > 0)
+						{
+							int new_hp = obj->getStats()->hp - 15;
+							obj->getStats()->hp = (new_hp < 0) ? 0 : new_hp;
+
+							if (obj->tieneComponente<CE::ITexto>())
+							{
+								obj->getComponente<CE::ITexto>()->m_texto.setString(
+									"HP: " + std::to_string(obj->getStats()->hp));
 							}
 						}
 					}
 				}
+
+				// ── Reproducir SFX de corte si algo fue golpeado ───────────────────────
+				if (hit_something)
+				{
+					int slash_idx = (rand() % 4) + 1;        // 1..4
+					std::string slash_key = "slash0" + std::to_string(slash_idx);
+					CE::GestorAssets::Get().getSonido(slash_key).play();
+				}
+
+				// Marcar para no reentrar en este bloque incluso si el indicador se activa nuevamente.
+				ataque->markDamageDealt();
 			}
-		} else {
-			ataque_procesado = false;
 		}
+		else
+		{
+			ataque_procesado = false;
+			swing_sfx_played = false;
+		}
+
 
 		// 6. Actualizar objetos del pool (NPCs, etc.)
 		auto &pool = objetos.getPool();
