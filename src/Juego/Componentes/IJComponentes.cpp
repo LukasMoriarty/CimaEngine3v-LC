@@ -170,7 +170,7 @@ namespace IVJ
 		marcador{sf::CircleShape{radio}}
 	{
 		marcador.setOrigin({radio,radio});
-		marcador.setFillColor(sf::Color{255,0,0,128});
+		marcador.setFillColor(sf::Color{255,0,0,64});	// mayor alpha = menos transparente
 	}
 
 	bool IRangoAggro::estaDentroRango(CE::Objeto& parent, CE::Vector2D& target)
