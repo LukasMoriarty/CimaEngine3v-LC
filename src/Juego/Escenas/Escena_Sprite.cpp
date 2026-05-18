@@ -272,100 +272,11 @@ namespace IVJ {
 			cuerpo->getComponente<CE::ISprite>()->m_sprite.setRotation(sf::radians(cuerpo->getTransformada()->angulo));
 		}
 
-		// LOGICA DE ATAQUE
-		auto fsm_cuerpo = cuerpo->getComponente<IMaquinaEstado>()->fsm;
-		auto *ataque = dynamic_cast<AtacarCuerpoKnife *>(fsm_cuerpo.get());
+		// Le damos 48px de radio, 48px de offset hacia adelante y 25 de daño
+		cuerpo->addComponente(std::make_shared<IArmaMelee>(48.f, 48.f, 25));
 
-		if (ataque)
-		{
-			// ── Entrando al estado de ataque por primera vez en este golpe ──────
-			if (!ataque_procesado)
-			{
-				ataque_procesado  = true;
-				swing_sfx_played  = false;
-				objs_golpeados.clear();
-			}
-
-			// ── Reproducir el SFX del golpe una sola vez al inicio de cada golpe ──────────
-			// Elegir un clip aleatorio 01-04.
-			if (!swing_sfx_played)
-			{
-				swing_sfx_played = true;
-				int swing_idx = (rand() % 4) + 1;            // 1..4
-				std::string swing_key = "swing0" + std::to_string(swing_idx);
-				CE::GestorAssets::Get().getSonido(swing_key).play();
-			}
-
-			float nx = 0;	// nx: componente normalizado en x de la dirección del ataque
-			float ny = 0;	// ny: componente normalizado en y de la dirección del ataque
-			if (dist > 0) {
-				// Para evitar división por cero, solo normalizamos si la distancia es mayor que cero
-				nx = dx / dist;
-				ny = dy / dist;
-			}
-
-			// ── Construir la caja de golpe (utilizada también para renderizado) ────────────────────
-			ataque_hitbox.setRadius(ATTACK_HITBOX_RADIUS);
-			ataque_hitbox.setOrigin({ATTACK_HITBOX_RADIUS, ATTACK_HITBOX_RADIUS});
-			ataque_hitbox.setPosition({pos.x + nx * ATTACK_HITBOX_RADIUS,
-			                           pos.y + ny * ATTACK_HITBOX_RADIUS});
-			ataque_hitbox.setFillColor(sf::Color(255, 0, 0, 100));
-
-			// ── Verificación de daño: la ventana de daño se abre al cruzar el
-			// midpoint y permanece abierta hasta markDamageDealt(). Usar
-			// shouldDealDamage() evita perder el golpe por jitter de frames.
-			if (ataque->shouldDealDamage())
-			{
-				bool hit_something = false;
-
-				for (auto &obj : objetos.getPool())
-				{
-					if (obj == jugador_ref || obj == cuerpo) continue;
-					if (!obj->tieneComponente<ITarget>())    continue;
-
-					// Saltar objetos ya golpeados en este golpe.
-					if (objs_golpeados.find(obj.get()) != objs_golpeados.end()) continue;
-
-					float zdx = obj->getTransformada()->posicion.x - ataque_hitbox.getPosition().x;
-					float zdy = obj->getTransformada()->posicion.y - ataque_hitbox.getPosition().y;
-
-					if (std::sqrt(zdx * zdx + zdy * zdy) < ATTACK_HITBOX_RADIUS + 16.f)
-					{
-						objs_golpeados.insert(obj.get());
-						hit_something = true;
-
-						if (obj->getStats()->hp > 0)
-						{
-							int new_hp = obj->getStats()->hp - 15;
-							obj->getStats()->hp = (new_hp < 0) ? 0 : new_hp;
-
-							if (obj->tieneComponente<CE::ITexto>())
-							{
-								obj->getComponente<CE::ITexto>()->m_texto.setString(
-									"HP: " + std::to_string(obj->getStats()->hp));
-							}
-						}
-					}
-				}
-
-				// ── Reproducir SFX de corte si algo fue golpeado ───────────────────────
-				if (hit_something)
-				{
-					int slash_idx = (rand() % 4) + 1;        // 1..4
-					std::string slash_key = "slash0" + std::to_string(slash_idx);
-					CE::GestorAssets::Get().getSonido(slash_key).play();
-				}
-
-				// Marcar para no reentrar en este bloque incluso si el indicador se activa nuevamente.
-				ataque->markDamageDealt();
-			}
-		}
-		else
-		{
-			ataque_procesado = false;
-			swing_sfx_played = false;
-		}
-
+		// Reemplaza tu lógica vieja de colisión por la llamada al nuevo sistema:
+		SistemaAtaqueMelee(*cuerpo, objetos.getPool());
 
 		// 6. Actualizar objetos del pool (NPCs, etc.)
 		auto &pool = objetos.getPool();
@@ -435,6 +346,11 @@ namespace IVJ {
 				texto->m_texto.setPosition({obj->getTransformada()->posicion.x - 30.f,
 										   obj->getTransformada()->posicion.y - 60.f});
 				CE::Render::Get().AddToDraw(texto->m_texto);
+			}
+
+			auto arma = cuerpo->getComponente<IArmaMelee>();
+			if (arma && arma->atacando) {
+				CE::Render::Get().AddToDraw(arma->hitbox_debug);
 			}
 #endif
 		}

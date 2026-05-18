@@ -655,4 +655,74 @@ namespace IVJ
 		trans->posicion.suma(vel.escala(dt));
 	}
 
+	void SistemaAtaqueMelee(CE::Objeto& atacante, const std::vector<std::shared_ptr<CE::Objeto>>& posibles_victimas)
+	{
+	    if (!atacante.tieneComponente<IArmaMelee>()) return;
+
+	    auto arma = atacante.getComponente<IArmaMelee>();
+
+	    // Si terminó la animación o no está atacando, limpiamos la lista
+	    if (!arma->atacando) {
+	        arma->objs_golpeados.clear();
+	        return;
+	    }
+
+	    auto trans = atacante.getTransformada();
+
+	    // 1. Calcular el centro de la hitbox frente al jugador
+	    // Asumiendo que el ángulo está en radianes.
+	    // Nota: Dependiendo de tu sistema de coordenadas de SFML, podrías necesitar ajustar el seno/coseno
+	    CE::Vector2D centro_hitbox = {
+	        trans->posicion.x + std::cos(trans->angulo) * arma->offset_adelante,
+	        trans->posicion.y + std::sin(trans->angulo) * arma->offset_adelante
+	    };
+
+	    // Actualizar posición gráfica (para debug)
+	    arma->hitbox_debug.setPosition({centro_hitbox.x, centro_hitbox.y});
+
+	    bool ha_golpeado = false;
+
+	    // 2. Comprobar colisiones
+	    for (const auto& obj_ptr : posibles_victimas) {
+	        CE::Objeto& obj = *obj_ptr;
+
+	        // Ignorar a sí mismo y a objetos muertos o sin vida
+	        if (&obj == &atacante) continue;
+	        if (!obj.tieneComponente<CE::IStats>() || !obj.tieneComponente<ITarget>()) continue;
+
+	        // Ignorar si ya lo golpeó en este mismo swing
+	        if (arma->objs_golpeados.count(&obj)) continue;
+
+	    	CE::Vector2D pos_enemigo = obj.getTransformada()->posicion;
+
+	    	// Teorema de Pitágoras (sin la raíz)
+	    	float dx = pos_enemigo.x - centro_hitbox.x;
+	    	float dy = pos_enemigo.y - centro_hitbox.y;
+	    	float dist_sq = (dx * dx) + (dy * dy);
+
+	    	float radio_enemigo = 20.f;
+
+	    	if (dist_sq < (arma->radio + radio_enemigo) * (arma->radio + radio_enemigo))
+	        {
+	            // IMPACTO
+	            auto stats = obj.getStats(); // o obj.getComponente<IStats>()
+	            if (stats->hp > 0)
+	            {
+	                stats->hp = (stats->hp > arma->danio) ? stats->hp - arma->danio : 0;
+	                arma->objs_golpeados.insert(&obj); // Registrar que ya fue golpeado
+	                ha_golpeado = true;
+
+	                if (obj.tieneComponente<CE::ITexto>()) {
+	                    obj.getComponente<CE::ITexto>()->m_texto.setString("HP: " + std::to_string(stats->hp));
+	                }
+	            }
+	        }
+	    }
+
+	    // 3. Efectos de Sonido
+	    if (ha_golpeado) {
+	        // std::string key = "slash0" + std::to_string((std::rand() % 4) + 1);
+	        // CE::GestorAssets::Get().getSonido(key).play();
+	    }
+	}
 } // namespace IVJ

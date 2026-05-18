@@ -42,9 +42,17 @@ namespace IVJ
 
 		// Recompute in case the clip was changed before entering.
 		damage_frame = std::max(1, m_clip.frame_count / 2);
+
+		if (obj.tieneComponente<IArmaMelee>()) {
+			obj.getComponente<IArmaMelee>()->atacando = true;
+		}
 	}
 
-	void AtacarCuerpoKnife::onSalir(const Entidad& /*obj*/) {}
+	void AtacarCuerpoKnife::onSalir(const Entidad& obj) {
+		if (obj.tieneComponente<IArmaMelee>()) {
+			obj.getComponente<IArmaMelee>()->atacando = false;
+		}
+	}
 
 	void AtacarCuerpoKnife::onUpdate(const Entidad& /*obj*/, float dt)
 	{

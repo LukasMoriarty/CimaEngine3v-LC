@@ -1,7 +1,10 @@
 #pragma once
-#include "../Maquinas/FSM.hpp"
+#include <unordered_set>
+
+
 #include "../../Motor/Componentes/IComponentes.hpp"
 #include "../../Motor/Primitivos/Objetos.hpp"
+#include "../Maquinas/FSM.hpp"
 
 namespace IVJ
 {
@@ -340,5 +343,27 @@ namespace IVJ
 		public:
 			explicit IEntorno(const std::vector<std::shared_ptr<CE::Objeto>>* pool) : pool(pool) {}
 			const std::vector<std::shared_ptr<CE::Objeto>>* pool;
+	};
+
+	class IArmaMelee : public CE::IComponentes {
+	public:
+		float radio;
+		float offset_adelante; // Distancia frente al personaje
+		int danio;
+		bool atacando{false};  // Se activa desde la FSM (AtacarCuerpoKnife)
+
+		// Guarda a quién ya golpeó en este swing para no repetir daño
+		std::unordered_set<CE::Objeto *> objs_golpeados;
+
+		// Para debug (se dibuja si atacando == true)
+		sf::CircleShape hitbox_debug;
+
+		explicit IArmaMelee(float radio = 48.f, float offset = 48.f, int danio = 15)
+			: CE::IComponentes{}, radio(radio), offset_adelante(offset), danio(danio)
+		{
+			hitbox_debug.setRadius(radio);
+			hitbox_debug.setOrigin({radio, radio});
+			hitbox_debug.setFillColor(sf::Color(255, 0, 0, 100)); // Rojo semi-transparente
+		}
 	};
 } // namespace IVJ

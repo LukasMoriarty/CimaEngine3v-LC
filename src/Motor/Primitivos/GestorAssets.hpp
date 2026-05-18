@@ -121,6 +121,9 @@ namespace CE
             
             /** @brief Buffer de sonido compartido para carga de efectos */
             sf::SoundBuffer sound_buffer;
+
+    		/** @brief Caché de buffers de sonido para evitar recargas repetidas */
+    		std::map<std::string, std::shared_ptr<sf::SoundBuffer>> hashBuffers;
             
             /** @brief Instancia singleton del gestor */
             static inline GestorAssets* instancia=nullptr;
