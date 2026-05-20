@@ -71,11 +71,18 @@ Additional notes (mouse & gamepad):
 Located in `src/Juego/Sistemas/Sistemas.hpp` - namespace IVJ, marked `[[maybe_unused]]`:
 - `SistemaControl()` - Map inputs to entity movement
 - `SistemaMover()` - Apply velocity to transform
-- `SistemaColAABB()` - Rectangle collision detection + optional resolution
+- `SistemaColAABB()` / `SistemaColAABBMid()` - Rectangle collision detection + optional resolution
 - `SistemaSpawn()` - Respawn management via Pool
 - `SistemaPaths()` - Bezier curve entity movement
 - `SistemaZombieSeguir()` - AI pathfinding with line-of-sight
+- `checkLOS()` - Line-of-sight check for obstacles
+- `SistemaNPCLookTarget()` - NPC face/aim toward target
+- `SistemaAtaqueMelee()` - Melee attack hitbox + damage application
+- `SistemaMoverBalas()` - Projectile movement
+- `SistemaDialogos()` - Manage dialog box display
+- `SistemaGirar()` - Rotation/spinning behavior (IGirar component)
 - Debug: `pintarLinea()` - Draw debug lines to screen
+- `revisarDistanciaInteraccion()` - Check if player within interact range of NPC
 
 Note: FSMs may receive mouse-direction parameters. Several FSM implementations provide an overload `onInputs(const CE::IControl& control, float mouse_nx, float mouse_ny)` so animation/state transitions can depend on the mouse direction (see `src/Juego/Maquinas/FSMZombie.hpp` and concrete FSMs). `Entidad::inputFSM()` performs the dispatching logic.
 
@@ -85,7 +92,39 @@ Note: FSMs may receive mouse-direction parameters. Several FSM implementations p
 
 Required methods: `onInit()`, `onFinal()`, `onUpdate(float dt)`, `onRender()`, `onInputs(*)`. Contains `CE::Pool objetos` for entities and button→action mapping. 
 
-Concrete scenes in `src/Juego/Escenas/` (Escena_Menu, Escena_Prueba, Escena_SS, Escena_Sprite, etc.). Each registers game state and object lifecycle.
+Concrete scenes in `src/Juego/Escenas/` (Escena_Menu, Escena_Sprite). Each registers game state and object lifecycle.
+
+## Game-Specific Components (IJComponentes)
+
+Located in `src/Juego/Componentes/IJComponentes.hpp` - extends `CE::IComponentes` for game logic:
+
+**FSM & AI**:
+- `IMaquinaEstado`: Holds reference to entity's FSM (Finite State Machine)
+- `ITarget`: Stores pointer to current target entity
+- `IRangoAggro`: Detection radius with helper `estaDentroRango()` - used for NPC aggression ranges
+- `IEntorno`: Reference to environment pool (for pathfinding obstacles, neighbors)
+
+**Interaction & Dialog**:
+- `IInteractuable`: Abstract base for interactive objects; `onInteractuar(CE::Objeto&)` called when player interacts
+- `IIndicador`: Visual indicator above NPCs (sprite + shader, used with `SistemaDialogos`)
+- `IDialogo`: Dialog box text display; auto-wraps lines with `agregarSaltoLinea()`
+
+**Movement & Behavior**:
+- `IGirar`: Rotation with `angulo` and `radio` for spinning behavior
+- `IArribaAbajo`: Vertical oscillation with `minY`, `maxY`, `velocidad` (Lab 2–3)
+- `IWave`: Wave motion parameters: `amp` (amplitude), `freq` (frequency), `phase` (Lab 2–3)
+- `ICirculos`: Circular movement with `radio` and `velocidad` (Lab 2–3)
+- `ITriangulo`: Triangle shape with `angulo` rotation (Lab 2–3)
+
+**Combat & Effects**:
+- `IArmaMelee`: Melee weapon data - `radio` (hitbox radius), `offset_adelante` (distance ahead), `damage`, `atacando` flag, `objs_golpeados` set to prevent multi-hit. Includes debug hitbox shape.
+- `IRayo`: Ray/laser projectile - stores start/end points and magnitude
+- `IPistola`: Gun component with `cooldown` timer and `puedeDisparar()` / `disparar()` helpers (to implement YET)
+
+**Particle & Temporary Effects**:
+- `IEmisor`: Particle emitter - references parent entity and prefab; `crearParticula()` spawns copies with rotation/velocity; pool accessed via `getPool()`
+- `ITemporal`: Marker component - set `done = true` when effect finishes (signal scene to remove object from pool)
+- `ICTimer`: Frame-based timer (`curr_frame`, `max_frame`) for effect timing
 
 ## Rendering & GUI
 
@@ -126,11 +165,21 @@ Motor/
 
 Juego/
   ├─ objetos/               # Entidad (game entity), Persona, TileMap, Texto
-  ├─ Componentes/           # Game-specific components (IDialogo, etc.)
+  ├─ Componentes/           # Game-specific components (IDialogo, IMaquinaEstado, etc.)
   ├─ Escenas/               # Scene implementations
-  ├─ Sistemas/              # Game systems (movement, collision, AI, etc.)
+  ├─ Sistemas/              # Game systems (movement, collision, AI, attacks, epidemics)
+  ├─ Figuras/               # Shape classes (Rectangulo, Triangulo, Circulo) for lab exercises
   ├─ Maquinas/              # FSM (finite state machines)
-  └─ Juego.cpp/hpp          # Ce::GameLayer implementation
+  │  ├─ Pies/               # Player feet animation FSM
+  │  ├─ Cuerpo/             # Player body/weapon animation FSM
+  │  ├─ Zombie/             # Zombie AI behavior FSM
+  │  ├─ Balas/              # Projectile/bullet FSMs
+  │  ├─ Naves/              # Ship/enemy FSMs
+  │  ├─ Bosses/             # Boss behavior FSMs
+  │  ├─ FX/                 # Visual effect FSMs (e.g., BloodSplash)
+  │  ├─ FSM.hpp             # Base FSM abstract class
+  │  └─ FSMBoss.hpp         # Boss-specific FSM base
+  └─ Juego.cpp/hpp          # GameLayer implementation
 ```
 
 ## C++ Standard & Compiler Flags
@@ -140,6 +189,36 @@ Juego/
 - **Release**: `-O2` (optimization)
 - **RTTI required**: extensive use of `dynamic_cast<T*>()` in component system
 
+## Advanced Patterns & Systems
+
+### Particle Effects & Temporary Objects
+
+**Pattern**: Use `IEmisor` component to spawn particles, mark them with `ITemporal` to auto-remove when done.
+
+Example structure:
+1. Create a prefab Entidad with an animation (ISprite) and ITemporal marker
+2. Parent entity adds `IEmisor(parent, prefab)` component
+3. Call `IEmisor::crearParticula()` from FSM or system to spawn copies
+4. Particle's behavior FSM (e.g., BloodSplash in `src/Juego/Maquinas/FX/BloodSplash.cpp`) sets `ITemporal::done = true` when animation ends
+5. Scene's `onUpdate()` removes objects where `getComponente<ITemporal>()->done == true`
+
+**Key files**: `src/Juego/Componentes/IJComponentes.hpp` (IEmisor, ITemporal), `src/Juego/Maquinas/FX/` (effect FSMs)
+
+### Melee Combat System
+
+**Pattern**: Player has `IArmaMelee` component; when attacking FSM state is active, scene calls `SistemaAtaqueMelee()` each frame.
+
+Workflow:
+1. Player entity equipped with `IArmaMelee(radius, offset_adelante, damage)`
+2. Player FSM enters attack state (sets `IArmaMelee::atacando = true`)
+3. Scene's `onUpdate()` calls `SistemaAtaqueMelee(player, game_pool)` while `atacando == true`
+4. System center hitbox at `player_pos + offset_adelante * mouse_direction`, collision-check all enemies in pool
+5. Track hits in `IArmaMelee::objs_golpeados` to prevent multi-hit per swing
+6. Play SFX once per swing (check `swing_sfx_played` flag)
+7. FSM exits attack state → reset flags (`atacando = false`, clear `objs_golpeados`, `swing_sfx_played = false`)
+
+**Key files**: `src/Juego/Escenas/Escena_Sprite.cpp` (attack handling), `src/Juego/Sistemas/Sistemas.cpp` (SistemaAtaqueMelee)
+
 ## Common Editing Patterns
 
 1. **Add component to entity**: `entity->addComponente(std::make_shared<ISprite>(...))`, then retrieve with `entity->getComponente<ISprite>()`
@@ -147,6 +226,9 @@ Juego/
 3. **Map inputs to actions**: Register button→string in scene's `HashBotones` map
 4. **Create new scene**: Extend `CE::Escena`, implement virtuals, register in `Juego::OnInit()`
 5. **Debug visualization**: Use `pintarLinea()` or ImGui panels (enabled in Debug build)
+6. **Add interaction NPC**: Give Entidad `IInteractuable`, `IIndicador`, `IDialogo` components; scene checks `revisarDistanciaInteraccion()` and calls `SistemaDialogos()`
+7. **Spawn particles**: Attach `IEmisor(parent, prefab)` to parent; call `crearParticula()` from FSM; mark particles with `ITemporal`
+8. **Melee attack**: equip entity with `IArmaMelee`; add attack state to FSM; scene calls `SistemaAtaqueMelee()` in loop
 
 ## Critical Dependencies
 
