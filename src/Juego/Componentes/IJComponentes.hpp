@@ -5,79 +5,10 @@
 #include "../../Motor/Componentes/IComponentes.hpp"
 #include "../../Motor/Primitivos/Objetos.hpp"
 #include "../Maquinas/FSM.hpp"
+#include "Motor/Primitivos/CEPool.hpp"
 
 namespace IVJ
 {
-	template <typename T>
-	class Cola
-	{
-		private:
-			struct Nodo
-			{
-				T data;
-				Nodo *siguiente;
-				Nodo(T d) : data(d), siguiente(nullptr) {}
-			};
-			Nodo *inicio;
-			Nodo *fin;
-		public:
-			Cola() : inicio(nullptr), fin(nullptr) {}
-
-			~Cola()
-			{
-				while (!vacia())
-				{
-					pop();
-				}
-			}
-
-			void push(T d)
-			{
-				Nodo *nuevo = new Nodo(d);
-				if (fin == nullptr)
-				{
-					inicio = fin = nuevo;
-					return;
-				}
-				fin->siguiente = nuevo;
-				fin = nuevo;
-			}
-			void pop()
-			{
-				if (inicio == nullptr)
-					return;
-				Nodo *temp = inicio;
-				inicio = inicio->siguiente;
-				if (inicio == nullptr)
-					fin = nullptr;
-				delete temp;
-			}
-
-			T front()
-			{
-				if (inicio != nullptr)
-					return inicio->data;
-				return T();
-			}
-
-			bool vacia()
-			{
-				return inicio == nullptr;
-			}
-
-			int size() const
-			{
-				int count = 0;
-				Nodo* temp = inicio;
-				while (temp != nullptr)
-				{
-					count++;
-					temp = temp->siguiente;
-				}
-				return count;
-			}
-	};
-
 	class FSM; //referencia circular
 	//Maquina estado componente
 	class IMaquinaEstado : public CE::IComponentes
@@ -85,8 +16,14 @@ namespace IVJ
 		public:
 			explicit IMaquinaEstado();
 			~IMaquinaEstado() override{};
+			// funcion de copiar
+			std::shared_ptr<IComponentes> clonar() const override
+			{
+				return std::make_shared<IMaquinaEstado>(*this);
+			}
 		public:
 			std::shared_ptr<FSM> fsm;
+			bool congelar{false};
 	};
 
 	//componente QUEST con un arreglo de int de 8 bit
@@ -96,6 +33,7 @@ namespace IVJ
 		public:
 			explicit IRayo(CE::Vector2D& pos,float& sig,const float magnitud=1.f );
 			~IRayo() override{};
+			std::shared_ptr<CE::IComponentes> clonar() const override { return std::make_shared<IRayo>(*this); }
 		private:
 			float magnitud;
 			float& dir;
@@ -124,6 +62,8 @@ namespace IVJ
 			virtual ~IIndicador() =default;
 			void onInteractuar(CE::Objeto& obj) override;
 			void onRender();
+			// IIndicador contains an sf::Shader which is non-copyable; cloning is not supported
+			std::shared_ptr<CE::IComponentes> clonar() const override { return nullptr; }
 		public:
 			sf::Sprite sprite;
 			sf::Shader shader;
@@ -142,6 +82,7 @@ namespace IVJ
 			virtual ~IDialogo() = default;
 			void onInteractuar(CE::Objeto& obj) override;
 			void onRender();
+			std::shared_ptr<CE::IComponentes> clonar() const override { return std::make_shared<IDialogo>(*this); }
 		private:
 			std::wstring agregarSaltoLinea(const std::wstring& str, size_t max_len);
 		public:
@@ -154,6 +95,7 @@ namespace IVJ
 	{
 		public:
 			explicit IGirar(const float ang, const float r);
+			std::shared_ptr<CE::IComponentes> clonar() const override { return std::make_shared<IGirar>(*this); }
 		public:
 			float angulo;
 			float radio;
@@ -164,6 +106,7 @@ namespace IVJ
 	{
 		public:
 			explicit IArribaAbajo(const float minY, const float maxY, const float vel);
+			std::shared_ptr<CE::IComponentes> clonar() const override { return std::make_shared<IArribaAbajo>(*this); }
 		public:
 			float minY;
 			float maxY;
@@ -174,6 +117,7 @@ namespace IVJ
 	{
 		public:
 			explicit IWave(float amp, float freq, float phase);
+			std::shared_ptr<CE::IComponentes> clonar() const override { return std::make_shared<IWave>(*this); }
 		public:
 			float amp;	  // amplitud
 			float freq;	 // frecuencia
@@ -184,6 +128,7 @@ namespace IVJ
 	{
 		public:
 			explicit ICirculos(float radio, float velocidad);
+			std::shared_ptr<CE::IComponentes> clonar() const override { return std::make_shared<ICirculos>(*this); }
 		public:
 			float radio;
 			float velocidad;
@@ -198,6 +143,7 @@ namespace IVJ
 		public:
 			explicit ICTimer(int max_frames = 60);
 			~ICTimer() override = default;
+			std::shared_ptr<CE::IComponentes> clonar() const override { return std::make_shared<ICTimer>(*this); }
 		public:
 			int curr_frame;
 			int max_frame;
@@ -209,37 +155,9 @@ namespace IVJ
 		public:
 			explicit ITemporal() : done(false) {}
 			~ITemporal() override = default;
+			std::shared_ptr<CE::IComponentes> clonar() const override { return std::make_shared<ITemporal>(*this); }
 		public:
 			bool done;
-	};
-
-	// Componente que representa una parte del cuerpo de la víbora
-	class ICParte : public CE::IComponentes
-	{
-		public:
-			explicit ICParte(std::shared_ptr<Figuras> figura, int timer_max = 15);
-			~ICParte() override = default;
-		public:
-			Cola<CE::Vector2D> cola_posiciones;
-			std::shared_ptr<Figuras> parte;
-			std::shared_ptr<CE::ITransform> pos;
-			std::shared_ptr<ICTimer> timer;
-			bool hacerAccion;
-	};
-
-	// Componente que gestiona todas las partes del cuerpo de la víbora
-	class ICPartesCuerpo : public CE::IComponentes
-	{
-		public:
-			explicit ICPartesCuerpo(int w, int h);
-			~ICPartesCuerpo() override = default;
-
-			void agregarParte(std::shared_ptr<ICParte> nueva_parte);
-
-		public:
-			std::vector<std::shared_ptr<ICParte>> partes;
-			int width;
-			int height;
 	};
 
 	/**
@@ -275,6 +193,7 @@ namespace IVJ
 		 */
 		explicit IEstadoEpidemia(int fila, int columna);
 		~IEstadoEpidemia() override = default;
+		std::shared_ptr<CE::IComponentes> clonar() const override { return std::make_shared<IEstadoEpidemia>(*this); }
 
 		/** @brief Devuelve true si la persona puede ser infectada ahora. */
 		bool puedeSerInfectado() const
@@ -324,6 +243,7 @@ namespace IVJ
 		public:
 			explicit ITriangulo(float r, float ang);
 			~ITriangulo() override{};
+			std::shared_ptr<CE::IComponentes> clonar() const override { return std::make_shared<ITriangulo>(*this); }
 		public:
 			sf::CircleShape tri_shape;
 			float angulo;
@@ -334,6 +254,7 @@ namespace IVJ
 		public:
 			explicit ITarget(CE::Objeto * target);
 			void setTarget(CE::Objeto& t);
+			std::shared_ptr<CE::IComponentes> clonar() const override { return std::make_shared<ITarget>(*this); }
 		public:
 			CE::Vector2D* pos;
 	};
@@ -342,7 +263,8 @@ namespace IVJ
 		public:
 			explicit IRangoAggro(float radio);
 			virtual ~IRangoAggro(){};
-			bool estaDentroRango(CE::Objeto& parent, CE::Vector2D& target);
+			std::shared_ptr<CE::IComponentes> clonar() const override { return std::make_shared<IRangoAggro>(*this); }
+		bool estaDentroRango(CE::Objeto& parent, CE::Vector2D& target);
 		public:
 			float radio;
 			sf::CircleShape marcador;
@@ -352,7 +274,8 @@ namespace IVJ
 	{
 		public:
 			explicit IEntorno(const std::vector<std::shared_ptr<CE::Objeto>>* pool) : pool(pool) {}
-			const std::vector<std::shared_ptr<CE::Objeto>>* pool;
+			std::shared_ptr<CE::IComponentes> clonar() const override { return std::make_shared<IEntorno>(*this); }
+		const std::vector<std::shared_ptr<CE::Objeto>>* pool;
 	};
 
 	class IArmaMelee : public CE::IComponentes {
@@ -376,5 +299,38 @@ namespace IVJ
 			hitbox_debug.setOrigin({radio, radio});
 			hitbox_debug.setFillColor(sf::Color(255, 0, 0, 100)); // Rojo semi-transparente
 		}
+		std::shared_ptr<CE::IComponentes> clonar() const override { return std::make_shared<IArmaMelee>(*this); }
+	};
+	class IEmisor : public CE::IComponentes {
+		public:
+			explicit IEmisor(Entidad &parent, Entidad &prefab);
+			~IEmisor(void) {};
+			std::shared_ptr<IComponentes> clonar() const override
+			{
+				return std::make_shared<IEmisor>(*this);
+			}
+			void onUpdate(float dt);
+			void crearParticula(void);
+			CE::Pool &getPool(void) {
+				return pool;
+			}
+		private:
+			CE::Pool pool;
+			Entidad &parent;	// quien tiene el emisor
+			Entidad &prefab;	// el objeto que se va a copiar
+	};
+	class IPistola : public CE::IComponentes {
+		public:
+			explicit IPistola(float cooldown);
+			~IPistola(void) {};
+			std::shared_ptr<IComponentes> clonar() const override
+			{
+				return std::make_shared<IPistola>(*this);
+			}
+			bool puedeDisparar() const;
+			void disparar();
+		private:
+			float cooldown;		// tiempo mínimo entre disparos (s)
+			float timer;		// tiempo acumulado desde el último disparo (s)
 	};
 } // namespace IVJ

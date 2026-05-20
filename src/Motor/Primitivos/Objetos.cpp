@@ -9,9 +9,14 @@ namespace CE
         transform = std::make_shared<ITransform>();
         stats = std::make_shared<IStats>();
         Objeto::num_objetos++;
-
     }
-
+	Objeto::Objeto(const Objeto &cpy)
+	{
+		// se cre espacio de memoria y se copia el contenido
+    	nombre = std::make_shared<INombre>(*cpy.nombre);
+    	transform = std::make_shared<ITransform>(*cpy.transform);
+    	stats = std::make_shared<IStats>(*cpy.stats);
+    }
     void Objeto::setPosicion(float x, float y)
     {
         transform->pos_prev = transform->posicion;

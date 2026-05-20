@@ -22,6 +22,8 @@
 #include <cmath>
 #include <memory>
 
+#include "Juego/Maquinas/Balas/BalasBoom.hpp"
+
 namespace IVJ {
 	Escena_Sprite::Escena_Sprite(std::shared_ptr<Entidad> &pref) :
 		CE::Escena{}, jugador_ref{pref}, cuerpo{std::make_shared<Entidad>()} {}
@@ -100,6 +102,24 @@ namespace IVJ {
 
 		// caja de colisiones para el jugador
 		jugador_ref->addComponente(std::make_shared<CE::IBoundingBox>(CE::Vector2D{32.f, 32.f}));
+
+		// prefab
+		static auto bala_prefab = std::make_shared<Entidad>();
+		bala_prefab->getStats()->hp_max = 1;
+		bala_prefab->getStats()->hp = 1;
+		bala_prefab->getStats()->str = 64;
+		bala_prefab->getTransformada()->velocidad = CE::Vector2D{750.f, 750.f};
+		CE::GestorAssets::Get().agregarTextura("balas1", ASSETS "/fx/balas1.png",
+											   CE::Vector2D{0.f, 0.f}, CE::Vector2D{48.f, 16.f});
+		auto bala_sprite = std::make_shared<CE::ISprite>(CE::GestorAssets::Get().getTextura("balas1"), 16, 16, 3.f);
+		bala_prefab->addComponente(bala_sprite);
+		bala_prefab->addComponente(std::make_shared<CE::IBoundingBox>(16));
+		bala_prefab->addComponente(std::make_shared<CE::ITimer>(180)); // 3seg a 60fps
+		auto bala_me = std::make_shared<IVJ::IMaquinaEstado>();
+		bala_prefab->addComponente(bala_me);
+		auto emisor = std::make_shared<IEmisor>(*jugador_ref, *bala_prefab);
+		jugador_ref->addComponente(emisor);
+		//fin lab11 prefab
 
 		auto fsm_pies = std::make_shared<IdlePies>(CE::AnimLoader::getClip(clips_pies, "idle"));
 
@@ -267,6 +287,47 @@ namespace IVJ {
 			// de colisiones
 			SistemaColAABB(*jugador_ref, *obj, true);
 		}
+		/*
+		//lab11 prefab - Colisión de balas contra zombies (objetos con ITarget)
+		for (auto &bala : jugador_ref->getComponente<IEmisor>()->getPool().getPool())
+		{
+			for (auto &obj : objetos.getPool())
+			{
+				// Verificar si el objeto tiene componente ITarget (es un zombie)
+				if (obj->tieneComponente<ITarget>())
+				{
+					if (SistemaColAABBMid(*bala, *obj, true))
+					{
+						((Entidad &)*bala).setFSM(std::make_shared<BalasBoom>(0.33f));
+						bala->getComponente<IMaquinaEstado>()->congelar = true;
+						// daño una sola vez
+						bala->getTransformada()->velocidad = CE::Vector2D{0.f, 0.f};
+						if (obj->getStats()->congelar == false)
+						{
+							float mitigar = obj->getStats()->def / 255.f;
+							obj->getStats()->hp -= (mitigar * bala->getStats()->str);
+							obj->getStats()->congelar = true;
+						}
+					}
+
+					if (bala->getComponente<CE::ITimer>()->frame_actual >= bala->getComponente<CE::ITimer>()->frame_maximo)
+					{
+						obj->getStats()->congelar = false;
+					}
+
+					// Aplicar shader si el objeto tiene uno
+					if (obj->tieneComponente<CE::IShader>())
+					{
+						static float acum_tiempo = 0;
+						acum_tiempo += dt;
+						obj->getComponente<CE::IShader>()->setEscalar("dt", &acum_tiempo);
+					}
+				}
+			}
+		}
+		// lab9 borra toda entidad que esta en el pool que hp sea <=0
+		objetos.borrarPool();
+		*/
 	}
 
 	void Escena_Sprite::onInputs(const CE::Botones &accion) {
@@ -286,6 +347,9 @@ namespace IVJ {
 			ctrl->izq = pressed;
 		else if (accion.getNombre() == "atacar") {
 			ctrl->acc = pressed;
+			jugador_ref->getComponente<IEmisor>()->crearParticula();
+			// Nota: el ataque melee se procesa en onUpdate por el sistema de ataque,
+			// no aquí, para que el timing de la hitbox se controle desde la FSM
 		}
 		else if (accion.getNombre() == "correr")
 			ctrl->run = pressed;
@@ -362,6 +426,15 @@ namespace IVJ {
 
 			CE::Render::Get().AddToDraw(fog_rect, &fog_shader);
 		}
+
+		/*
+		//lab11 prefab
+		for (auto &p : jugador_ref->getComponente<IEmisor>()->getPool().getPool())
+		{
+			CE::Render::Get().AddToDraw(*p);
+		}
+		CE::Render::Get().AddToDraw(*jugador_ref);
+		*/
 
 #if DEBUG
 		auto cam = &CE::GestorCamaras::Get().getCamaraActiva();

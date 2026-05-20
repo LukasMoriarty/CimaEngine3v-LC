@@ -61,6 +61,11 @@ All follow the same pattern - static `Get()` returns mutable instance, private c
 
 `IControl` component tracks 8 directions + 4 action buttons (boolean flags). Game code calls `SistemaControl()` to update based on inputs.
 
+Additional notes (mouse & gamepad):
+- Scenes commonly compute a world-space mouse direction and pass it to entity FSMs. Example pattern (see `src/Juego/Escenas/Escena_Sprite.cpp`): obtain raw mouse position with `CE::Render::Get().GetMouseGamePos()`, map it to world coords with `Render::Get().GetTextura().mapPixelToCoords(..., GestorCamaras::Get().getCamaraActiva().getView())`, normalize the vector and call `Entidad::setMouseDirection(mouse_nx, mouse_ny)`; `Entidad::inputFSM()` forwards these values to `fsm->onInputs(control, mouse_nx, mouse_ny)` (see `src/Juego/objetos/Entidad.{hpp,cpp}`).
+- Gamepad input is mixed (OR) with keyboard state in scenes. `Escena_Sprite` uses `sf::Joystick::getAxisPosition` with a deadzone of 25.f and maps button 10 as an attack button; the same `IControl` flags are combined for unified handling.
+- Mouse buttons are polled per-frame (e.g. left mouse button sets `IControl::acc`) so scenes may use both event-driven `Botones` and polling for reliable input.
+
 ## Key Game Systems (Sistemas)
 
 Located in `src/Juego/Sistemas/Sistemas.hpp` - namespace IVJ, marked `[[maybe_unused]]`:
@@ -71,6 +76,8 @@ Located in `src/Juego/Sistemas/Sistemas.hpp` - namespace IVJ, marked `[[maybe_un
 - `SistemaPaths()` - Bezier curve entity movement
 - `SistemaZombieSeguir()` - AI pathfinding with line-of-sight
 - Debug: `pintarLinea()` - Draw debug lines to screen
+
+Note: FSMs may receive mouse-direction parameters. Several FSM implementations provide an overload `onInputs(const CE::IControl& control, float mouse_nx, float mouse_ny)` so animation/state transitions can depend on the mouse direction (see `src/Juego/Maquinas/FSMZombie.hpp` and concrete FSMs). `Entidad::inputFSM()` performs the dispatching logic.
 
 ## Scene System
 
@@ -98,6 +105,10 @@ auto& tex = CE::GestorAssets::Get().getTextura("pies");
 ```
 
 `ASSETS` macro = compile-time path to `assets/` folder. Spritesheet anatomy: texture file, (x,y) offset, (w,h) region extraction.
+
+Additional asset patterns seen in the project:
+- Audio: scenes load SFX and music via `CE::GestorAssets::Get().agregarSonido("key", ASSETS "/sfx/...")` and `agregarMusica("key", ASSETS "/music/...")`. Use `CE::GestorAssets::Get().getMusica("key").play()` and `.setVolume()` to control playback (example: `src/Juego/Escenas/Escena_Sprite.cpp` lines ~59-71).
+- Animation metadata: animations are loaded from JSON using `CE::AnimLoader::cargar(path)` and then retrieved with `CE::AnimLoader::getClip(...)` (see `Escena_Sprite.cpp` lines ~84-87). This project separates texture atlases from clip/indices JSON files.
 
 ## Code Organization
 

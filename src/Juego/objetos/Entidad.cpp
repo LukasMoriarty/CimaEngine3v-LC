@@ -7,6 +7,19 @@
 
 namespace IVJ
 {
+	static int num_cpy = 0;
+	Entidad::Entidad(const Entidad &cpy)
+		: CE::Objeto{cpy}
+	{
+		nombre->nombre = cpy.getNombre()->nombre + "_" + std::to_string(++num_cpy);
+		// copia profunda de los componentes
+		// ya que no queremos la referencia sino un componente nuevo
+		for (auto &comp : cpy.componentes)
+		{
+			componentes.push_back(comp->clonar());
+		}
+	}
+
 	void Entidad::onUpdate(float dt)
 	{
 		//CE::Objeto::onUpdate(dt);
@@ -99,6 +112,10 @@ namespace IVJ
 
 	void Entidad::setFSM(const std::shared_ptr<FSM>& mq)
 	{
+		// cuando llamamos setFSM con make_shared como parámetro
+		// hay que congelar para que no siempre lo cambie
+		if (getComponente<IMaquinaEstado>()->congelar)
+			return;
 		auto &estado_actual = getComponente<IMaquinaEstado>()->fsm;
 		//transición de salida
 		estado_actual->onSalir(*this);

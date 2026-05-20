@@ -10,9 +10,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <Juego/Escenas/Escena_Prueba.hpp>
-#include <Juego/Escenas/Escena_SS.hpp>
 #include <Juego/Escenas/Escena_Menu.hpp>
-#include <Juego/Escenas/Escena_Epidemia.hpp>
 #include <Juego/Escenas/Escena_Sprite.hpp>
 #include <Juego/objetos/Entidad.hpp>
 
@@ -37,9 +35,7 @@ namespace IVJ
 		jugador->getStats()->hp = 100;
 
 		CE::GestorEscenas::Get().registrarEscena("Prueba",std::make_shared<Escena_Prueba>(jugador));
-		CE::GestorEscenas::Get().registrarEscena("SS",std::make_shared<Escena_SS>(jugador));
 		CE::GestorEscenas::Get().registrarEscena("Menu",std::make_shared<Escena_Menu>());
-		//CE::GestorEscenas::Get().registrarEscena("Epidemia",std::make_shared<Escena_Epidemia>(jugador));
 		//CE::GestorEscenas::Get().registrarEscena("EscenaCamara", std::make_shared<Escena_Camara>(jugador));
 		CE::GestorEscenas::Get().registrarEscena("EscenaSprite", std::make_shared<Escena_Sprite>(jugador));
 

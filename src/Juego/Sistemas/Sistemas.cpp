@@ -765,7 +765,7 @@ namespace IVJ
 
 					// Play animation via BloodSplash FSM (one-shot)
 					CE::AnimClip clip{0, 11};
-					auto fsm_sangre = std::make_shared<BloodSplash>(clip, 0.05f);
+					auto fsm_sangre = std::make_shared<BloodSplash>(clip, 0.03f);
 					auto mq = std::make_shared<IMaquinaEstado>();
 					mq->fsm = fsm_sangre;
 					sangre_ent->addComponente(mq);
@@ -792,5 +792,12 @@ namespace IVJ
 				arma->swing_played = true;
 			}
 		}
+	}
+
+	void SistemaMoverBalas(const std::shared_ptr<CE::Objeto> &ente, float dt)
+	{
+		auto trans = ente->getTransformada();
+		auto vel = ente->getTransformada()->velocidad;
+		trans->posicion.suma(vel.escala(dt));
 	}
 } // namespace IVJ

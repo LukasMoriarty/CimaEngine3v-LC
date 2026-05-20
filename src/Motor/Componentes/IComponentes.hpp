@@ -27,6 +27,8 @@ namespace CE
 		public:
 			/** @brief Destructor virtual por defecto */
 			virtual ~IComponentes()=default;
+			// interfaz de copiar
+			virtual std::shared_ptr<IComponentes> clonar() const = 0;
 	};
 
 	/**
@@ -46,6 +48,11 @@ namespace CE
 			
 			/** @brief Destructor virtual */
 			~INombre() override{};
+
+			std::shared_ptr<IComponentes> clonar() const override
+			{
+				return std::make_shared<INombre>(*this);
+			}
 			
 		public:
 			/** @brief Nombre/identificador de la entidad */
@@ -77,6 +84,11 @@ namespace CE
 			
 			/** @brief Destructor virtual */
 			~ITransform() override{};
+
+			std::shared_ptr<IComponentes> clonar() const override
+			{
+				return std::make_shared<ITransform>(*this);
+			}
 			
 		public:
 			/** @brief Posición actual de la entidad */
@@ -104,6 +116,9 @@ namespace CE
 		public:
 			/** @brief Constructor inicializa timer en 0 */
 			ITimer();
+
+			/** @brief Constructor con un int que representa segundos */
+			explicit ITimer(int frame_maximo);
 			
 			/** @brief Destructor virtual */
 			~ITimer() override{};
@@ -113,6 +128,14 @@ namespace CE
 			
 			/** @brief Fracción decimal del frame (0.0 a 1.0) para interpolación */
 			float frac_actual;
+
+			/** @brief Frame máximo o duración total de la animación */
+			int frame_maximo;
+
+			std::shared_ptr<IComponentes> clonar() const override
+			{
+				return std::make_shared<ITimer>(*this);
+			}
 	};
 	
 	/**
@@ -142,6 +165,13 @@ namespace CE
 			
 			/** @brief Estadística de agilidad (velocidad y evasión) */
 			std::uint8_t agi;
+
+			bool congelar{false};	// flag para congelar la entidad (no se mueve ni actúa)
+
+			std::shared_ptr<IComponentes> clonar() const override
+			{
+				return std::make_shared<IStats>(*this);
+			}
 	};
 
 	/**
@@ -166,6 +196,11 @@ namespace CE
 
 			/** @brief Objeto de texto SFML que se renderiza */
 			sf::Text m_texto;
+
+			std::shared_ptr<IComponentes> clonar() const override
+			{
+				return std::make_shared<ITexto>(*this);
+			}
 	};
 
 	/**
@@ -196,6 +231,11 @@ namespace CE
 			
 			/** @brief Destructor virtual */
 			~ISprite() override{};
+
+			std::shared_ptr<IComponentes> clonar() const override
+			{
+				return std::make_shared<ISprite>(*this);
+			}
 			
 		public:
 			/** @brief Objeto sprite SFML para renderizado */
@@ -252,6 +292,11 @@ namespace CE
 			
 			/** @brief Destructor virtual */
 			~IShader() override{};
+
+			std::shared_ptr<IComponentes> clonar() const override
+			{
+				return nullptr;	// IShader no se puede copiar, gracias SFML
+			}
 			
 			/**
 			 * @brief Establece un uniform escalar (float).
@@ -340,6 +385,11 @@ namespace CE
 			
 			/** @brief Destructor virtual */
 			~IControl() override{};
+
+			std::shared_ptr<IComponentes> clonar() const override
+			{
+				return std::make_shared<IControl>(*this);
+			}
 			
 		public:
 			/** @brief Entrada: dirección arriba */
@@ -405,6 +455,11 @@ namespace CE
 			
 			/** @brief Mitad de las dimensiones (usado para cálculos rápidos) */
 			Vector2D mitad;
+
+			std::shared_ptr<IComponentes> clonar() const override
+			{
+				return std::make_shared<IBoundingBox>(*this);
+			}
 	};
 
 	/**
@@ -459,6 +514,11 @@ namespace CE
 			
 			/** @brief Lista de componentes para cada entidad generada */
 			std::vector<std::shared_ptr<IComponentes>> componentes;
+
+			std::shared_ptr<IComponentes> clonar() const override
+			{
+				return std::make_shared<IRespawn>(*this);
+			}
 	};
 
 	/**
@@ -500,6 +560,11 @@ namespace CE
 			
 			/** @brief Frame actual dentro de la curva */
 			int frame_actual_curva;
+
+			std::shared_ptr<IComponentes> clonar() const override
+			{
+				return std::make_shared<IPaths>(*this);
+			}
 	};
 }
 

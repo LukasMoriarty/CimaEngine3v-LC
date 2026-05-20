@@ -23,6 +23,10 @@ namespace CE
 		:IComponentes{},frame_actual{0}
 	{}
 
+	ITimer::ITimer(int frames_maximos)
+		: IComponentes{},frame_maximo{frames_maximos}
+	{}
+
 	ITexto::ITexto(const sf::Font& font, const std::string& texto)
 		:IComponentes{},m_texto{sf::Text(font,texto)}
 	{}

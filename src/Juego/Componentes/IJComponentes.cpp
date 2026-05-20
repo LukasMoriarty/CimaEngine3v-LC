@@ -5,6 +5,9 @@
 #include <cmath>
 #include <string>
 
+#include "Juego/Maquinas/Balas/BalasIdle.hpp"
+#include "Juego/Sistemas/Sistemas.hpp"
+
 namespace IVJ
 {
 
@@ -126,21 +129,6 @@ namespace IVJ
 		: CE::IComponentes{}, curr_frame{0}, max_frame{max_frames}
 	{}
 
-	// Implementación de ICParte
-	ICParte::ICParte(std::shared_ptr<Figuras> figura, int timer_max)
-		: CE::IComponentes{},
-		  cola_posiciones{},
-		  parte{figura},
-		  pos{std::make_shared<CE::ITransform>()},
-		  timer{std::make_shared<ICTimer>(timer_max)},
-		  hacerAccion{false}
-	{}
-
-	// Implementación de ICPartesCuerpo
-	ICPartesCuerpo::ICPartesCuerpo(int w, int h)
-		: CE::IComponentes{}, partes{}, width{w}, height{h}
-	{}
-
 	IEstadoEpidemia::IEstadoEpidemia(int f, int c)
 		: CE::IComponentes{}, fila{f}, columna{c}
 	{}
@@ -191,4 +179,82 @@ namespace IVJ
 		float dist = diX * diX + diY * diY;
 		return dist <= r2;
 	}
+
+	IEmisor::IEmisor(Entidad &parent, Entidad &prefab)
+    : CE::IComponentes{}, pool{1}, parent{parent}, prefab{prefab}
+	{}
+
+	void IEmisor::onUpdate(float dt)
+	{
+	    for (auto &p : pool.getPool())
+	    {
+	        // asumir que tiene un timer de lo contrario crushear
+	        auto itimer = p->getComponente<CE::ITimer>();
+	        // verificar si ya llego al timer, si si poner vida 0 y borrar
+	        if (itimer->frame_actual >= itimer->frame_maximo)
+	            p->getStats()->hp = 0;
+	        // ejecutar update y mover?
+	        p->onUpdate(dt);
+	        SistemaMoverBalas(p, dt);
+	        itimer->frame_actual++;
+	    }
+	    //borar si vida es 0
+	    pool.borrarPool();
+	}
+	void IEmisor::crearParticula(void)
+	{
+	    auto nuevo = std::make_shared<Entidad>(prefab);
+	    //  calcular dirección y posición
+	    auto p_pos = parent.getTransformada()->posicion;
+	    auto n_vel = nuevo->getTransformada()->velocidad;
+	    nuevo->getTransformada()->angulo = parent.getTransformada()->angulo;
+	    float ang = nuevo->getTransformada()->angulo;
+	    const float pi = std::round(3.14159f * 1000.f) / 1000.f;
+	    const float pi_2 = std::round(pi / 2.f * 1000.f) / 1000.f;
+	    const float pi_4 = std::round(pi / 4.f * 1000.f) / 1000.f - 0.001f;
+	    const float pi_4b = std::round(3.f * pi / 4.f * 1000.f) / 1000.f - 0.001f;
+	    const float rang = std::round(ang * 1000.f) / 1000.f;
+	    // std::cout << rang << ": " << pi << ", " << pi_2 << ", " << pi_4 << ", " << pi_4b << "\n";
+	    auto vel = CE::Vector2D{0.f, 0.f};
+	    if (rang == 0.f) //arriba
+	        vel.y = -n_vel.y;
+	    if (rang == pi) // PI: abajo
+	        vel.y = n_vel.y;
+	    if (rang == -pi_4) //-pi/4:izq arriba
+	    {
+	        vel.y = -n_vel.y;
+	        vel.x = -n_vel.x;
+	    }
+	    if (rang == pi_4) // pi/4: der arriba
+	    {
+	        vel.y = -n_vel.y;
+	        vel.x = n_vel.x;
+	    }
+	    if (rang == pi_2) // PI/2: der
+	        vel.x = n_vel.x;
+	    if (rang == -pi_2) // izq
+	        vel.x = -n_vel.x;
+	    // patch el 2.3 ya que redondea extraño
+	    if (rang >= -pi_4b && rang <= -2.3) //-3pi/4 abajo izq
+	    {
+	        vel.y = n_vel.y;
+	        vel.x = -n_vel.x;
+	    }
+	    if (rang <= pi_4b && rang >= 2.3) // 3pi/4 abajo der
+	    {
+	        vel.y = n_vel.y;
+	        vel.x = n_vel.x;
+	    }
+	    //maquina de estados
+	    nuevo->getComponente<IMaquinaEstado>()->fsm = std::make_shared<IVJ::BalasIdle>(1.f);
+	    nuevo->setFSM(nuevo->getComponente<IMaquinaEstado>()->fsm);
+	    // en el objeto padre la posición
+	    nuevo->setPosicion(p_pos.x, p_pos.y);
+	    nuevo->getTransformada()->velocidad = vel;
+	    pool.agregarPool(nuevo);
+	}
+
+	IPistola::IPistola(float cooldown)
+		: CE::IComponentes{}, cooldown{cooldown}, timer{0.f}
+	{}
 } // namespace IVJ
