@@ -14,7 +14,7 @@ namespace IVJ
 	FSM* DispararCuerpoPistola::onInputs(const CE::IControl& /*control*/)
 	{
 		if (disparo_completo)
-			return new IdleCuerpoPistola(CE::AnimClip{-1, -1}, 0.1f);
+			return new IdleCuerpoPistola(CE::AnimClip{0, 20}, 0.1f);
 		return nullptr;
 	}
 
@@ -32,6 +32,7 @@ namespace IVJ
 		id_frame = m_clip.first_frame;
 		cur_frame_time = max_frame_time;
 		disparo_completo = false;
+		local_frame = 0;
 
 		if (obj.tieneComponente<IPistola>())
 		{
@@ -58,6 +59,15 @@ namespace IVJ
 		int row = id_frame / num_cols;
 		sprite->setTextureRect(sf::IntRect{{col * s_w, row * s_h}, {s_w, s_h}});
 
-		id_frame = m_clip.first_frame;
+		// avanzar el frame de animacion secuencialmente
+		local_frame++;
+		if (local_frame >= m_clip.frame_count)
+		{
+			disparo_completo = true;
+			id_frame = m_clip.first_frame;
+		}
+		else {
+			id_frame = m_clip.first_frame + local_frame;
+		}
 	}
 } // namespace IVJ

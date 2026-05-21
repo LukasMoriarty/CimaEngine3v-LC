@@ -28,5 +28,6 @@ namespace IVJ
 			int id_frame{0};
 			float max_frame_time, cur_frame_time;
 			bool recarga_completa{false};
+			int local_frame{0};
 	};
 }

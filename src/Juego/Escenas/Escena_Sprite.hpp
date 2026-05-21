@@ -71,5 +71,9 @@ namespace IVJ
 			/// True after the swing SFX has fired for the current attack swing.
 			/// Resets when the player leaves the attack state.
 			bool swing_sfx_played{false};
+
+			//elementos del sistema de inventario y HUD
+			std::unique_ptr<sf::Text> hud_texto;
+			void actualizarArmaEquipada();
 	};
 } // namespace IVJ

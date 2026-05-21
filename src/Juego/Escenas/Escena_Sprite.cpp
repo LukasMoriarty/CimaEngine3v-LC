@@ -10,13 +10,9 @@
 #include <Juego/Sistemas/Sistemas.hpp>
 #include <Juego/objetos/Entidad.hpp>
 #include <Juego/objetos/TileMap.hpp>
-
 #include <Juego/Maquinas/Pies/IdlePies.hpp>
-
 #include <Juego/Maquinas/Cuerpo/IdleCuerpoKnife.hpp>
-
-#include <Juego/Maquinas/Cuerpo/AtacarCuerpoKnife.hpp>
-#include <Juego/Maquinas/Zombie/IdleZombie.hpp>
+#include <Juego/Maquinas/Pistola/IdleCuerpoPistola.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -47,6 +43,9 @@ namespace IVJ {
 		registrarBotones(sf::Keyboard::Scancode::Enter, "aceptar");
 		registrarBotones(sf::Keyboard::Scancode::Space, "atacar"); // <-- ataque
 		registrarBotones(sf::Keyboard::Scancode::LControl, "correr");
+		registrarBotones(sf::Keyboard::Scancode::Q, "anterior_arma");
+		registrarBotones(sf::Keyboard::Scancode::E, "siguiente_arma");
+		registrarBotones(sf::Keyboard::Scancode::R, "recargar");
 
 		// Tilemap
 		tiles_layers.push_back(TileMap());
@@ -80,12 +79,16 @@ namespace IVJ {
 											   ASSETS "/sprites/Top_Down_Survivor/knife/survivor-knife-atlas.png",
 											   CE::Vector2D{0.f, 0.f}, CE::Vector2D{3072.f, 2688.f});
 
+		CE::GestorAssets::Get().agregarTextura("cuerpoPistola",
+											   ASSETS "/sprites/Top_Down_Survivor/handgun/survivor-handgun-atlas.png",
+											   CE::Vector2D{0.f, 0.f}, CE::Vector2D{3456.f, 3456.f});
 		CE::GestorAssets::Get().agregarTextura("zombie", ASSETS "/sprites/zombie/zombie-atlas.png",
 											   CE::Vector2D{0.f, 0.f}, CE::Vector2D{2688.f, 2688.f});
 
 		// METADATA DE ANIMACION
 		auto clips_pies = CE::AnimLoader::cargar(ASSETS "/sprites/Top_Down_Survivor/feet/indices_animacion.json");
 		auto clips_knife = CE::AnimLoader::cargar(ASSETS "/sprites/Top_Down_Survivor/knife/indices_animacion.json");
+		auto clips_handgun = CE::AnimLoader::cargar(ASSETS "/sprites/Top_Down_Survivor/handgun/indices_animacion.json");
 		clips_zombie = CE::AnimLoader::cargar(ASSETS "/sprites/zombie/indices_animacion.json");
 
 		// PIES (jugador_ref)
@@ -140,17 +143,50 @@ namespace IVJ {
 		// Se sincroniza en onUpdate con el control de jugador_ref.
 		cuerpo->addComponente(std::make_shared<CE::IControl>());
 
-		// FSM de cuerpo
-		auto fsm_cuerpo = std::make_shared<IdleCuerpoKnife>(CE::AnimLoader::getClip(clips_knife, "idle_knife"));
-
-		auto mq_cuerpo = std::make_shared<IMaquinaEstado>();
-		mq_cuerpo->fsm = fsm_cuerpo;
-		cuerpo->addComponente(mq_cuerpo);
-		cuerpo->setFSM(fsm_cuerpo);
-
 		cuerpo->addComponente(std::make_shared<IArmaMelee>(32.f, 32.f, 20));
+		cuerpo->addComponente(std::make_shared<IPistola>());
+
+		// crear e inicializar el Inventario del Jugador
+		auto inventario = std::make_shared<IInventario>();
+
+		auto item_cuchillo = std::make_shared<IItem>();
+		item_cuchillo->tipo = IItem::Tipo::Cuchillo;
+		item_cuchillo->nombre = "Cuchillo";
+		item_cuchillo->key_textura = "cuerpoCuchillo";
+		item_cuchillo->json_anims = ASSETS "/sprites/Top_Down_Survivor/knife/indices_animacion.json";
+		item_cuchillo->sprite_w = 384;
+		item_cuchillo->sprite_h = 384;
+		item_cuchillo->sprite_escala = 0.5f;
+
+		auto item_pistola = std::make_shared<IItem>();
+		item_pistola->tipo = IItem::Tipo::Pistola;
+		item_pistola->nombre = "Pistola";
+		item_pistola->key_textura = "cuerpoPistola";
+		item_pistola->json_anims = ASSETS "/sprites/Top_Down_Survivor/handgun/indices_animacion.json";
+		item_pistola->sprite_w = 384;
+		item_pistola->sprite_h = 384;
+		item_pistola->sprite_escala = 0.5f;
+
+		inventario->agregarItem(item_cuchillo);
+		inventario->agregarItem(item_pistola);
+		jugador_ref->addComponente(inventario);
+
+		// FSM inicial del cuerpo (se establecera dinamicamente en actualizarArmaEquipada
+		auto mq_cuerpo = std::make_shared<IMaquinaEstado>();
+		// asginar una FSM temporal que luego se actualizara
+		mq_cuerpo->fsm = std::make_shared<IdleCuerpoKnife>(CE::AnimLoader::getClip(clips_knife, "idle_knife"));;
+		cuerpo->addComponente(mq_cuerpo);
 
 		objetos.agregarPool(cuerpo);
+
+		// Configuración visual del texto del HUD
+		hud_texto = std::make_unique<sf::Text>(CE::GestorAssets::Get().getFont("default_font"), "", 24);
+		hud_texto->setFillColor(sf::Color::White);
+		hud_texto->setOutlineColor(sf::Color::Black);
+		hud_texto->setOutlineThickness(1.5f);
+
+		// Equipar el arma inicial activa
+		actualizarArmaEquipada();
 
 		if (sf::Joystick::isConnected(0))
 			std::cout << "Gamepad conectado: " << sf::Joystick::getIdentification(0).name.toAnsiString() << std::endl;
@@ -256,8 +292,65 @@ namespace IVJ {
 			cuerpo->getComponente<CE::ISprite>()->m_sprite.setRotation(sf::radians(cuerpo->getTransformada()->angulo));
 		}
 
-		// Reemplaza tu lógica vieja de colisión por la llamada al nuevo sistema:
-		SistemaAtaqueMelee(*cuerpo, objetos);
+		// 6. Combate, disparo e inventario
+        auto inv = jugador_ref->getComponente<IInventario>();
+        IItem* item_activo = inv ? inv->getItemActivo() : nullptr;
+
+        if (item_activo)
+        {
+            if (item_activo->tipo == IItem::Tipo::Cuchillo)
+            {
+                // Ejecutar sistema de ataque cuerpo a cuerpo
+                SistemaAtaqueMelee(*cuerpo, objetos);
+            }
+            else if (item_activo->tipo == IItem::Tipo::Pistola)
+            {
+                auto arma = cuerpo->getComponente<IPistola>();
+                if (arma) {
+                    // Actualizar tiempos internos de la pistola (cooldowns, recargas)
+                    arma->onUpdate(dt);
+
+                    // Disparar si se presiona la acción y la pistola está lista
+                    if (ctrl_pies && ctrl_pies->acc && arma->puedeDisparar()) {
+                        auto& bala_tex = CE::GestorAssets::Get().getTextura("balas1");
+                        SistemaDisparar(*jugador_ref, *cuerpo, *arma, objetos, bala_tex);
+                    }
+                }
+            }
+        }
+
+        // Actualizar posición de balas y evaluar impactos contra zombies (ITarget)
+        SistemaActualizarBalas(objetos, dt);
+        SistemaColBalas(objetos);
+
+        // Actualizar HUD
+        if (item_activo)
+        {
+            std::wstring info = L"VIDA: " + std::to_wstring((int)jugador_ref->getStats()->hp) + L"\n" +
+                                L"ARMA: " + std::wstring(item_activo->nombre.begin(), item_activo->nombre.end()) + L"\n";
+            if (item_activo->tipo == IItem::Tipo::Pistola)
+            {
+                auto arma = cuerpo->getComponente<IPistola>();
+                if (arma)
+                {
+                    if (arma->recargando)
+                    {
+                        info += L"MUNICION: RECARGANDO...";
+                    }
+                	else
+                	{
+                        info += L"MUNICION: " + std::to_wstring(arma->balas_cargador) + L" / " + std::to_wstring(arma->balas_reserva);
+                    }
+                }
+            }
+        	else
+        	{
+                info += L"MUNICION: N/A";
+            }
+            if (hud_texto)
+	        	hud_texto->setString(info);
+        }
+
 
 		// 7. Sistema de Spawners
 		SistemaSpawn(objetos, m_spawn_pool, clips_zombie, jugador_ref.get());
@@ -353,6 +446,28 @@ namespace IVJ {
 		}
 		else if (accion.getNombre() == "correr")
 			ctrl->run = pressed;
+		else if (accion.getNombre() == "recargar")
+			ctrl->sacc = pressed;	// mapear boton de recarga a control.sacc
+
+		// cambio de armas usando teclas Q y E
+		if (pressed)
+		{
+			auto inv = jugador_ref->getComponente<IInventario>();
+			if (inv) {
+				if (accion.getNombre() == "siguiente_arma")
+				{
+					inv->ciclarSiguiente();
+					actualizarArmaEquipada();
+				}
+				else if (accion.getNombre() == "anterior_arma")
+				{
+					inv->ciclarAnterior();
+					actualizarArmaEquipada();
+				}
+			}
+		}
+
+
 		// Nota: el control del cuerpo se sincroniza al inicio de onUpdate
 	}
 
@@ -448,5 +563,52 @@ namespace IVJ {
 		debugcam.setFillColor(sf::Color::Transparent);
 		CE::Render::Get().AddToDraw(debugcam);
 #endif
+		// Renderizar HUD estático (en coordenadas de pantalla)
+		auto& tex = CE::Render::Get().GetTextura();
+		sf::View vista_original = tex.getView();
+		tex.setView(tex.getDefaultView()); // Cambiar a la vista estática
+
+		if (hud_texto)
+		{
+			hud_texto->setPosition({30.f, 30.f});
+			CE::Render::Get().AddToDraw(*hud_texto);
+		}
+
+		tex.setView(vista_original); // Restaurar vista del juego original
 	}
+
+	void Escena_Sprite::actualizarArmaEquipada()
+	{
+		auto inv = jugador_ref->getComponente<IInventario>();
+		if (!inv) return;
+		auto item = inv->getItemActivo();
+		if (!item) return;
+
+		// 1. Cambiar textura, dimensiones y escala en el componente ISprite delcuerpo
+		auto spr = cuerpo->getComponente<CE::ISprite>();
+		if (spr) {
+			spr->m_sprite.setTexture(CE::GestorAssets::Get().getTextura(item->key_textura));
+			spr->width = item->sprite_w;
+			spr->height = item->sprite_h;
+			spr->escala = item->sprite_escala;
+			spr->m_sprite.setScale({item->sprite_escala, item->sprite_escala});
+			spr->m_sprite.setOrigin({item->sprite_w / 2.f, item->sprite_h / 2.f});
+		}
+
+		// 2. Cargar clips correspondientes y reasignar la FSM del cuerpo
+		if (item->tipo == IItem::Tipo::Cuchillo)
+		{
+			auto clips = CE::AnimLoader::cargar(item->json_anims);
+			auto fsm_cuerpo = std::make_shared<IdleCuerpoKnife>(CE::AnimLoader::getClip(clips, "idle_knife"));
+			cuerpo->getComponente<IMaquinaEstado>()->fsm = fsm_cuerpo;
+			cuerpo->setFSM(fsm_cuerpo);
+		}
+		else if (item->tipo == IItem::Tipo::Pistola)
+		{
+			auto fsm_cuerpo = std::make_shared<IdleCuerpoPistola>(CE::AnimClip{0, 20}, 0.1f);
+			cuerpo->getComponente<IMaquinaEstado>()->fsm = fsm_cuerpo;
+			cuerpo->setFSM(fsm_cuerpo);
+		}
+	}
+
 } // namespace IVJ

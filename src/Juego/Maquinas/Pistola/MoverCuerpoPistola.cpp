@@ -15,11 +15,11 @@ namespace IVJ
 	FSM *MoverCuerpoPistola::onInputs(const CE::IControl &control)
 	{
 		if (control.acc)
-			return new DispararCuerpoPistola(CE::AnimClip{-1, -1}, 0.04f);
+			return new DispararCuerpoPistola(CE::AnimClip{70, 3}, 0.04f);
 		if (!control.arr && !control.abj && !control.der && !control.izq)
-			return new IdleCuerpoPistola(CE::AnimClip{-1, -1}, 0.1f);
+			return new IdleCuerpoPistola(CE::AnimClip{0, 20}, 0.1f);
 		if (control.sacc)	// recargar
-			return new RecargarCuerpoPistola(CE::AnimClip{-1, -1}, 0.1f);
+			return new RecargarCuerpoPistola(CE::AnimClip{55, 15}, 0.1f);
 		return nullptr;
 	}
 

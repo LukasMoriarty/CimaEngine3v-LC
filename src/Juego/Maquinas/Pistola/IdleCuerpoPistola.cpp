@@ -1,7 +1,8 @@
 #include "Motor/Componentes/IComponentes.hpp"
 #include "IdleCuerpoPistola.hpp"
-
 #include "DispararCuerpoPistola.hpp"
+#include "MoverCuerpoPistola.hpp"
+#include "RecargarCuerpoPistola.hpp"
 
 namespace IVJ
 {
@@ -12,12 +13,12 @@ namespace IVJ
 	}
 
 	FSM *IdleCuerpoPistola::onInputs(const CE::IControl &control) {
-		if (control.acc) return nullptr;
-			//return new DispararCuerpoPistola(CE::AnimClip{20, 15}, 0.04f);
-		if (control.arr || control.abj || control.der || control.izq) return nullptr;
-			//return new MoverCuerpoPistola(CE::AnimClip{35, 20}, 0.1f);
-		if (control.sacc) return nullptr;	// falta implementar que tambien cheque si esta el cargador vacio y tiene reserva
-			//return new RecargarCuerpoPistola(CE::AnimClip{-1,-1}, 0.1f);
+		if (control.acc)
+			return new DispararCuerpoPistola(CE::AnimClip{70, 3}, 0.04f);
+		if (control.arr || control.abj || control.der || control.izq)
+			return new MoverCuerpoPistola(CE::AnimClip{35, 20}, 0.1f);
+		if (control.sacc)	// falta implementar que tambien cheque si esta el cargador vacio y tiene reserva
+			return new RecargarCuerpoPistola(CE::AnimClip{55,15}, 0.1f);
 
 		return nullptr;
 	}

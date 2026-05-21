@@ -27,5 +27,6 @@ namespace IVJ
 			int id_frame{0};
 			float max_frame_time, cur_frame_time;
 			bool disparo_completo{false};
+			int local_frame{0};
 	};
 }

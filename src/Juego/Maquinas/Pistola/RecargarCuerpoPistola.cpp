@@ -13,7 +13,7 @@ namespace IVJ
 
 	FSM *RecargarCuerpoPistola::onInputs(const CE::IControl& /*control*/) {
 		if (recarga_completa)
-			return new IdleCuerpoPistola(CE::AnimClip{-1, -1}, 0.1f);
+			return new IdleCuerpoPistola(CE::AnimClip{0, 20}, 0.1f);
 		return nullptr;
 	}
 
@@ -31,6 +31,7 @@ namespace IVJ
 		id_frame = m_clip.first_frame;
 		cur_frame_time = max_frame_time;
 		recarga_completa = false;
+		local_frame = 0;
 
 		if (obj.tieneComponente<IPistola>())
 		{
@@ -57,7 +58,16 @@ namespace IVJ
 		int row = id_frame / num_cols;
 		sprite->setTextureRect(sf::IntRect{{col * s_w, row * s_h}, {s_w, s_h}});
 
-		int local = (id_frame - m_clip.first_frame + 1) % std::max(1, m_clip.frame_count);
-		id_frame = m_clip.first_frame + local;
+		// avanzar el frame de animacion secuencialmente
+		local_frame++;
+		if (local_frame >= m_clip.frame_count)
+		{
+			recarga_completa = true;
+			id_frame = m_clip.first_frame;
+		}
+		else
+		{
+			id_frame = m_clip.first_frame + local_frame;
+		}
 	}
 } // namespace IVJ
