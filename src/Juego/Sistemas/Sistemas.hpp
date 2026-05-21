@@ -32,9 +32,6 @@ namespace IVJ
     [[maybe_unused]] void SistemaTrianguloWave(CE::Objeto &ente, float dt);
     [[maybe_unused]] void SistemaCirculoMoverEnCirculos(CE::Objeto &ente, float dt);
 
-    [[maybe_unused]] void SistemaEpidemia(CE::Pool& pool, int columnas, float dt);
-    [[maybe_unused]] bool SistemaEpidemiaTerminada(CE::Pool& pool);
-
     // lab 8
     [[maybe_unused]] void SistemaNPCLookTarget(CE::Objeto& ente, CE::Vector2D& target);
 
@@ -46,5 +43,21 @@ namespace IVJ
 
     [[maybe_unused]] void SistemaAtaqueMelee(CE::Objeto& atacante, CE::Pool& game_pool);
 
-	[[maybe_unused]] void SistemaMoverBalas(const std::shared_ptr<CE::Objeto> &ente, float dt);
+	[[maybe_unused]] void SistemaDisparar(
+		CE::Objeto& tirador,	// jugador (posicion fuente)
+		CE::Objeto& cuerpo,		// cuerpo (angulo/direccion)
+		IPistola& arma,
+		CE::Pool& game_pool,
+		const sf::Texture& bala_tex
+	);
+	/*
+	 * Mueve todas las Entidades con IBala en game_pool
+	 * Marca activa=false (y hp=0) cuando distancia_viajada >= rango_max
+	 */
+	[[maybe_unused]] void SistemaActualizarBalas(CE::Pool& game_pool, float dt);
+	/*
+	 * Detecta colision bala vs cualquier entidad con ITarget (es decir, las que targetean al jugador)
+	 * Al impactar: aplica daño, genera blood splash, desactiva bala (hp=0)
+	 */
+	[[maybe_unused]] void SistemaColBalas(CE::Pool& game_pool);
 }

@@ -319,18 +319,75 @@ namespace IVJ
 			Entidad &parent;	// quien tiene el emisor
 			Entidad &prefab;	// el objeto que se va a copiar
 	};
+	class IBala : public CE::IComponentes {
+		public:
+			int damage{10};
+			float rango_max{800.f};
+			float distancia_viajada{0.f};
+			CE::Objeto* origen{nullptr};	// para no pegar al que dispara
+			bool activa{true};
+
+			std::shared_ptr<CE::IComponentes> clonar() const override {
+				return std::make_shared<IBala>(*this);
+			}
+	};
+
 	class IPistola : public CE::IComponentes {
 		public:
-			explicit IPistola(float cooldown);
-			~IPistola(void) {};
-			std::shared_ptr<IComponentes> clonar() const override
-			{
+			int balas_cargador{8};
+			int balas_max_cargador{8};
+			int balas_reserva{32};
+			float cooldown_disparo{0.25f};	// segundos minimos entre disparos
+			float timer_disparo{0.f};
+			float tiempo_recarga{2.0f};
+			float timer_recarga{0.f};
+			bool disparando{false};
+			bool recargando{false};
+			bool puedeDisparar() const;
+			void iniciarDisparo();	// decrementa bala, resetea cooldown
+			void iniciarRecarga();	// solo si hay reseva y no esta recargando
+			void onUpdate(float dt);	// llama la escena cada frame
+
+			std::shared_ptr<CE::IComponentes> clonar() const override {
 				return std::make_shared<IPistola>(*this);
 			}
-			bool puedeDisparar() const;
-			void disparar();
-		private:
-			float cooldown;		// tiempo mínimo entre disparos (s)
-			float timer;		// tiempo acumulado desde el último disparo (s)
+	};
+	class IItem : public CE::IComponentes
+	{
+		public:
+			enum class Tipo
+			{
+				Cuchillo,
+				Pistola,
+				Rifle,
+				Escopeta
+			};
+			Tipo tipo{Tipo::Cuchillo};	// tipo de arma que representa el item
+			std::string nombre{"Cuchillo"};
+
+			// Datos para reconstruir el cuerpo visual al equipar
+			std::string key_textura{};	// key en GestorAssets
+			std::string json_anims{};	// path a indices_animacion.json
+			int sprite_w{384};
+			int sprite_h{384};
+			float sprite_escala{0.5f};
+
+			std::shared_ptr<CE::IComponentes> clonar() const override {
+				return std::make_shared<IItem>(*this);
+			}
+	};
+	class IInventario : public CE::IComponentes {
+		public:
+			std::vector<std::shared_ptr<IItem>> items;
+			int idx_activo{0};
+
+			void agregarItem(std::shared_ptr<IItem> item);
+			IItem* getItemActivo() const;
+			void ciclarSiguiente();
+			void ciclarAnterior();
+
+			std::shared_ptr<CE::IComponentes> clonar() const override {
+				return std::make_shared<IInventario>(*this);
+			}
 	};
 } // namespace IVJ

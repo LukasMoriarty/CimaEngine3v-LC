@@ -355,164 +355,6 @@ namespace IVJ
 		ente.setPosicion(pos.x, pos.y);
 	}
 
-	void SistemaEpidemia(CE::Pool& pool, int columnas, float dt)
-	{
-		auto& objetos = pool.getPool();
-		int total  = static_cast<int>(objetos.size());
-		int filas  = (columnas > 0) ? total / columnas : 0;
-
-		using Estado = IVJ::IEstadoEpidemia::Estado;
-
-		// actualizar timers y transiciones de estado
-		for (auto& obj : objetos)
-		{
-			auto epidemia = obj->getComponente<IVJ::IEstadoEpidemia>();
-			if (!epidemia) continue;
-
-			epidemia->pendiente_contagiar = false;
-
-			switch (epidemia->estado_actual)
-			{
-				// ────────────────────────────────────────────────
-				case Estado::Enfermo:
-				{
-					epidemia->timer_estado += dt;
-					epidemia->timer_tick   += dt;
-
-					// Dispara un tick de contagio cada segundo (máx 3)
-					while (epidemia->timer_tick  >= IVJ::IEstadoEpidemia::TICK_INTERVALO
-						&& epidemia->ticks_realizados < 3)
-					{
-						epidemia->timer_tick	   -= IVJ::IEstadoEpidemia::TICK_INTERVALO;
-						epidemia->ticks_realizados++;
-						epidemia->pendiente_contagiar = true;
-					}
-
-					// Tras 3 s → recuperación
-					if (epidemia->timer_estado >= IVJ::IEstadoEpidemia::DUR_ENFERMO)
-					{
-						epidemia->estado_actual	= Estado::Recuperacion;
-						epidemia->timer_estado	 = 0.f;
-						epidemia->ticks_realizados = 0;
-						epidemia->timer_tick	   = 0.f;
-					}
-					break;
-				}
-
-				// ────────────────────────────────────────────────
-				case Estado::Recuperacion:
-				{
-					epidemia->timer_estado += dt;
-					if (epidemia->timer_estado >= IVJ::IEstadoEpidemia::DUR_RECUPERACION)
-					{
-						epidemia->timer_estado = 0.f;
-
-						// Muere?
-						float r_muerte = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-						if (r_muerte < IVJ::IEstadoEpidemia::PROB_MUERTE)
-						{
-							epidemia->estado_actual   = Estado::Muerto;
-							obj->getStats()->hp = 0;
-						}
-						else
-						{
-							// Calcula si se obtiene inmunidad permanente
-							float r_inm = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-							if (r_inm < epidemia->prob_inmunidad_permanente)
-							{
-								epidemia->estado_actual = Estado::Inmune;
-							}
-							else
-							{
-								// Inmunidad parcial temporal (2 s)
-								epidemia->estado_actual		   = Estado::Normal;
-								epidemia->tiene_inmunidad_parcial = true;
-								epidemia->timer_inmunidad_parcial = 0.f;
-							}
-						}
-					}
-					break;
-				}
-
-				// ────────────────────────────────────────────────
-				case Estado::Normal:
-				{
-					// Descontar inmunidad parcial
-					if (epidemia->tiene_inmunidad_parcial)
-					{
-						epidemia->timer_inmunidad_parcial += dt;
-						if (epidemia->timer_inmunidad_parcial >= IVJ::IEstadoEpidemia::DUR_INMUNIDAD_PARCIAL)
-						{
-							epidemia->tiene_inmunidad_parcial	= false;
-							epidemia->timer_inmunidad_parcial	= 0.f;
-						}
-					}
-					break;
-				}
-
-				// Inmune y Muerto no hacen nada
-				case Estado::Inmune:
-				case Estado::Muerto:
-				default:
-					break;
-			}
-		}
-
-		// contagio a vecinos adyacentes (arriba, abajo, izquierda, derecha)
-		// Solo las personas con pendiente_contagiar = true intentan infectar
-		for (auto& obj : objetos)
-		{
-			auto ep = obj->getComponente<IVJ::IEstadoEpidemia>();
-			if (!ep || !ep->pendiente_contagiar) continue;
-
-			int f = ep->fila;
-			int c = ep->columna;
-
-			// Deltas para: arriba, abajo, izquierda, derecha
-
-			for (int k = 0; k < 4; ++k)
-			{
-				constexpr int dc[4] = {  0,  0, -1,  1 };
-				constexpr int df[4] = { -1,  1,  0,  0 };
-
-				int vf = f + df[k];
-				int vc = c + dc[k];
-
-				// Comprobar límites de la cuadrícula
-				if (vf < 0 || vf >= filas || vc < 0 || vc >= columnas) continue;
-
-				int idx = vf * columnas + vc;
-				if (idx < 0 || idx >= total) continue;
-
-				auto ep_v = objetos[idx]->getComponente<IVJ::IEstadoEpidemia>();
-				if (!ep_v || !ep_v->puedeSerInfectado()) continue;
-
-				// Probabilidad individual del vecino susceptible
-				float r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-				if (r < ep_v->prob_contagio)
-				{
-					ep_v->infectar();
-				}
-			}
-		}
-	}
-
-	bool SistemaEpidemiaTerminada(CE::Pool& pool)
-	{
-		using Estado = IVJ::IEstadoEpidemia::Estado;
-		for (auto& obj : pool.getPool())
-		{
-			auto ep = obj->getComponente<IVJ::IEstadoEpidemia>();
-			if (!ep) continue;
-			if (ep->estado_actual == Estado::Enfermo ||
-				ep->estado_actual == Estado::Recuperacion)
-			{
-				return false;  // Todavía hay casos activos
-			}
-		}
-		return true;  // No quedan enfermos ni en recuperación
-	}
-
 	void SistemaNPCLookTarget(CE::Objeto& ente, CE::Vector2D& target)
 	{
 		if (!ente.tieneComponente<IRangoAggro>()) return;
@@ -794,10 +636,32 @@ namespace IVJ
 		}
 	}
 
-	void SistemaMoverBalas(const std::shared_ptr<CE::Objeto> &ente, float dt)
+	void SistemaDisparar(CE::Objeto &tirador, CE::Objeto &cuerpo, IPistola &arma, CE::Pool &game_pool, const sf::Texture &bala_tex)
 	{
-		auto trans = ente->getTransformada();
-		auto vel = ente->getTransformada()->velocidad;
-		trans->posicion.suma(vel.escala(dt));
+		// ... implementar
+	}
+
+	void SistemaActualizarBalas(CE::Pool &game_pool, float dt)
+	{
+		for (auto& obj_ptr : game_pool.getPool())
+		{
+			CE::Objeto& obj = *obj_ptr;
+			if (!obj.tieneComponente<IBala>()) continue;
+
+			auto bala = obj.getComponente<IBala>();
+			// ... implementar
+		}
+	}
+
+	void SistemaColBalas(CE::Pool &game_pool)
+	{
+		for (auto& obj_ptr : game_pool.getPool())
+		{
+			CE::Objeto& obj = *obj_ptr;
+			if (!obj.tieneComponente<IBala>()) continue;
+
+			auto bala = obj.getComponente<IBala>();
+			// ... implementar
+		}
 	}
 } // namespace IVJ

@@ -158,7 +158,7 @@ namespace IVJ
 		marcador{sf::CircleShape{radio}}
 	{
 		marcador.setOrigin({radio,radio});
-		marcador.setFillColor(sf::Color{255,0,0,64});	// mayor alpha = menos transparente
+		marcador.setFillColor(sf::Color{255,0,0,30});	// mayor alpha = menos transparente
 	}
 
 	bool IRangoAggro::estaDentroRango(CE::Objeto& parent, CE::Vector2D& target)
@@ -195,7 +195,7 @@ namespace IVJ
 	            p->getStats()->hp = 0;
 	        // ejecutar update y mover?
 	        p->onUpdate(dt);
-	        SistemaMoverBalas(p, dt);
+	        //SistemaMoverBalas(p, dt);
 	        itimer->frame_actual++;
 	    }
 	    //borar si vida es 0
@@ -253,8 +253,4 @@ namespace IVJ
 	    nuevo->getTransformada()->velocidad = vel;
 	    pool.agregarPool(nuevo);
 	}
-
-	IPistola::IPistola(float cooldown)
-		: CE::IComponentes{}, cooldown{cooldown}, timer{0.f}
-	{}
 } // namespace IVJ
