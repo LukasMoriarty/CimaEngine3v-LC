@@ -253,4 +253,85 @@ namespace IVJ
 	    nuevo->getTransformada()->velocidad = vel;
 	    pool.agregarPool(nuevo);
 	}
+
+	// ──────────────────────────────────────────────────────────────────────────
+	// Additions to src/Juego/Componentes/IJComponentes.cpp
+	// Add these implementations at the bottom of the file (inside namespace IVJ)
+	// ──────────────────────────────────────────────────────────────────────────
+
+	// ---------- IPistola ----------
+
+	bool IPistola::puedeDisparar() const
+	{
+	    return !recargando && balas_cargador > 0 && timer_disparo <= 0.f;
+	}
+
+	void IPistola::iniciarDisparo()
+	{
+	    if (!puedeDisparar()) return;
+	    balas_cargador--;
+	    timer_disparo = cooldown_disparo;
+	    disparando = true;
+	}
+
+	void IPistola::iniciarRecarga()
+	{
+	    // Don't reload if: already reloading, no reserve ammo, or magazine is full
+	    if (recargando || balas_reserva <= 0 || balas_cargador >= balas_max_cargador)
+	        return;
+	    recargando = true;
+	    timer_recarga = tiempo_recarga;
+	}
+
+	void IPistola::onUpdate(float dt)
+	{
+	    // Cool down the fire rate timer
+	    if (timer_disparo > 0.f)
+	        timer_disparo -= dt;
+
+	    // Process active reload
+	    if (recargando)
+	    {
+	        timer_recarga -= dt;
+	        if (timer_recarga <= 0.f)
+	        {
+	            int needed   = balas_max_cargador - balas_cargador;
+	            int transfer = (needed < balas_reserva) ? needed : balas_reserva;
+	            balas_cargador  += transfer;
+	            balas_reserva   -= transfer;
+	            recargando       = false;
+	            timer_recarga    = 0.f;
+	        }
+	    }
+
+	    // Auto-trigger reload when magazine empties and there is reserve ammo
+	    if (balas_cargador == 0 && balas_reserva > 0 && !recargando)
+	        iniciarRecarga();
+	}
+
+	// ---------- IInventario ----------
+
+	void IInventario::agregarItem(std::shared_ptr<IItem> item)
+	{
+	    items.push_back(std::move(item));
+	}
+
+	IItem* IInventario::getItemActivo() const
+	{
+	    if (items.empty()) return nullptr;
+	    return items[static_cast<std::size_t>(idx_activo)].get();
+	}
+
+	void IInventario::ciclarSiguiente()
+	{
+	    if (items.empty()) return;
+	    idx_activo = (idx_activo + 1) % static_cast<int>(items.size());
+	}
+
+	void IInventario::ciclarAnterior()
+	{
+	    if (items.empty()) return;
+	    idx_activo = (idx_activo - 1 + static_cast<int>(items.size()))
+	                 % static_cast<int>(items.size());
+	}
 } // namespace IVJ
