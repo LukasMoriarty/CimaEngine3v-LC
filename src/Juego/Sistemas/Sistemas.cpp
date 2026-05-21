@@ -522,6 +522,9 @@ namespace IVJ
 				if (stats->hp > 0)
 				{
 					stats->hp = (stats->hp > arma->damage) ? stats->hp - arma->damage : 0;
+					std::string key_zombie = "zombie_hurt_01";
+					CE::GestorAssets::Get().getSonido(key_zombie).setVolume(20.f);
+					CE::GestorAssets::Get().getSonido(key_zombie).play();
 					arma->objs_golpeados.insert(&obj);
 					ha_golpeado = true;
 
@@ -560,6 +563,7 @@ namespace IVJ
 			std::string key = ha_golpeado
 				? "slash0"  + std::to_string((std::rand() % 4) + 1)
 				: "swing0"  + std::to_string((std::rand() % 4) + 1);
+			CE::GestorAssets::Get().getSonido(key).setVolume(50.f);
 			CE::GestorAssets::Get().getSonido(key).play();
 			arma->swing_played = true;
 		}
@@ -688,6 +692,9 @@ namespace IVJ
 					if (stats->hp > 0)
 					{
 						stats->hp = (stats->hp > bala->damage) ? stats->hp - bala->damage : 0;
+						std::string key = "zombie_hurt_01";
+						CE::GestorAssets::Get().getSonido(key).setVolume(20.f);
+						CE::GestorAssets::Get().getSonido(key).play();
 
 						if (target.tieneComponente<CE::ITexto>())
 							target.getComponente<CE::ITexto>()->m_texto.setString(

@@ -35,7 +35,7 @@ namespace IVJ
 
 		if (obj.tieneComponente<IPistola>())
 		{
-			obj.getComponente<IPistola>()->recargando = true;
+			obj.getComponente<IPistola>()->iniciarRecarga();
 		}
 	}
 
@@ -50,7 +50,7 @@ namespace IVJ
 	void RecargarCuerpoPistola::onUpdate(const Entidad& /*obj*/, float dt) {
 		if (!sprite || recarga_completa) return;
 
-		cur_frame_time += dt;
+		cur_frame_time -= dt;
 		if (cur_frame_time > 0.f) return;
 		cur_frame_time = max_frame_time;
 

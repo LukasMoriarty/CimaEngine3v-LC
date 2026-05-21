@@ -14,7 +14,7 @@ namespace IVJ
 
 	FSM *IdleCuerpoPistola::onInputs(const CE::IControl &control) {
 		if (control.acc)
-			return new DispararCuerpoPistola(CE::AnimClip{70, 3}, 0.04f);
+			return new DispararCuerpoPistola(CE::AnimClip{70, 3}, 0.1f);
 		if (control.arr || control.abj || control.der || control.izq)
 			return new MoverCuerpoPistola(CE::AnimClip{35, 20}, 0.1f);
 		if (control.sacc)	// falta implementar que tambien cheque si esta el cargador vacio y tiene reserva

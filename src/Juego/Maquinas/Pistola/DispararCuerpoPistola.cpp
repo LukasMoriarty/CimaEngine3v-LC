@@ -51,7 +51,7 @@ namespace IVJ
 	void DispararCuerpoPistola::onUpdate(const Entidad& /*obj*/, float dt) {
 		if (!sprite || disparo_completo) return;
 
-		cur_frame_time += dt;
+		cur_frame_time -= dt;
 		if (cur_frame_time > 0.f) return;
 		cur_frame_time = max_frame_time;
 

@@ -65,6 +65,10 @@ namespace IVJ {
 		CE::GestorAssets::Get().agregarSonido("swing02", ASSETS "/sfx/machete_swing_02.wav");
 		CE::GestorAssets::Get().agregarSonido("swing03", ASSETS "/sfx/machete_swing_03.wav");
 		CE::GestorAssets::Get().agregarSonido("swing04", ASSETS "/sfx/machete_swing_04.wav");
+		CE::GestorAssets::Get().agregarSonido("pistol_shot", ASSETS "/sfx/pistol/pistol_shot.mp3");
+		CE::GestorAssets::Get().agregarSonido("pistol_reload", ASSETS "/sfx/pistol/pistol_reload.mp3");
+		CE::GestorAssets::Get().agregarSonido("zombie_attack_01", ASSETS "/sfx/zombie_attack/attack_01.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_01", ASSETS "/sfx/zombie_hurt/hurt_01.wav");
 
 		CE::GestorAssets::Get().agregarMusica("musica_fondo", ASSETS "/music/pausemusic.mp3");
 		// reproducir musica de fondo (loop)
@@ -362,6 +366,9 @@ namespace IVJ {
 			if (e->tieneComponente<ITarget>() && e->getStats()->hp <= 0) return true;
 			auto temp = e->getComponente<ITemporal>();
 			if (temp && temp->done) return true;
+			// Eliminar balas desactivadas (por impacto o distancia máxima)
+			auto bala = e->getComponente<IBala>();
+			if (bala && !bala->activa) return true;
 			return false;
 		});
 
@@ -373,12 +380,13 @@ namespace IVJ {
 				// SistemaNPCLookTarget(*obj, tpos); // Quitamos esto, ahora
 				// SistemaZombieSeguir maneja la mirada
 				SistemaZombieSeguir(*obj, tpos, objetos.getPool(), dt);
-				SistemaColAABB(*obj, *jugador_ref, true);
+				// No colisionar balas como paredes sólidas contra el jugador
+				if (!obj->tieneComponente<IBala>())
+					SistemaColAABB(*obj, *jugador_ref, true);
 			}
-
-			// se agrega todas las cajas de colisiiones generadas del tilemap al sistema
-			// de colisiones
-			SistemaColAABB(*jugador_ref, *obj, true);
+			// Colisión sólida jugador vs objetos (excluir balas)
+			if (!obj->tieneComponente<IBala>())
+				SistemaColAABB(*jugador_ref, *obj, true);
 		}
 		/*
 		//lab11 prefab - Colisión de balas contra zombies (objetos con ITarget)
