@@ -16,6 +16,7 @@ namespace IVJ
 	{
 		public:
 			explicit Escena_Sprite(std::shared_ptr<Entidad> &pref);
+			void cargarSonidos();
 			virtual ~Escena_Sprite() {};
 			void onInit() override;
 			void onFinal() override;
