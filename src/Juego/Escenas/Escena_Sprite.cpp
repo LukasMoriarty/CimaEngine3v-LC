@@ -57,18 +57,7 @@ namespace IVJ {
 		tiles_layers[0].atlas_texture.setSmooth(true);
 		tiles_layers[1].atlas_texture.setSmooth(true);
 
-		CE::GestorAssets::Get().agregarSonido("slash01", ASSETS "/sfx/machete_slash_flesh_attack_01.wav");
-		CE::GestorAssets::Get().agregarSonido("slash02", ASSETS "/sfx/machete_slash_flesh_attack_02.wav");
-		CE::GestorAssets::Get().agregarSonido("slash03", ASSETS "/sfx/machete_slash_flesh_attack_03.wav");
-		CE::GestorAssets::Get().agregarSonido("slash04", ASSETS "/sfx/machete_slash_flesh_attack_04.wav");
-		CE::GestorAssets::Get().agregarSonido("swing01", ASSETS "/sfx/machete_swing_01.wav");
-		CE::GestorAssets::Get().agregarSonido("swing02", ASSETS "/sfx/machete_swing_02.wav");
-		CE::GestorAssets::Get().agregarSonido("swing03", ASSETS "/sfx/machete_swing_03.wav");
-		CE::GestorAssets::Get().agregarSonido("swing04", ASSETS "/sfx/machete_swing_04.wav");
-		CE::GestorAssets::Get().agregarSonido("pistol_shot", ASSETS "/sfx/pistol/pistol_shot.mp3");
-		CE::GestorAssets::Get().agregarSonido("pistol_reload", ASSETS "/sfx/pistol/pistol_reload.mp3");
-		CE::GestorAssets::Get().agregarSonido("zombie_attack_01", ASSETS "/sfx/zombie_attack/attack_01.wav");
-		CE::GestorAssets::Get().agregarSonido("zombie_hurt_01", ASSETS "/sfx/zombie_hurt/hurt_01.wav");
+		cargarSonidos();
 
 		CE::GestorAssets::Get().agregarMusica("musica_fondo", ASSETS "/music/pausemusic.mp3");
 		// reproducir musica de fondo (loop)
