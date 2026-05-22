@@ -619,4 +619,57 @@ namespace IVJ {
 		}
 	}
 
+	void Escena_Sprite::cargarSonidos()
+	{
+		CE::GestorAssets::Get().agregarSonido("slash01", ASSETS "/sfx/machete_slash_flesh_attack_01.wav");
+		CE::GestorAssets::Get().agregarSonido("slash02", ASSETS "/sfx/machete_slash_flesh_attack_02.wav");
+		CE::GestorAssets::Get().agregarSonido("slash03", ASSETS "/sfx/machete_slash_flesh_attack_03.wav");
+		CE::GestorAssets::Get().agregarSonido("slash04", ASSETS "/sfx/machete_slash_flesh_attack_04.wav");
+		CE::GestorAssets::Get().agregarSonido("swing01", ASSETS "/sfx/machete_swing_01.wav");
+		CE::GestorAssets::Get().agregarSonido("swing02", ASSETS "/sfx/machete_swing_02.wav");
+		CE::GestorAssets::Get().agregarSonido("swing03", ASSETS "/sfx/machete_swing_03.wav");
+		CE::GestorAssets::Get().agregarSonido("swing04", ASSETS "/sfx/machete_swing_04.wav");
+		CE::GestorAssets::Get().agregarSonido("pistol_shot", ASSETS "/sfx/pistol/pistol_shot.mp3");
+		CE::GestorAssets::Get().agregarSonido("pistol_reload", ASSETS "/sfx/pistol/pistol_reload.mp3");
+		CE::GestorAssets::Get().agregarSonido("zombie_attack_01", ASSETS "/sfx/zombie_attack/attack_01.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_attack_02", ASSETS "/sfx/zombie_attack/attack_02.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_attack_03", ASSETS "/sfx/zombie_attack/attack_03.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_attack_04", ASSETS "/sfx/zombie_attack/attack_04.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_attack_05", ASSETS "/sfx/zombie_attack/attack_05.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_attack_06", ASSETS "/sfx/zombie_attack/attack_06.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_attack_07", ASSETS "/sfx/zombie_attack/attack_07.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_01", ASSETS "/sfx/zombie_hurt/hurt_01.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_02", ASSETS "/sfx/zombie_hurt/hurt_02.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_03", ASSETS "/sfx/zombie_hurt/hurt_03.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_04", ASSETS "/sfx/zombie_hurt/hurt_04.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_05", ASSETS "/sfx/zombie_hurt/hurt_05.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_06", ASSETS "/sfx/zombie_hurt/hurt_06.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_07", ASSETS "/sfx/zombie_hurt/hurt_07.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_08", ASSETS "/sfx/zombie_hurt/hurt_08.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_09", ASSETS "/sfx/zombie_hurt/hurt_09.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_10", ASSETS "/sfx/zombie_hurt/hurt_10.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_11", ASSETS "/sfx/zombie_hurt/hurt_11.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_12", ASSETS "/sfx/zombie_hurt/hurt_12.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_13", ASSETS "/sfx/zombie_hurt/hurt_13.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_14", ASSETS "/sfx/zombie_hurt/hurt_14.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_15", ASSETS "/sfx/zombie_hurt/hurt_15.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_16", ASSETS "/sfx/zombie_hurt/hurt_16.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_17", ASSETS "/sfx/zombie_hurt/hurt_17.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_18", ASSETS "/sfx/zombie_hurt/hurt_18.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_19", ASSETS "/sfx/zombie_hurt/hurt_19.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_20", ASSETS "/sfx/zombie_hurt/hurt_20.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_21", ASSETS "/sfx/zombie_hurt/hurt_21.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_22", ASSETS "/sfx/zombie_hurt/hurt_22.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_23", ASSETS "/sfx/zombie_hurt/hurt_23.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_24", ASSETS "/sfx/zombie_hurt/hurt_24.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_25", ASSETS "/sfx/zombie_hurt/hurt_25.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_26", ASSETS "/sfx/zombie_hurt/hurt_26.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_27", ASSETS "/sfx/zombie_hurt/hurt_27.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_28", ASSETS "/sfx/zombie_hurt/hurt_28.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_29", ASSETS "/sfx/zombie_hurt/hurt_29.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_30", ASSETS "/sfx/zombie_hurt/hurt_30.wav");
+		CE::GestorAssets::Get().agregarSonido("zombie_hurt_31", ASSETS "/sfx/zombie_hurt/hurt_31.wav");
+
+	}
+
 } // namespace IVJ
