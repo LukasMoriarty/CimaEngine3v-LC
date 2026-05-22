@@ -522,7 +522,8 @@ namespace IVJ
 				if (stats->hp > 0)
 				{
 					stats->hp = (stats->hp > arma->damage) ? stats->hp - arma->damage : 0;
-					std::string key_zombie = "zombie_hurt_01";
+					int num = std::rand() % 31 + 1;
+					std::string key_zombie = std::string("zombie_hurt_") + (num < 10 ? "0" : "") + std::to_string(num);
 					CE::GestorAssets::Get().getSonido(key_zombie).setVolume(20.f);
 					CE::GestorAssets::Get().getSonido(key_zombie).play();
 					arma->objs_golpeados.insert(&obj);
