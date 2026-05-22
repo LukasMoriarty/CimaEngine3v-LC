@@ -139,6 +139,7 @@ namespace IVJ
 	}
 	void Escena_Menu::onRender()
 	{
+		CE::Render::Get().OnClearColor(sf::Color(0, 0, 0));
 		for (auto& obj : objetos.getPool())
 		{
 			CE::Render::Get().AddToDraw(*obj);
