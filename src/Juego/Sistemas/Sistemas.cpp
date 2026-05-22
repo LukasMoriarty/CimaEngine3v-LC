@@ -693,7 +693,9 @@ namespace IVJ
 					if (stats->hp > 0)
 					{
 						stats->hp = (stats->hp > bala->damage) ? stats->hp - bala->damage : 0;
-						std::string key = "zombie_hurt_01";
+						// key random entre el 01 y el 31
+						int num = std::rand() % 31 + 1;
+						std::string key = std::string("zombie_hurt_") + (num < 10 ? "0" : "") + std::to_string(num);
 						CE::GestorAssets::Get().getSonido(key).setVolume(20.f);
 						CE::GestorAssets::Get().getSonido(key).play();
 
