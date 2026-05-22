@@ -18,8 +18,6 @@
 #include <cmath>
 #include <memory>
 
-#include "Juego/Maquinas/Balas/BalasBoom.hpp"
-
 namespace IVJ {
 	Escena_Sprite::Escena_Sprite(std::shared_ptr<Entidad> &pref) :
 		CE::Escena{}, jugador_ref{pref}, cuerpo{std::make_shared<Entidad>()} {}
@@ -59,7 +57,7 @@ namespace IVJ {
 
 		cargarSonidos();
 
-		CE::GestorAssets::Get().agregarMusica("musica_fondo", ASSETS "/music/pausemusic.mp3");
+		CE::GestorAssets::Get().agregarMusica("musica_fondo", ASSETS "/music/levelmusic.mp3");
 		// reproducir musica de fondo (loop)
 		CE::GestorAssets::Get().getMusica("musica_fondo").play();
 		CE::GestorAssets::Get().getMusica("musica_fondo").setVolume(20.f);
@@ -298,8 +296,7 @@ namespace IVJ {
             }
             else if (item_activo->tipo == IItem::Tipo::Pistola)
             {
-                auto arma = cuerpo->getComponente<IPistola>();
-                if (arma) {
+				if (auto arma = cuerpo->getComponente<IPistola>()) {
                     // Actualizar tiempos internos de la pistola (cooldowns, recargas)
                     arma->onUpdate(dt);
 
@@ -323,8 +320,7 @@ namespace IVJ {
                                 L"ARMA: " + std::wstring(item_activo->nombre.begin(), item_activo->nombre.end()) + L"\n";
             if (item_activo->tipo == IItem::Tipo::Pistola)
             {
-                auto arma = cuerpo->getComponente<IPistola>();
-                if (arma)
+				if (auto arma = cuerpo->getComponente<IPistola>())
                 {
                     if (arma->recargando)
                     {
@@ -449,8 +445,7 @@ namespace IVJ {
 		// cambio de armas usando teclas Q y E
 		if (pressed)
 		{
-			auto inv = jugador_ref->getComponente<IInventario>();
-			if (inv) {
+			if (auto inv = jugador_ref->getComponente<IInventario>()) {
 				if (accion.getNombre() == "siguiente_arma")
 				{
 					inv->ciclarSiguiente();
@@ -503,8 +498,7 @@ namespace IVJ {
 		}
 		// Render debug info for spawn zones
 		for (auto &spawn_zone : m_spawn_pool.getPool()) {
-			auto respawn_data = spawn_zone->getComponente<CE::IRespawn>();
-			if (respawn_data) {
+			if (auto respawn_data = spawn_zone->getComponente<CE::IRespawn>()) {
 				sf::RectangleShape spawn_rect;
 				spawn_rect.setSize({(float)respawn_data->width, (float)respawn_data->height});
 				spawn_rect.setOrigin({respawn_data->width / 2.f, respawn_data->height / 2.f});
@@ -582,8 +576,7 @@ namespace IVJ {
 		if (!item) return;
 
 		// 1. Cambiar textura, dimensiones y escala en el componente ISprite delcuerpo
-		auto spr = cuerpo->getComponente<CE::ISprite>();
-		if (spr) {
+		if (auto spr = cuerpo->getComponente<CE::ISprite>()) {
 			spr->m_sprite.setTexture(CE::GestorAssets::Get().getTextura(item->key_textura));
 			spr->width = item->sprite_w;
 			spr->height = item->sprite_h;
