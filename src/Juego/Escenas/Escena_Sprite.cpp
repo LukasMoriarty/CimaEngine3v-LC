@@ -346,7 +346,8 @@ namespace IVJ {
 
 		// 6. Actualizar objetos del pool (NPCs, etc.)
 		auto &pool = objetos.getPool();
-		std::erase_if(pool, [](const std::shared_ptr<CE::Objeto> &e) {
+		pool.erase(std::remove_if(pool.begin(), pool.end(), [](const std::shared_ptr<CE::Objeto> &e)
+		{
 			// Remove dead NPCs (targets) and also remove temporary FX whose ITemporal::done is set
 			if (e->tieneComponente<ITarget>() && e->getStats()->hp <= 0) return true;
 			auto temp = e->getComponente<ITemporal>();
@@ -355,7 +356,7 @@ namespace IVJ {
 			auto bala = e->getComponente<IBala>();
 			if (bala && !bala->activa) return true;
 			return false;
-		});
+		}), pool.end());
 
 		for (auto &obj: pool) {
 			obj->inputFSM();

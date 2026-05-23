@@ -43,7 +43,6 @@ namespace IVJ
 
 			// Player outline uniforms
 			sf::Glsl::Vec4 zombie_outline_color{1.f, 0.f, 0.f, 1.f};
-			float zombie_outline_thickness{0.015f};
 			sf::Vector2f zombie_tex_size{384.f, 384.f};
 
 			// Fog effect
@@ -67,11 +66,6 @@ namespace IVJ
 			bool ataque_procesado{false};
 			sf::CircleShape ataque_hitbox;
 			std::unordered_set<CE::Objeto *> objs_golpeados;
-
-			// ── Attack SFX state ──────────────────────────────────────────────
-			/// True after the swing SFX has fired for the current attack swing.
-			/// Resets when the player leaves the attack state.
-			bool swing_sfx_played{false};
 
 			//elementos del sistema de inventario y HUD
 			std::unique_ptr<sf::Text> hud_texto;

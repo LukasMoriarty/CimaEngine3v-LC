@@ -205,7 +205,7 @@ namespace CE
 			float vel;
 			float objetivo_x = 0.0f;
 			float objetivo_y = 0.0f;
-			bool en_transicion = false;
+			//bool en_transicion = false;
 	};
 
 	class CamaraTopDownLock: public Camara {
