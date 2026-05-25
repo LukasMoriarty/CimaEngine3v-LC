@@ -14,7 +14,7 @@ namespace IVJ
     [[maybe_unused]]bool SistemaColAABB(CE::Objeto& A,CE::Objeto& B, bool resolucion =false);
     [[maybe_unused]]bool SistemaColAABBMid(CE::Objeto& A, CE::Objeto& B, bool resolucion =false);
 
-    [[maybe_unused]]void SistemaSpawn(CE::Pool& game_pool, CE::Pool& spawn_zones, const std::map<std::string, CE::AnimClip>& zombie_clips, CE::Objeto* player_target);
+    [[maybe_unused]]void SistemaSpawn(CE::Pool& game_pool, CE::Pool& spawn_zones, const std::map<std::string, CE::AnimClip>& zombie_clips, CE::Objeto* player_target, int& zombies_por_generar);
     [[maybe_unused]]void SistemaPaths(std::vector<std::shared_ptr<CE::Objeto>>& obj);
     [[maybe_unused]]bool checkRayoHit(CE::Objeto& npc, CE::Vector2D& p1, CE::Vector2D& p2);
 
@@ -41,7 +41,7 @@ namespace IVJ
 
     [[maybe_unused]] void SistemaZombieSeguir(CE::Objeto& zombie, CE::Vector2D& target, const std::vector<std::shared_ptr<CE::Objeto>>& obstaculos, float dt);
 
-    [[maybe_unused]] void SistemaAtaqueMelee(CE::Objeto& atacante, CE::Pool& game_pool);
+    [[maybe_unused]] void SistemaAtaqueMelee(CE::Objeto& atacante, CE::Pool& game_pool, int& puntaje, int& zombies_matados);
 
 	[[maybe_unused]] void SistemaDisparar(
 		CE::Objeto& tirador,	// jugador (posicion fuente)
@@ -59,5 +59,5 @@ namespace IVJ
 	 * Detecta colision bala vs cualquier entidad con ITarget (es decir, las que targetean al jugador)
 	 * Al impactar: aplica daño, genera blood splash, desactiva bala (hp=0)
 	 */
-	[[maybe_unused]] void SistemaColBalas(CE::Pool& game_pool);
+	[[maybe_unused]] void SistemaColBalas(CE::Pool& game_pool, int& puntaje, int& zombies_matados);
 }

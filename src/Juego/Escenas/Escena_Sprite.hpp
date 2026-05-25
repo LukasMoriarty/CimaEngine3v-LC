@@ -28,6 +28,16 @@ namespace IVJ
 		private:
 			int inicializar{1};
 
+			int ronda_actual{1};
+			int zombies_ronda_total{4};
+			int zombies_por_generar_ronda{4};
+			int zombies_matados_ronda{0};
+			int puntaje_total{0};
+			float tiempo_espera_ronda{0.f};
+			bool jugador_muerto{false};
+
+			std::unique_ptr<sf::Text> mensaje_pantalla;
+
 			/// Pies del jugador — tiene el sprite atlas de pies y su propio FSM.
 			std::shared_ptr<Entidad> &jugador_ref;
 

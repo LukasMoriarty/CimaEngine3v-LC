@@ -432,4 +432,14 @@ namespace IVJ
 			std::shared_ptr<CE::IComponentes> clonar() const override { return std::make_shared<IFloatingText>(*this); }
 	};
 
+	class IZombieSpawnerRef : public CE::IComponentes
+	{
+		public:
+			CE::Objeto* spawner_ptr;
+
+			explicit IZombieSpawnerRef(CE::Objeto* spawner) : spawner_ptr(spawner) {}
+			~IZombieSpawnerRef() override = default;
+			std::shared_ptr<CE::IComponentes> clonar() const override { return std::make_shared<IZombieSpawnerRef>(*this); }
+	};
+
 } // namespace IVJ

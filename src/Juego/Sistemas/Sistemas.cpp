@@ -7,6 +7,9 @@
 #include "../objetos/Entidad.hpp"
 #include <cmath>
 #include <cstdlib>
+#include <algorithm>
+#include <random>
+#include <queue>
 #include "../../Motor/Utils/Lerp.hpp"
 #include "../../Motor/Render/Render.hpp"
 #include <memory>
@@ -150,18 +153,45 @@ namespace IVJ
 
 	void SistemaSpawn(CE::Pool& game_pool, CE::Pool& spawn_zones,
 					const std::map<std::string, CE::AnimClip>& zombie_clips,
-					CE::Objeto* player_target)
+					CE::Objeto* player_target, int& zombies_por_generar)
 	{
+		if (zombies_por_generar <= 0) return;
+
+		struct ElementoSpawn {
+			CE::Objeto* spawner;
+			double prioridad;
+			bool operator<(const ElementoSpawn& otro) const {
+				return prioridad < otro.prioridad;
+			}
+		};
+
+		std::priority_queue<ElementoSpawn> cola_spawners;
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::uniform_real_distribution<> dis(0.0, 1.0);
+
 		for (auto& s : spawn_zones.getPool())
 		{
 			auto respawndata = s->getComponente<CE::IRespawn>();
-			if (!respawndata || respawndata->curr_spawn >= respawndata->max_spawn) continue;
+			if (!respawndata) continue;
+
 			if (respawndata->timer_actual < respawndata->timer_maximo)
 			{
 				respawndata->timer_actual++;
-				continue;
 			}
+			else
+			{
+				cola_spawners.push({s.get(), dis(gen)});
+			}
+		}
 
+		while (zombies_por_generar > 0 && !cola_spawners.empty())
+		{
+			auto top_el = cola_spawners.top();
+			cola_spawners.pop();
+			CE::Objeto* s = top_el.spawner;
+
+			auto respawndata = s->getComponente<CE::IRespawn>();
 			auto zombie = std::make_shared<Entidad>();
 
 			int size_x = respawndata->width;
@@ -188,6 +218,9 @@ namespace IVJ
 			zombie->addComponente(std::make_shared<IEntorno>(&game_pool.getPool()));
 			zombie->addComponente(std::make_shared<ITarget>(player_target));
 
+			// Enlazar el spawner al zombie usando IZombieSpawnerRef
+			zombie->addComponente(std::make_shared<IZombieSpawnerRef>(s));
+
 			auto texto_hp = std::make_shared<CE::ITexto>(CE::GestorAssets::Get().getFont("default_font"), "HP: 100");
 			texto_hp->m_texto.setCharacterSize(20);
 			texto_hp->m_texto.setFillColor(sf::Color::Red);
@@ -206,8 +239,12 @@ namespace IVJ
 			zombie->addComponente(zombie_shader);
 
 			game_pool.agregarPool(zombie);
+			
+			// Cooldown largo mientras el zombie está vivo
+			respawndata->timer_maximo = 999999;
 			respawndata->timer_actual = 0;
-			respawndata->curr_spawn++;
+			
+			zombies_por_generar--;
 		}
 	}
 
@@ -482,7 +519,7 @@ namespace IVJ
 	//  COMBAT — MELEE
 	// ─────────────────────────────────────────────────────────────────────────────
 
-	void SistemaAtaqueMelee(CE::Objeto& atacante, CE::Pool& game_pool)
+	void SistemaAtaqueMelee(CE::Objeto& atacante, CE::Pool& game_pool, int& puntaje, int& zombies_matados)
 	{
 		if (!atacante.tieneComponente<IArmaMelee>()) return;
 		auto arma = atacante.getComponente<IArmaMelee>();
@@ -523,6 +560,11 @@ namespace IVJ
 				{
 					stats->hp = (stats->hp > arma->damage) ? stats->hp - arma->damage : 0;
 					
+					if (stats->hp == 0) {
+						puntaje += 100;
+						zombies_matados++;
+					}
+
 					// Dropear salud al matar con cuchillo
 					if (stats->hp == 0 && (std::rand() % 100) < 50) {
 						auto spawner = std::make_shared<Entidad>();
@@ -669,7 +711,7 @@ namespace IVJ
 
 	// ─────────────────────────────────────────────────────────────────────────────
 
-	void SistemaColBalas(CE::Pool& game_pool)
+	void SistemaColBalas(CE::Pool& game_pool, int& puntaje, int& zombies_matados)
 	{
 		// Collect active bullets first (avoid iterator invalidation from pool additions)
 		std::vector<CE::Objeto*> balas_activas;
@@ -708,6 +750,11 @@ namespace IVJ
 						{
 							stats->hp = (stats->hp > bala->damage) ? stats->hp - bala->damage : 0;
 							
+							if (stats->hp == 0) {
+								puntaje += 50;
+								zombies_matados++;
+							}
+
 							// Dropear municion al matar con bala
 							if (stats->hp == 0 && (std::rand() % 100) < 25) {
 								auto spawner = std::make_shared<Entidad>();

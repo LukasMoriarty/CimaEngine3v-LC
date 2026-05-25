@@ -179,6 +179,11 @@ namespace IVJ {
 		hud_texto->setOutlineColor(sf::Color::Black);
 		hud_texto->setOutlineThickness(1.5f);
 
+		mensaje_pantalla = std::make_unique<sf::Text>(CE::GestorAssets::Get().getFont("default_font"), "", 50);
+		mensaje_pantalla->setFillColor(sf::Color::Yellow);
+		mensaje_pantalla->setOutlineColor(sf::Color::Black);
+		mensaje_pantalla->setOutlineThickness(2.f);
+
 		// Equipar el arma inicial activa
 		actualizarArmaEquipada();
 
@@ -206,6 +211,13 @@ namespace IVJ {
 	void Escena_Sprite::onFinal() { CE::GestorCamaras::Get().setCamaraActiva(0); }
 
 	void Escena_Sprite::onUpdate(float dt) {
+		if (jugador_muerto) return;
+
+		if (jugador_ref->getStats()->hp <= 0) {
+			jugador_muerto = true;
+			return;
+		}
+
 		fog_tiempo += dt;
 
 		// 1. Sincronizar control del cuerpo con el de los pies
@@ -295,7 +307,7 @@ namespace IVJ {
             if (item_activo->tipo == IItem::Tipo::Cuchillo)
             {
                 // Ejecutar sistema de ataque cuerpo a cuerpo
-                SistemaAtaqueMelee(*cuerpo, objetos);
+                SistemaAtaqueMelee(*cuerpo, objetos, puntaje_total, zombies_matados_ronda);
             }
             else if (item_activo->tipo == IItem::Tipo::Pistola)
             {
@@ -314,7 +326,7 @@ namespace IVJ {
 
         // Actualizar posición de balas y evaluar impactos contra zombies (ITarget)
         SistemaActualizarBalas(objetos, dt);
-        SistemaColBalas(objetos);
+        SistemaColBalas(objetos, puntaje_total, zombies_matados_ronda);
 
         // Actualizar HUD
         if (item_activo)
@@ -339,20 +351,62 @@ namespace IVJ {
         	{
                 info += L"MUNICION: N/A";
             }
+			
+            info += L"\nPUNTAJE: " + std::to_wstring(puntaje_total) +
+                    L"\nRONDA: " + std::to_wstring(ronda_actual) +
+                    L"\nZOMBIES MATADOS: " + std::to_wstring(zombies_matados_ronda) + L" / " + std::to_wstring(zombies_ronda_total);
+
             if (hud_texto)
 	        	hud_texto->setString(info);
         }
 
 
-		// 7. Sistema de Spawners
-		SistemaSpawn(objetos, m_spawn_pool, clips_zombie, jugador_ref.get());
+		// Sistema de Rondas
+		if (zombies_matados_ronda >= zombies_ronda_total) {
+			if (tiempo_espera_ronda == 0.f) {
+				auto float_txt = std::make_shared<Entidad>();
+				float_txt->setPosicion(jugador_ref->getTransformada()->posicion.x, jugador_ref->getTransformada()->posicion.y - 60.f);
+				float_txt->addComponente(std::make_shared<IFloatingText>(3.0f));
+				float_txt->addComponente(std::make_shared<ITemporal>());
+				auto text_comp = std::make_shared<CE::ITexto>(CE::GestorAssets::Get().getFont("default_font"), 
+					"Ronda " + std::to_string(ronda_actual) + " terminada. Prepárate.");
+				text_comp->m_texto.setCharacterSize(24);
+				text_comp->m_texto.setFillColor(sf::Color::Yellow);
+				text_comp->m_texto.setOutlineColor(sf::Color::Black);
+				text_comp->m_texto.setOutlineThickness(2.f);
+				float_txt->addComponente(text_comp);
+				objetos.agregarPool(float_txt);
+			}
+			tiempo_espera_ronda += dt;
+			if (tiempo_espera_ronda >= 3.0f) {
+				ronda_actual++;
+				zombies_ronda_total = static_cast<int>(std::round(zombies_ronda_total * 1.2f));
+				zombies_por_generar_ronda = zombies_ronda_total;
+				zombies_matados_ronda = 0;
+				tiempo_espera_ronda = 0.f;
+			}
+		} else {
+			SistemaSpawn(objetos, m_spawn_pool, clips_zombie, jugador_ref.get(), zombies_por_generar_ronda);
+		}
 
 		// 6. Actualizar objetos del pool (NPCs, etc.)
 		auto &pool = objetos.getPool();
 		pool.erase(std::remove_if(pool.begin(), pool.end(), [](const std::shared_ptr<CE::Objeto> &e)
 		{
 			// Remove dead NPCs (targets) and also remove temporary FX whose ITemporal::done is set
-			if (e->tieneComponente<ITarget>() && e->getStats()->hp <= 0) return true;
+			if (e->tieneComponente<ITarget>() && e->getStats()->hp <= 0) {
+				if (e->tieneComponente<IZombieSpawnerRef>()) {
+					if (auto sp_ref = e->getComponente<IZombieSpawnerRef>()) {
+						if (auto sp = sp_ref->spawner_ptr) {
+							if (auto resp = sp->getComponente<CE::IRespawn>()) {
+								resp->timer_maximo = 120;
+								resp->timer_actual = 0;
+							}
+						}
+					}
+				}
+				return true;
+			}
 			auto temp = e->getComponente<ITemporal>();
 			if (temp && temp->done) return true;
 			// Eliminar balas desactivadas (por impacto o distancia máxima)
@@ -670,6 +724,18 @@ namespace IVJ {
 		{
 			hud_texto->setPosition({30.f, 30.f});
 			CE::Render::Get().AddToDraw(*hud_texto);
+		}
+
+		if (jugador_muerto) {
+			mensaje_pantalla->setString("GAME OVER\nLograste la Ronda: " + std::to_string(ronda_actual) + 
+										"\nPuntaje Total: " + std::to_string(puntaje_total));
+			mensaje_pantalla->setPosition({1920.f / 2.f - 250.f, 1080.f / 2.f - 100.f});
+			CE::Render::Get().AddToDraw(*mensaje_pantalla);
+		} 
+		else if (zombies_matados_ronda >= zombies_ronda_total) {
+			mensaje_pantalla->setString("Ronda " + std::to_string(ronda_actual) + " terminada. Prepárate.");
+			mensaje_pantalla->setPosition({1920.f / 2.f - 300.f, 1080.f / 2.f - 100.f});
+			CE::Render::Get().AddToDraw(*mensaje_pantalla);
 		}
 
 		tex.setView(vista_original); // Restaurar vista del juego original
