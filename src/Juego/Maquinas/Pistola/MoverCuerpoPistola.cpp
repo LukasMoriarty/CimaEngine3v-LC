@@ -12,14 +12,29 @@ namespace IVJ
 		nombre = "MoverCuerpoPistola";
 	}
 
-	FSM *MoverCuerpoPistola::onInputs(const CE::IControl &control)
-	{
-		if (control.acc)
-			return new DispararCuerpoPistola(CE::AnimClip{70, 3}, 0.04f);
+	FSM *MoverCuerpoPistola::onInputs(const CE::IControl &control) {
+		if (mi_arma && mi_arma->balas_cargador == 0 && mi_arma->balas_reserva > 0)
+			return new RecargarCuerpoPistola(CE::AnimClip{55, 15}, 0.1f);
+
+		if (control.acc) {
+			if (mi_arma && (mi_arma->automatica || mi_arma->gatillo_liberado)) {
+				if (!mi_arma->automatica || mi_arma->puedeDisparar()) {
+					mi_arma->gatillo_liberado = false;
+					return new DispararCuerpoPistola(CE::AnimClip{70, 3}, 0.04f);
+				}
+			}
+		} else if (mi_arma) {
+			mi_arma->gatillo_liberado = true;
+		}
+
 		if (!control.arr && !control.abj && !control.der && !control.izq)
 			return new IdleCuerpoPistola(CE::AnimClip{0, 20}, 0.1f);
-		if (control.sacc)	// recargar
-			return new RecargarCuerpoPistola(CE::AnimClip{55, 15}, 0.1f);
+
+		if (control.sacc) {
+			if (mi_arma && mi_arma->balas_cargador < mi_arma->balas_max_cargador && mi_arma->balas_reserva > 0)
+				return new RecargarCuerpoPistola(CE::AnimClip{55, 15}, 0.1f);
+		}
+
 		return nullptr;
 	}
 
@@ -36,6 +51,8 @@ namespace IVJ
 
 		id_frame = m_clip.first_frame;
 		cur_frame_time = max_frame_time;
+		
+		mi_arma = obj.tieneComponente<IPistola>() ? obj.getComponente<IPistola>() : nullptr;
 	}
 
 	void MoverCuerpoPistola::onSalir(const Entidad &/*obj*/) {}
@@ -52,5 +69,7 @@ namespace IVJ
 
 		int local = (id_frame - m_clip.first_frame + 1) % std::max(1, m_clip.frame_count);
 		id_frame  = m_clip.first_frame + local;
+
+
 	}
 } // namespace IVJ

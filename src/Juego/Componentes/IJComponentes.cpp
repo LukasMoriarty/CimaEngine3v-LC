@@ -288,25 +288,17 @@ namespace IVJ
 	    // Cool down the fire rate timer
 	    if (timer_disparo > 0.f)
 	        timer_disparo -= dt;
-
-	    // Process active reload
-	    if (recargando)
-	    {
+	    
+	    if (recargando) {
 	        timer_recarga -= dt;
-	        if (timer_recarga <= 0.f)
-	        {
-	            int needed   = balas_max_cargador - balas_cargador;
-	            int transfer = (needed < balas_reserva) ? needed : balas_reserva;
-	            balas_cargador  += transfer;
-	            balas_reserva   -= transfer;
-	            recargando       = false;
-	            timer_recarga    = 0.f;
+	        if (timer_recarga <= 0.f) {
+	            int faltante = balas_max_cargador - balas_cargador;
+	            int recargar = std::min(faltante, balas_reserva);
+	            balas_cargador += recargar;
+	            balas_reserva -= recargar;
+	            recargando = false;
 	        }
 	    }
-
-	    // Auto-trigger reload when magazine empties and there is reserve ammo
-	    if (balas_cargador == 0 && balas_reserva > 0 && !recargando)
-	        iniciarRecarga();
 	}
 
 	// ---------- IInventario ----------

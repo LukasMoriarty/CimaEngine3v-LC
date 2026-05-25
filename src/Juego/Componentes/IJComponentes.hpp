@@ -285,6 +285,8 @@ namespace IVJ
 		int damage;
 		bool atacando{false};  // Se activa desde la FSM (AtacarCuerpoKnife)
 		bool swing_played{false};	// true mientras el swing SFX ya se disparó este ataque
+		bool automatica{false};
+		bool gatillo_liberado{true};
 
 		// Guarda a quién ya golpeó en este swing para no repetir daño
 		std::unordered_set<CE::Objeto *> objs_golpeados;
@@ -343,6 +345,8 @@ namespace IVJ
 			float timer_recarga{0.f};
 			bool disparando{false};
 			bool recargando{false};
+			bool automatica{false};
+			bool gatillo_liberado{true};
 			bool puedeDisparar() const;
 			void iniciarDisparo();	// decrementa bala, resetea cooldown
 			void iniciarRecarga();	// solo si hay reseva y no esta recargando

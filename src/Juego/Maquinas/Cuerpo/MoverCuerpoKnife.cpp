@@ -14,12 +14,17 @@ namespace IVJ
 
 	FSM* MoverCuerpoKnife::onInputs(const CE::IControl& control)
 	{
-		if (control.acc)
-			return new AtacarCuerpoKnife(CE::AnimClip{20, 15}, 0.04f);
+		if (control.acc) {
+			if (mi_arma && (mi_arma->automatica || mi_arma->gatillo_liberado)) {
+				mi_arma->gatillo_liberado = false;
+				return new AtacarCuerpoKnife(CE::AnimClip{20, 15}, 0.04f);
+			}
+		} else if (mi_arma) {
+			mi_arma->gatillo_liberado = true;
+		}
 
 		if (!control.arr && !control.abj && !control.der && !control.izq)
 			return new IdleCuerpoKnife(CE::AnimClip{0, 20}, 0.1f);
-
 
 		return nullptr;
 	}
@@ -38,6 +43,8 @@ namespace IVJ
 
 		id_frame       = m_clip.first_frame;
 		cur_frame_time = max_frame_time;
+		
+		mi_arma = obj.tieneComponente<IArmaMelee>() ? obj.getComponente<IArmaMelee>() : nullptr;
 	}
 
 	void MoverCuerpoKnife::onSalir(const Entidad& /*obj*/) {}

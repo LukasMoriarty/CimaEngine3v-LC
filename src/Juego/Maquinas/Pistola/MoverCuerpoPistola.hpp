@@ -1,4 +1,6 @@
 #pragma once
+#include "Motor/Componentes/IComponentes.hpp"
+#include "../../Componentes/IJComponentes.hpp"
 #include "../FSM.hpp"
 #include "../../../Motor/Utils/AnimLoader.hpp"
 
@@ -26,6 +28,7 @@ namespace IVJ
 		private:
 			sf::Sprite* sprite{nullptr};
 			int s_w{0}, s_h{0}, num_cols{8};
+			IVJ::IPistola* mi_arma{nullptr};
 			CE::AnimClip m_clip;
 			int id_frame{0};
 			float max_frame_time, cur_frame_time;

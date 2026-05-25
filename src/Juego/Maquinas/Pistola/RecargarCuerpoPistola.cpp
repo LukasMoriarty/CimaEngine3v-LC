@@ -42,7 +42,14 @@ namespace IVJ
 	void RecargarCuerpoPistola::onSalir(const Entidad &obj) {
 		if (obj.tieneComponente<IPistola>())
 		{
-			obj.getComponente<IPistola>()->recargando = false;
+			auto arma = obj.getComponente<IPistola>();
+			arma->recargando = false;
+			if (recarga_completa) {
+				int needed = arma->balas_max_cargador - arma->balas_cargador;
+				int transfer = (needed < arma->balas_reserva) ? needed : arma->balas_reserva;
+				arma->balas_cargador += transfer;
+				arma->balas_reserva -= transfer;
+			}
 		}
 		recarga_completa = true;
 	}

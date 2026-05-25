@@ -1,4 +1,6 @@
 #pragma once
+#include "Motor/Componentes/IComponentes.hpp"
+#include "../../Componentes/IJComponentes.hpp"
 #include "../FSM.hpp"
 #include "../../../Motor/Utils/AnimLoader.hpp"
 
@@ -29,6 +31,7 @@ namespace IVJ
         int s_h{0};
         int num_cols{8};        ///< Columnas del atlas knife (3072/384 = 8)
 
+        IVJ::IArmaMelee* mi_arma{nullptr};
         CE::AnimClip m_clip;
         int id_frame{0};
 
