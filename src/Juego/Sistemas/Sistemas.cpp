@@ -228,7 +228,7 @@ namespace IVJ
 			texto_hp->m_texto.setOutlineThickness(1.f);
 			zombie->addComponente(texto_hp);
 
-			static sf::Glsl::Vec4 zombie_outline_color{1.f, 0.f, 0.f, 1.f};
+			static sf::Glsl::Vec4 zombie_outline_color{0.5f, 1.f, 0.33f, 1.f};
 			static float zombie_outline_thickness = 0.015f;
 			static sf::Vector2f zombie_tex_size{384.f, 384.f};
 

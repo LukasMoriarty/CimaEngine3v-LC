@@ -57,9 +57,10 @@ namespace IVJ {
 
 		cargarSonidos();
 
-		CE::GestorAssets::Get().agregarMusica("musica_fondo", ASSETS "/music/phonk.mp3");
+		CE::GestorAssets::Get().agregarMusica("musica_fondo", ASSETS "/music/phonkslowed.mp3");
 		// reproducir musica de fondo (loop)
 		CE::GestorAssets::Get().getMusica("musica_fondo").play();
+		CE::GestorAssets::Get().getMusica("musica_fondo").setLooping(true);
 		CE::GestorAssets::Get().getMusica("musica_fondo").setVolume(20.f);
 
 		// Cargar texturas

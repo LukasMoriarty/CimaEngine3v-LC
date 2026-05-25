@@ -6,12 +6,12 @@ namespace IVJ
 {
     struct ZombieConst
     {
-        static constexpr float RANGO_AGGRO = 500.f;          // detection range
-        static constexpr float VELOCIDAD = 150.f;          // movement speed
-        static constexpr float DISTANCIA_ATAQUE = 45.f;     // distance to stop and attack
+        static constexpr float RANGO_AGGRO = 2000.f;          // detection range
+        static constexpr float VELOCIDAD = 250.f;          // movement speed
+        static constexpr float DISTANCIA_ATAQUE = 100.f;     // distance to stop and attack
         static constexpr float DISTANCIA_IDLE = 250.f;      // distance to return to idle
         static constexpr float FRAME_RATE_ATTACK = 0.06f;   // attack animation frame time
-        static constexpr float FRAME_RATE_MOVE = 0.04f;     // move/idle animation frame time
+        static constexpr float FRAME_RATE_MOVE = 0.03f;     // move/idle animation frame time
     };
 
 	/**
