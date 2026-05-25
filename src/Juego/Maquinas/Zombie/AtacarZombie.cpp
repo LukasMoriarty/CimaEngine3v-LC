@@ -81,6 +81,23 @@ namespace IVJ {
             if (id_frame >= m_clip.first_frame + m_clip.frame_count) {
                 ataque_completo = true;
                 id_frame = m_clip.first_frame + m_clip.frame_count - 1;
+
+                // Aplicar daño
+                if (auto itarget = obj.getComponente<ITarget>()) {
+                    if (itarget->target_obj) {
+                        auto target_stats = itarget->target_obj->getStats();
+                        if (target_stats->hp > 0) {
+                            target_stats->hp = (target_stats->hp > 25) ? target_stats->hp - 25 : 0;
+                            target_stats->timer_damage_shader = 1.0f; // 1 segundo de feedback visual
+
+							// Update HP text if present
+							if (itarget->target_obj->tieneComponente<CE::ITexto>()) {
+								itarget->target_obj->getComponente<CE::ITexto>()->m_texto.setString(
+									"HP: " + std::to_string((int)target_stats->hp));
+							}
+                        }
+                    }
+                }
             }
         }
 

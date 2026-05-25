@@ -257,6 +257,7 @@ namespace IVJ
 			std::shared_ptr<CE::IComponentes> clonar() const override { return std::make_shared<ITarget>(*this); }
 		public:
 			CE::Vector2D* pos;
+			CE::Objeto* target_obj{nullptr};
 	};
 	class IRangoAggro : public CE::IComponentes
 	{
@@ -394,4 +395,41 @@ namespace IVJ
 				return std::make_shared<IInventario>(*this);
 			}
 	};
+
+	// ─────────────────────────────────────────────────────────────────────────────
+	//  SISTEMA DE DROPS Y HUD
+	// ─────────────────────────────────────────────────────────────────────────────
+	class IDropItem : public CE::IComponentes
+	{
+		public:
+			enum class Tipo { Salud, Municion };
+			Tipo tipo;
+
+			explicit IDropItem(Tipo t) : tipo(t) {}
+			~IDropItem() override = default;
+			std::shared_ptr<CE::IComponentes> clonar() const override { return std::make_shared<IDropItem>(*this); }
+	};
+
+	class IDelayedSpawn : public CE::IComponentes
+	{
+		public:
+			float delay_timer;
+			IDropItem::Tipo tipo;
+
+			explicit IDelayedSpawn(float delay, IDropItem::Tipo t) : delay_timer(delay), tipo(t) {}
+			~IDelayedSpawn() override = default;
+			std::shared_ptr<CE::IComponentes> clonar() const override { return std::make_shared<IDelayedSpawn>(*this); }
+	};
+
+	class IFloatingText : public CE::IComponentes
+	{
+		public:
+			float timer;
+			float max_timer;
+
+			explicit IFloatingText(float duration) : timer(duration), max_timer(duration) {}
+			~IFloatingText() override = default;
+			std::shared_ptr<CE::IComponentes> clonar() const override { return std::make_shared<IFloatingText>(*this); }
+	};
+
 } // namespace IVJ

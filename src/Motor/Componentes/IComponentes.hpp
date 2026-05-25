@@ -168,6 +168,8 @@ namespace CE
 
 			bool congelar{false};	// flag para congelar la entidad (no se mueve ni actúa)
 
+			float timer_damage_shader{0.f}; // timer para aplicar un shader de daño visualmente
+
 			std::shared_ptr<IComponentes> clonar() const override
 			{
 				return std::make_shared<IStats>(*this);

@@ -142,7 +142,7 @@ namespace IVJ
 	}
 
 	ITarget::ITarget(CE::Objeto *target)
-		: CE::IComponentes{}, pos{nullptr}
+		: CE::IComponentes{}, pos{nullptr}, target_obj{target}
 	{
 		if (target)
 			pos = &target->getTransformada()->posicion;
@@ -151,6 +151,7 @@ namespace IVJ
 	void ITarget::setTarget(CE::Objeto &t)
 	{
 		pos = &(t.getTransformada()->posicion);
+		target_obj = &t;
 	}
 
 	IRangoAggro::IRangoAggro(float radio)

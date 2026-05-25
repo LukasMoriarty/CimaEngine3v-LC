@@ -113,6 +113,9 @@ namespace IVJ {
 		bala_prefab->addComponente(bala_me);
 		auto emisor = std::make_shared<IEmisor>(*jugador_ref, *bala_prefab);
 		jugador_ref->addComponente(emisor);
+		
+		jugador_ref->getStats()->hp_max = 200;
+		jugador_ref->getStats()->hp = 200;
 		//fin lab11 prefab
 
 		auto fsm_pies = std::make_shared<IdlePies>(CE::AnimLoader::getClip(clips_pies, "idle"));
@@ -358,9 +361,98 @@ namespace IVJ {
 			return false;
 		}), pool.end());
 
+		int salud_count = 0;
+		int municion_count = 0;
+
+		// Contar items actuales para los limites
+		for (auto &obj: pool) {
+			if (auto drop = obj->getComponente<IDropItem>()) {
+				if (drop->tipo == IDropItem::Tipo::Salud) salud_count++;
+				if (drop->tipo == IDropItem::Tipo::Municion) municion_count++;
+			}
+		}
+
 		for (auto &obj: pool) {
 			obj->inputFSM();
 			obj->onUpdate(dt);
+
+			// Logica de Spawners (IDelayedSpawn)
+			if (auto delSpawn = obj->getComponente<IDelayedSpawn>()) {
+				delSpawn->delay_timer -= dt;
+				if (delSpawn->delay_timer <= 0.f) {
+					if (!obj->tieneComponente<ITemporal>()) obj->addComponente(std::make_shared<ITemporal>());
+					obj->getComponente<ITemporal>()->done = true; // remover el spawner invisible
+					bool can_spawn = false;
+					if (delSpawn->tipo == IDropItem::Tipo::Salud && salud_count < 2) can_spawn = true;
+					if (delSpawn->tipo == IDropItem::Tipo::Municion && municion_count < 3) can_spawn = true;
+
+					if (can_spawn) {
+						auto item = std::make_shared<Entidad>();
+						item->setPosicion(obj->getTransformada()->posicion.x, obj->getTransformada()->posicion.y);
+						item->addComponente(std::make_shared<CE::IBoundingBox>(CE::Vector2D{32.f, 32.f}));
+						item->addComponente(std::make_shared<IDropItem>(delSpawn->tipo));
+						
+						// Marcador visual
+						auto txt = std::make_shared<CE::ITexto>(CE::GestorAssets::Get().getFont("default_font"), delSpawn->tipo == IDropItem::Tipo::Salud ? "[ + HP + ]" : "[ + AMMO + ]");
+						txt->m_texto.setFillColor(delSpawn->tipo == IDropItem::Tipo::Salud ? sf::Color::Green : sf::Color::Yellow);
+						txt->m_texto.setCharacterSize(16);
+						txt->m_texto.setOutlineColor(sf::Color::Black);
+						txt->m_texto.setOutlineThickness(1.f);
+						item->addComponente(txt);
+
+						objetos.agregarPool(item);
+						if (delSpawn->tipo == IDropItem::Tipo::Salud) salud_count++;
+						else municion_count++;
+					}
+				}
+			}
+
+			// Logica de recoleccion (IDropItem)
+			if (auto drop = obj->getComponente<IDropItem>()) {
+				if (SistemaColAABBMid(*jugador_ref, *obj, false)) {
+					if (!obj->tieneComponente<ITemporal>()) obj->addComponente(std::make_shared<ITemporal>());
+					obj->getComponente<ITemporal>()->done = true; // remover item
+
+					auto float_txt = std::make_shared<Entidad>();
+					float_txt->setPosicion(obj->getTransformada()->posicion.x, obj->getTransformada()->posicion.y - 40.f);
+					float_txt->addComponente(std::make_shared<IFloatingText>(2.0f));
+					float_txt->addComponente(std::make_shared<ITemporal>());
+					auto text_comp = std::make_shared<CE::ITexto>(CE::GestorAssets::Get().getFont("default_font"), "");
+					text_comp->m_texto.setCharacterSize(24);
+					text_comp->m_texto.setOutlineColor(sf::Color::Black);
+					text_comp->m_texto.setOutlineThickness(2.f);
+
+					if (drop->tipo == IDropItem::Tipo::Salud) {
+						auto stats = jugador_ref->getStats();
+						stats->hp = std::min(stats->hp_max, (std::uint8_t)(stats->hp + 50));
+						text_comp->m_texto.setFillColor(sf::Color::Green);
+						text_comp->m_texto.setString("+50 HP");
+					} else {
+						if (auto arma = cuerpo->getComponente<IPistola>()) {
+							arma->balas_reserva = std::min(80, arma->balas_reserva + 16); // 20% de 80, capeado en 80
+						}
+						text_comp->m_texto.setFillColor(sf::Color::Yellow);
+						text_comp->m_texto.setString("+16 Municion");
+					}
+					float_txt->addComponente(text_comp);
+					objetos.agregarPool(float_txt);
+				}
+			}
+
+			// Lógica de texto flotante (IFloatingText)
+			if (auto floatTxt = obj->getComponente<IFloatingText>()) {
+				floatTxt->timer -= dt;
+				obj->getTransformada()->posicion.y -= 30.f * dt;
+				if (auto text_comp = obj->getComponente<CE::ITexto>()) {
+					sf::Color c = text_comp->m_texto.getFillColor();
+					c.a = (std::uint8_t)(255.f * std::max(0.f, floatTxt->timer / floatTxt->max_timer));
+					text_comp->m_texto.setFillColor(c);
+				}
+				if (floatTxt->timer <= 0.f) {
+					if (auto temp = obj->getComponente<ITemporal>()) temp->done = true;
+				}
+			}
+
 			if (obj->tieneComponente<ITarget>()) {
 				auto &tpos = *obj->getComponente<ITarget>()->pos;
 				// SistemaNPCLookTarget(*obj, tpos); // Quitamos esto, ahora
@@ -370,9 +462,15 @@ namespace IVJ {
 				if (!obj->tieneComponente<IBala>())
 					SistemaColAABB(*obj, *jugador_ref, true);
 			}
-			// Colisión sólida jugador vs objetos (excluir balas)
-			if (!obj->tieneComponente<IBala>())
+			// Colisión sólida jugador vs objetos (excluir balas, drops y textos)
+			if (!obj->tieneComponente<IBala>() && !obj->tieneComponente<IDropItem>() && !obj->tieneComponente<IFloatingText>() && !obj->tieneComponente<IDelayedSpawn>())
 				SistemaColAABB(*jugador_ref, *obj, true);
+		}
+
+		// Reducir temporizador de daño visual
+		auto stats = jugador_ref->getStats();
+		if (stats->timer_damage_shader > 0.f) {
+			stats->timer_damage_shader -= dt;
 		}
 		/*
 		//lab11 prefab - Colisión de balas contra zombies (objetos con ITarget)
@@ -524,7 +622,15 @@ namespace IVJ {
 			fog_shader.setUniform("lampPos", sf::Vector2f(playerPos.x / 4000.f, playerPos.y / 4000.f));
 			fog_shader.setUniform("lampRadio", 0.05f); // ~200px
 			fog_shader.setUniform("lampSoft", 0.04f); // Suavizado del borde
-			fog_shader.setUniform("fogColor", sf::Glsl::Vec4(0.01f, 0.01f, 0.01f, 0.98f)); // Oscuro casi negro
+			
+			auto stats = jugador_ref->getStats();
+			if (stats->timer_damage_shader > 0.f) {
+				float intensidad = std::min(1.0f, stats->timer_damage_shader);
+				fog_shader.setUniform("fogColor", sf::Glsl::Vec4(0.01f + 0.6f * intensidad, 0.01f, 0.01f, 0.98f)); // Rojizo
+			} else {
+				fog_shader.setUniform("fogColor", sf::Glsl::Vec4(0.01f, 0.01f, 0.01f, 0.98f)); // Oscuro casi negro
+			}
+
 			fog_shader.setUniform("tiempo", fog_tiempo * 0.5f); // Humo denso y lento
 			fog_shader.setUniform("ruido_escala", 15.0f);
 			fog_shader.setUniform("ruido_min", 0.3f);

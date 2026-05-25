@@ -522,6 +522,15 @@ namespace IVJ
 				if (stats->hp > 0)
 				{
 					stats->hp = (stats->hp > arma->damage) ? stats->hp - arma->damage : 0;
+					
+					// Dropear salud al matar con cuchillo
+					if (stats->hp == 0 && (std::rand() % 100) < 50) {
+						auto spawner = std::make_shared<Entidad>();
+						spawner->setPosicion(pos_enemigo.x, pos_enemigo.y);
+						spawner->addComponente(std::make_shared<IDelayedSpawn>(2.0f, IDropItem::Tipo::Salud));
+						game_pool.agregarPool(spawner);
+					}
+
 					int num = std::rand() % 31 + 1;
 					std::string key_zombie = std::string("zombie_hurt_") + (num < 10 ? "0" : "") + std::to_string(num);
 					CE::GestorAssets::Get().getSonido(key_zombie).setVolume(20.f);
@@ -693,6 +702,15 @@ namespace IVJ
 					if (stats->hp > 0)
 					{
 						stats->hp = (stats->hp > bala->damage) ? stats->hp - bala->damage : 0;
+						
+						// Dropear municion al matar con bala
+						if (stats->hp == 0 && (std::rand() % 100) < 25) {
+							auto spawner = std::make_shared<Entidad>();
+							spawner->setPosicion(target.getTransformada()->posicion.x, target.getTransformada()->posicion.y);
+							spawner->addComponente(std::make_shared<IDelayedSpawn>(2.0f, IDropItem::Tipo::Municion));
+							game_pool.agregarPool(spawner);
+						}
+
 						// key random entre el 01 y el 31
 						int num = std::rand() % 31 + 1;
 						std::string key = std::string("zombie_hurt_") + (num < 10 ? "0" : "") + std::to_string(num);
