@@ -2,6 +2,9 @@
 #include "IdleZombie.hpp"
 #include "MoverZombie.hpp"
 #include "../../../Motor/Componentes/IComponentes.hpp"
+#include "../../../Motor/Primitivos/GestorAssets.hpp"
+#include <cstdlib>
+#include <string>
 
 namespace IVJ {
     AtacarZombie::AtacarZombie(std::map<std::string, CE::AnimClip> clips, float frame_rate)
@@ -50,6 +53,12 @@ namespace IVJ {
         id_frame = m_clip.first_frame;
         cur_frame_time = max_frame_time;
         ataque_completo = false;
+
+        // Reproducir sonido aleatorio de ataque
+        int num = std::rand() % 7 + 1;
+        std::string key_attack = "zombie_attack_0" + std::to_string(num);
+        CE::GestorAssets::Get().getSonido(key_attack).setVolume(30.f);
+        CE::GestorAssets::Get().getSonido(key_attack).play();
 
         // Estrictamente velocidad 0 al atacar
         if (obj.tieneComponente<CE::ITransform>()) {

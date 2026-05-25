@@ -1,6 +1,7 @@
 #include "RecargarCuerpoPistola.hpp"
 #include "IdleCuerpoPistola.hpp"
 #include "Motor/Componentes/IComponentes.hpp"
+#include "Motor/Primitivos/GestorAssets.hpp"
 
 namespace IVJ
 {
@@ -36,6 +37,8 @@ namespace IVJ
 		if (obj.tieneComponente<IPistola>())
 		{
 			obj.getComponente<IPistola>()->iniciarRecarga();
+			CE::GestorAssets::Get().getSonido("pistol_reload").setVolume(50.f);
+			CE::GestorAssets::Get().getSonido("pistol_reload").play();
 		}
 	}
 

@@ -590,6 +590,9 @@ namespace IVJ
 		if (!arma.puedeDisparar()) return;
 		arma.iniciarDisparo();
 
+		CE::GestorAssets::Get().getSonido("pistol_shot").setVolume(40.f);
+		CE::GestorAssets::Get().getSonido("pistol_shot").play();
+
 		auto trans   = cuerpo.getTransformada();
 		float angulo = trans->angulo;
 
