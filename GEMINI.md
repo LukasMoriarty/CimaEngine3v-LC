@@ -1,7 +1,3 @@
-# MODO DE OPERACIÓN CRÍTICO
-- Actúa estrictamente en modo CONSULTA (Ask).
-- NO generes scripts automáticos ni intentes modificar el sistema de archivos.
-- Explica detalladamente qué hacer, en qué archivo (especificando si pertenece a /src/Motor o /src/Juego) y qué líneas modificar en CLion.
 
 # CimaEngine3v-LC: AI Agent Guide
 

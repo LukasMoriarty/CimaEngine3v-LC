@@ -5,6 +5,8 @@
 #include "../../../Motor/Primitivos/GestorAssets.hpp"
 #include <cstdlib>
 #include <string>
+#include <cmath>
+#include "Motor/Render/Render.hpp"
 
 namespace IVJ {
     AtacarZombie::AtacarZombie(std::map<std::string, CE::AnimClip> clips, float frame_rate)
@@ -61,15 +63,36 @@ namespace IVJ {
         if (obj.tieneComponente<CE::ITransform>()) {
             obj.getTransformada()->velocidad = {0.f, 0.f};
         }
+
+        if (auto arma = obj.getComponente<IArmaMelee>()) {
+            arma->atacando = true;
+        }
     }
 
     void AtacarZombie::onSalir(const Entidad& obj) {
-        (void) obj;
+        if (auto arma = obj.getComponente<IArmaMelee>()) {
+            arma->atacando = false;
+        }
     }
 
     void AtacarZombie::onUpdate(const Entidad &obj, float dt) {
         (void) obj;
         if (!sprite) return;
+
+#if DEBUG
+    	if (obj.tieneComponente<CE::ITransform>()) {
+    		auto trans = obj.getTransformada();
+    		// Offset de 40.f hacia adelante basado en el ángulo del zombie
+    		CE::Vector2D centro_hitbox{
+    			trans->posicion.x + std::sin(trans->angulo) * 40.f,
+				trans->posicion.y - std::cos(trans->angulo) * 40.f
+			};
+            if (auto arma = obj.getComponente<IArmaMelee>()) {
+                arma->hitbox_debug.setPosition({centro_hitbox.x, centro_hitbox.y});
+            }
+    	}
+#endif
+
 
         // Forzar velocidad 0 cada frame de ataque por si acaso
         if (obj.tieneComponente<CE::ITransform>()) {

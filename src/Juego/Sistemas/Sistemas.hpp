@@ -37,7 +37,7 @@ namespace IVJ
 
     // zombie
     [[maybe_unused]] bool checkLOS(const CE::Vector2D& p1, const CE::Vector2D& p2, const std::vector<std::shared_ptr<CE::Objeto>>& obstaculos, CE::Objeto* ignore = nullptr);
-
+    [[maybe_unused]] CE::Objeto* getBlockingObstacle(const CE::Vector2D& p1, const CE::Vector2D& p2, const std::vector<std::shared_ptr<CE::Objeto>>& obstaculos, CE::Objeto* ignore = nullptr);
 
     [[maybe_unused]] void SistemaZombieSeguir(CE::Objeto& zombie, CE::Vector2D& target, const std::vector<std::shared_ptr<CE::Objeto>>& obstaculos, float dt);
 

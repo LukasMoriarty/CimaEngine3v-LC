@@ -217,6 +217,7 @@ namespace IVJ
 			zombie->addComponente(std::make_shared<IRangoAggro>(ZombieConst::RANGO_AGGRO));
 			zombie->addComponente(std::make_shared<IEntorno>(&game_pool.getPool()));
 			zombie->addComponente(std::make_shared<ITarget>(player_target));
+			zombie->addComponente(std::make_shared<IArmaMelee>(35.f, 40.f, 25));
 
 			// Enlazar el spawner al zombie usando IZombieSpawnerRef
 			zombie->addComponente(std::make_shared<IZombieSpawnerRef>(s));
@@ -258,11 +259,10 @@ namespace IVJ
 		{
 			if (!o->tieneComponente<CE::IPaths>()) continue;
 			auto path = o->getComponente<CE::IPaths>();
-			int num_curvas = (int)path->puntos.size() / 3;
+			int num_curvas = static_cast<int>(path->puntos.size()) / 3;
 			if (path->puntos.empty() || path->id_curva >= num_curvas) continue;
 
-			float t = (path->frame_actual_curva % (path->frame_total_curva + 1))
-					/ (float)path->frame_total_curva;
+			float t = (path->frame_actual_curva % (path->frame_total_curva + 1)) / static_cast<float>(path->frame_total_curva);
 
 			CE::Vector2D P0 = path->puntos[0 + path->id_curva * (path->offset - 0)];
 			CE::Vector2D P1 = path->puntos[1 + path->id_curva * (path->offset - 0)];
@@ -272,27 +272,6 @@ namespace IVJ
 			o->setPosicion(pos.x, pos.y);
 
 			if (t == 1.f) path->id_curva++;
-
-			if (path->id_curva == 2 && o->tieneComponente<CE::IShader>())
-			{
-				auto shader = o->getComponente<CE::IShader>();
-				shader->cambiarShader("", ASSETS "/shaders/color.frag");
-				static sf::Glsl::Vec4 color{0.f, 1.f, 0.f, 1.f};
-				shader->m_vars.clear();
-				shader->setVector4("color", &color);
-			}
-			else if (o->tieneComponente<CE::IShader>())
-			{
-				auto shader = o->getComponente<CE::IShader>();
-				shader->cambiarShader("", ASSETS "/shaders/contorno.frag");
-				static sf::Glsl::Vec4 outlinecolor{0.f, 1.f, 0.f, 1.f};
-				static float thickness = 0.1f;
-				static sf::Glsl::Vec2 size{63, 92};
-				shader->m_vars.clear();
-				shader->setVector4("uOutlineColor", &outlinecolor);
-				shader->setEscalar("uThickness", &thickness);
-				shader->setVector2("uTexSize", &size);
-			}
 		}
 	}
 
@@ -396,13 +375,23 @@ namespace IVJ
 	}
 
 	bool checkLOS(const CE::Vector2D& p1, const CE::Vector2D& p2,
-				const std::vector<std::shared_ptr<CE::Objeto>>& obstaculos,
-				CE::Objeto* ignore)
+					const std::vector<std::shared_ptr<CE::Objeto>>& obstaculos,
+					CE::Objeto* ignore)
 	{
 		for (auto& obs : obstaculos)
 		{
 			if (obs.get() == ignore) continue;
 			if (!obs->tieneComponente<CE::IBoundingBox>()) continue;
+
+			// FILTRAR: Solo las paredes físicas bloquean la línea de visión
+			bool es_pared = !obs->tieneComponente<ITarget>() &&
+							!obs->tieneComponente<IBala>() &&
+							!obs->tieneComponente<IDropItem>() &&
+							!obs->tieneComponente<IFloatingText>() &&
+							!obs->tieneComponente<IDelayedSpawn>() &&
+							!obs->tieneComponente<CE::IControl>();
+			if (!es_pared) continue;
+
 
 			auto bb	= obs->getComponente<CE::IBoundingBox>();
 			auto trans = obs->getTransformada();
@@ -439,6 +428,59 @@ namespace IVJ
 		return true;
 	}
 
+	CE::Objeto* getBlockingObstacle(const CE::Vector2D& p1, const CE::Vector2D& p2,
+					const std::vector<std::shared_ptr<CE::Objeto>>& obstaculos,
+					CE::Objeto* ignore)
+	{
+		for (auto& obs : obstaculos)
+		{
+			if (obs.get() == ignore) continue;
+			if (!obs->tieneComponente<CE::IBoundingBox>()) continue;
+
+			// FILTRAR: Solo las paredes bloquean el paso físico del zombie
+			bool es_pared = !obs->tieneComponente<ITarget>() &&
+							!obs->tieneComponente<IBala>() &&
+							!obs->tieneComponente<IDropItem>() &&
+							!obs->tieneComponente<IFloatingText>() &&
+							!obs->tieneComponente<IDelayedSpawn>() &&
+							!obs->tieneComponente<CE::IControl>();
+			if (!es_pared) continue;
+
+			auto bb	= obs->getComponente<CE::IBoundingBox>();
+			auto trans = obs->getTransformada();
+
+			float minX = trans->posicion.x - bb->mitad.x;
+			float maxX = minX + bb->tam.x;
+			float minY = trans->posicion.y - bb->mitad.y;
+			float maxY = minY + bb->tam.y;
+
+			float dx = p2.x - p1.x;
+			float dy = p2.y - p1.y;
+			float tmin = 0.f, tmax = 1.f;
+
+			if (std::abs(dx) > 0.0001f)
+			{
+				float tx1 = (minX - p1.x) / dx;
+				float tx2 = (maxX - p1.x) / dx;
+				tmin = std::max(tmin, std::min(tx1, tx2));
+				tmax = std::min(tmax, std::max(tx1, tx2));
+			}
+			else { if (p1.x < minX || p1.x > maxX) continue; }
+
+			if (std::abs(dy) > 0.0001f)
+			{
+				float ty1 = (minY - p1.y) / dy;
+				float ty2 = (maxY - p1.y) / dy;
+				tmin = std::max(tmin, std::min(ty1, ty2));
+				tmax = std::min(tmax, std::max(ty1, ty2));
+			}
+			else { if (p1.y < minY || p1.y > maxY) continue; }
+
+			if (tmax >= tmin && tmax > 0.f) return obs.get();
+		}
+		return nullptr;
+	}
+
 	void SistemaZombieSeguir(CE::Objeto& zombie, CE::Vector2D& target_pos,
 							const std::vector<std::shared_ptr<CE::Objeto>>& obstaculos, float dt)
 	{
@@ -446,14 +488,38 @@ namespace IVJ
 		auto rango = zombie.getComponente<IRangoAggro>();
 		if (!rango) return;
 
+		// Si el zombie tiene un IPaths, dejamos que SistemaPaths lo mueva,
+		// pero le permitimos rotar hacia donde se mueve.
+		if (zombie.tieneComponente<CE::IPaths>()) {
+			auto path = zombie.getComponente<CE::IPaths>();
+			int num_curvas = (int)path->puntos.size() / 3;
+			if (path->id_curva >= num_curvas) {
+				auto& comps = zombie.getListaComponentes();
+				comps.erase(
+					std::remove_if(comps.begin(), comps.end(),
+						[](const std::shared_ptr<CE::IComponentes>& c) {
+							return dynamic_cast<CE::IPaths*>(c.get()) != nullptr;
+						}),
+					comps.end());
+			} else {
+				// Rotar en la direccion del movimiento que le da el SistemaPaths
+				CE::Vector2D vel = trans->posicion - trans->pos_prev; // aproximación
+				if (vel.longitud() > 0.1f) {
+					CE::Vector2D cam = vel;
+					cam.normalizacion();
+					trans->angulo = std::atan2(cam.x, -cam.y);
+				}
+				return; // No aplicamos velocidad manual
+			}
+		}
+
 		CE::Vector2D pos_actual = trans->posicion;
 		float dist = pos_actual.distancia(target_pos);
 		bool en_rango  = rango->estaDentroRango(zombie, target_pos);
-		bool tiene_los = checkLOS(pos_actual, target_pos, obstaculos, &zombie);
 
 		CE::Vector2D vel{0.f, 0.f};
 
-		if (en_rango && tiene_los)
+		if (en_rango)
 		{
 			if (dist < ZombieConst::DISTANCIA_ATAQUE)
 			{
@@ -466,23 +532,58 @@ namespace IVJ
 
 				// Forward obstacle probe
 				CE::Vector2D probe = pos_actual;
-				CE::Vector2D probe_offset{dir.x * 30.f, dir.y * 30.f};
+				CE::Vector2D probe_offset{dir.x * 40.f, dir.y * 40.f};
 				probe.suma(probe_offset);
 
-				if (!checkLOS(pos_actual, probe, obstaculos, &zombie))
+				CE::Objeto* obs = getBlockingObstacle(pos_actual, probe, obstaculos, &zombie);
+				if (obs)
 				{
-					float ang = std::atan2(dir.y, dir.x);
-					CE::Vector2D dirL{std::cos(ang - 0.78f), std::sin(ang - 0.78f)};
-					CE::Vector2D dirR{std::cos(ang + 0.78f), std::sin(ang + 0.78f)};
-					CE::Vector2D pL{pos_actual.x + dirL.x * 40.f, pos_actual.y + dirL.y * 40.f};
-					CE::Vector2D pR{pos_actual.x + dirR.x * 40.f, pos_actual.y + dirR.y * 40.f};
+					auto bb = obs->getComponente<CE::IBoundingBox>();
+					auto obs_trans = obs->getTransformada();
 
-					if	  (checkLOS(pos_actual, pL, obstaculos, &zombie)) dir = dirL;
-					else if (checkLOS(pos_actual, pR, obstaculos, &zombie)) dir = dirR;
+					// Expand by 25 pixels to avoid clipping
+					float minX = obs_trans->posicion.x - bb->mitad.x - 25.f;
+					float maxX = obs_trans->posicion.x + bb->mitad.x + 25.f;
+					float minY = obs_trans->posicion.y - bb->mitad.y - 25.f;
+					float maxY = obs_trans->posicion.y + bb->mitad.y + 25.f;
+
+					CE::Vector2D corners[4] = {
+						{minX, minY}, {maxX, minY}, {minX, maxY}, {maxX, maxY}
+					};
+
+					int best_corner = -1;
+					float min_dist = 999999.f;
+
+					for (int i = 0; i < 4; ++i) {
+						float d = pos_actual.distancia(corners[i]) + corners[i].distancia(target_pos);
+						if (d < min_dist) {
+							// Opcional: chequear si la esquina misma no esta bloqueada por OTRA pared
+							if (!getBlockingObstacle(pos_actual, corners[i], obstaculos, &zombie)) {
+								min_dist = d;
+								best_corner = i;
+							}
+						}
+					}
+
+					// Si encontramos una buena esquina, creamos el IPaths
+					if (best_corner != -1) {
+						// Cálculo de frames dinámicos según distancia para mantener velocidad homogénea
+						float dist_a_esquina = pos_actual.distancia(corners[best_corner]);
+						int frames_viaje = std::max(10, static_cast<int>(dist_a_esquina / 2.5f));
+
+						auto path = std::make_shared<CE::IPaths>(frames_viaje);
+						path->addCurva(pos_actual, corners[best_corner], corners[best_corner]);
+						zombie.addComponente(path);
+						return; // Dejamos que en el prox frame lo tome SistemaPaths
+					}
+
+					
+					// Si fallan las esquinas, caemos en la velocidad 0 (atorado)
+					vel = {0.f, 0.f};
+				} else {
+					dir.escala(ZombieConst::VELOCIDAD);
+					vel = dir;
 				}
-
-				dir.escala(ZombieConst::VELOCIDAD);
-				vel = dir;
 			}
 		}
 		else
@@ -498,7 +599,7 @@ namespace IVJ
 		// Rotation
 		if (zombie.tieneComponente<CE::ISprite>())
 		{
-			if (tiene_los && en_rango)
+			if (en_rango)
 			{
 				CE::Vector2D mirar = target_pos - pos_actual;
 				mirar.normalizacion();

@@ -426,6 +426,8 @@ namespace IVJ {
 			}
 		}
 
+		SistemaPaths(pool);
+
 		for (auto &obj: pool) {
 			obj->inputFSM();
 			obj->onUpdate(dt);
@@ -511,11 +513,27 @@ namespace IVJ {
 				auto &tpos = *obj->getComponente<ITarget>()->pos;
 				// SistemaNPCLookTarget(*obj, tpos); // Quitamos esto, ahora
 				// SistemaZombieSeguir maneja la mirada
-				SistemaZombieSeguir(*obj, tpos, objetos.getPool(), dt);
+				SistemaZombieSeguir(*obj, tpos, pool, dt);
 				// No colisionar balas como paredes sólidas contra el jugador
 				if (!obj->tieneComponente<IBala>())
 					SistemaColAABB(*obj, *jugador_ref, true);
+
+				// Colisión sólida de zombie contra paredes físicas (evita que las atraviesen)
+				for (auto &other : pool) {
+					if (other.get() == obj.get()) continue;
+
+					bool es_pared = other->tieneComponente<CE::IBoundingBox>() &&
+									!other->tieneComponente<ITarget>() &&
+									!other->tieneComponente<IBala>() &&
+									!other->tieneComponente<IDropItem>() &&
+									!other->tieneComponente<IFloatingText>() &&
+									!other->tieneComponente<IDelayedSpawn>();
+					if (es_pared) {
+						SistemaColAABBMid(*obj, *other, true);
+					}
+				}
 			}
+
 			// Colisión sólida jugador vs objetos (excluir balas, drops y textos)
 			if (!obj->tieneComponente<IBala>() && !obj->tieneComponente<IDropItem>() && !obj->tieneComponente<IFloatingText>() && !obj->tieneComponente<IDelayedSpawn>())
 				SistemaColAABB(*jugador_ref, *obj, true);
