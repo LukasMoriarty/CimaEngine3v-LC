@@ -31,9 +31,6 @@ namespace IVJ {
             if (distancia > ZombieConst::DISTANCIA_ATAQUE) {
                 return new MoverZombie(m_clips, ZombieConst::FRAME_RATE_MOVE);
             }
-            // Si sigue cerca, se queda en Idle o repite ataque? 
-            // El usuario dijo "ayudame a estandarizar y estabilizar el framerate... siempre tenga el mismo framerate de cuando termina de atacar"
-            // Generalmente de ataque se vuelve a mover o idle.
             return new IdleZombie(m_clips, ZombieConst::FRAME_RATE_MOVE);
         }
         return nullptr;

@@ -16,7 +16,8 @@ namespace IVJ
 	{
 		public:
 			explicit Escena_Sprite(std::shared_ptr<Entidad> &pref);
-			void cargarSonidos();
+			static void cargarSonidos();
+			void actualizarArmaEquipada() const;
 			virtual ~Escena_Sprite() {};
 			void onInit() override;
 			void onFinal() override;
@@ -79,6 +80,5 @@ namespace IVJ
 
 			//elementos del sistema de inventario y HUD
 			std::unique_ptr<sf::Text> hud_texto;
-			void actualizarArmaEquipada();
 	};
 } // namespace IVJ

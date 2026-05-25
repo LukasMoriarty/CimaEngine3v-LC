@@ -23,7 +23,7 @@ namespace IVJ {
 		CE::Escena{}, jugador_ref{pref}, cuerpo{std::make_shared<Entidad>()} {}
 
 	void Escena_Sprite::onInit() {
-		CE::GestorCamaras::Get().setCamaraActiva(1);
+		CE::GestorCamaras::Get().setCamaraActiva(2);
 		CE::GestorCamaras::Get().getCamaraActiva().lockEnObjeto(jugador_ref);
 		CE::GestorCamaras::Get().getCamaraActiva().setViewSize(800.f, 450.f);
 
@@ -57,7 +57,7 @@ namespace IVJ {
 
 		cargarSonidos();
 
-		CE::GestorAssets::Get().agregarMusica("musica_fondo", ASSETS "/music/levelmusic.mp3");
+		CE::GestorAssets::Get().agregarMusica("musica_fondo", ASSETS "/music/phonk.mp3");
 		// reproducir musica de fondo (loop)
 		CE::GestorAssets::Get().getMusica("musica_fondo").play();
 		CE::GestorAssets::Get().getMusica("musica_fondo").setVolume(20.f);
@@ -84,7 +84,7 @@ namespace IVJ {
 
 		// PIES (jugador_ref)
 		auto trans = jugador_ref->getTransformada();
-		trans->velocidad = CE::Vector2D{200.f, 200.f};
+		trans->velocidad = CE::Vector2D{300.f, 300.f};
 		jugador_ref->setPosicion(1750.f, 1750.f);
 		jugador_ref->getStats()->hp = 100;
 		jugador_ref->getStats()->hp_max = 100;
@@ -353,8 +353,7 @@ namespace IVJ {
             }
 			
             info += L"\nPUNTAJE: " + std::to_wstring(puntaje_total) +
-                    L"\nRONDA: " + std::to_wstring(ronda_actual) +
-                    L"\nZOMBIES MATADOS: " + std::to_wstring(zombies_matados_ronda) + L" / " + std::to_wstring(zombies_ronda_total);
+                    L"\nRONDA: " + std::to_wstring(ronda_actual);
 
             if (hud_texto)
 	        	hud_texto->setString(info);
@@ -368,8 +367,8 @@ namespace IVJ {
 				float_txt->setPosicion(jugador_ref->getTransformada()->posicion.x, jugador_ref->getTransformada()->posicion.y - 60.f);
 				float_txt->addComponente(std::make_shared<IFloatingText>(3.0f));
 				float_txt->addComponente(std::make_shared<ITemporal>());
-				auto text_comp = std::make_shared<CE::ITexto>(CE::GestorAssets::Get().getFont("default_font"), 
-					"Ronda " + std::to_string(ronda_actual) + " terminada. Prepárate.");
+				auto text_comp = std::make_shared<CE::ITexto>(CE::GestorAssets::Get().getFont("default_font"),
+					"Ronda " + std::to_string(ronda_actual) + " terminada");
 				text_comp->m_texto.setCharacterSize(24);
 				text_comp->m_texto.setFillColor(sf::Color::Yellow);
 				text_comp->m_texto.setOutlineColor(sf::Color::Black);
@@ -629,21 +628,23 @@ namespace IVJ {
 
 		// Objetos del pool
 		for (auto &obj: objetos.getPool()) {
-			if (obj->tieneComponente<IRangoAggro>()) {
-				auto rango = obj->getComponente<IRangoAggro>();
-				rango->marcador.setPosition({obj->getTransformada()->posicion.x, obj->getTransformada()->posicion.y});
-				CE::Render::Get().AddToDraw(rango->marcador);
-			}
-			CE::Render::Get().AddToDraw(*obj);
-
-#if DEBUG
 			if (obj->tieneComponente<CE::ITexto>()) {
 				auto texto = obj->getComponente<CE::ITexto>();
 				texto->m_texto.setPosition({obj->getTransformada()->posicion.x - 30.f,
 										   obj->getTransformada()->posicion.y - 60.f});
 				CE::Render::Get().AddToDraw(texto->m_texto);
 			}
+			CE::Render::Get().AddToDraw(*obj);
+		}
 
+#if DEBUG
+		// Render debug info for objects
+		for (auto &obj: objetos.getPool()) {
+			if (obj->tieneComponente<IRangoAggro>()) {
+				auto rango = obj->getComponente<IRangoAggro>();
+				rango->marcador.setPosition({obj->getTransformada()->posicion.x, obj->getTransformada()->posicion.y});
+				CE::Render::Get().AddToDraw(rango->marcador);
+			}
 			auto arma = cuerpo->getComponente<IArmaMelee>();
 			if (arma && arma->atacando) {
 				CE::Render::Get().AddToDraw(arma->hitbox_debug);
@@ -733,7 +734,7 @@ namespace IVJ {
 			CE::Render::Get().AddToDraw(*mensaje_pantalla);
 		} 
 		else if (zombies_matados_ronda >= zombies_ronda_total) {
-			mensaje_pantalla->setString("Ronda " + std::to_string(ronda_actual) + " terminada. Prepárate.");
+			//mensaje_pantalla->setString("Ronda " + std::to_string(ronda_actual) + " terminada");
 			mensaje_pantalla->setPosition({1920.f / 2.f - 300.f, 1080.f / 2.f - 100.f});
 			CE::Render::Get().AddToDraw(*mensaje_pantalla);
 		}
@@ -741,8 +742,7 @@ namespace IVJ {
 		tex.setView(vista_original); // Restaurar vista del juego original
 	}
 
-	void Escena_Sprite::actualizarArmaEquipada()
-	{
+	void Escena_Sprite::actualizarArmaEquipada() const {
 		auto inv = jugador_ref->getComponente<IInventario>();
 		if (!inv) return;
 		auto item = inv->getItemActivo();
@@ -774,8 +774,7 @@ namespace IVJ {
 		}
 	}
 
-	void Escena_Sprite::cargarSonidos()
-	{
+	void Escena_Sprite::cargarSonidos() {
 		CE::GestorAssets::Get().agregarSonido("slash01", ASSETS "/sfx/machete_slash_flesh_attack_01.wav");
 		CE::GestorAssets::Get().agregarSonido("slash02", ASSETS "/sfx/machete_slash_flesh_attack_02.wav");
 		CE::GestorAssets::Get().agregarSonido("slash03", ASSETS "/sfx/machete_slash_flesh_attack_03.wav");
