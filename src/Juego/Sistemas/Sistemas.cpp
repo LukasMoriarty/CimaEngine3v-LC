@@ -600,7 +600,7 @@ namespace IVJ
 		float dir_x = std::sin(angulo);
 		float dir_y = -std::cos(angulo);
 
-		constexpr float BALA_SPEED = 800.f;
+		constexpr float BALA_SPEED = 1200.f;
 
 		auto bala_ent = std::make_shared<Entidad>();
 		bala_ent->getStats()->hp	 = 1;
@@ -692,63 +692,76 @@ namespace IVJ
 				CE::Objeto& target = *target_ptr;
 				if (&target == bala_ptr)	  continue;   // skip self
 				if (&target == bala->origen)  continue;   // skip shooter
-				if (!target.tieneComponente<ITarget>()) continue;
+				if (!target.tieneComponente<CE::IBoundingBox>()) continue;
 
-				if (SistemaColAABBMid(*bala_ptr, target, false))
+				if (target.tieneComponente<ITarget>())
 				{
-					// Deactivate bullet
-					bala->activa		  = false;
-					bala_ptr->getStats()->hp = 0;
-
-					// Apply damage
-					auto stats = target.getStats();
-					if (stats->hp > 0)
+					if (SistemaColAABBMid(*bala_ptr, target, false))
 					{
-						stats->hp = (stats->hp > bala->damage) ? stats->hp - bala->damage : 0;
-						
-						// Dropear municion al matar con bala
-						if (stats->hp == 0 && (std::rand() % 100) < 25) {
-							auto spawner = std::make_shared<Entidad>();
-							spawner->setPosicion(target.getTransformada()->posicion.x, target.getTransformada()->posicion.y);
-							spawner->addComponente(std::make_shared<IDelayedSpawn>(2.0f, IDropItem::Tipo::Municion));
-							game_pool.agregarPool(spawner);
-						}
+						// Deactivate bullet
+						bala->activa		  = false;
+						bala_ptr->getStats()->hp = 0;
 
-						// key random entre el 01 y el 31
-						int num = std::rand() % 31 + 1;
-						std::string key = std::string("zombie_hurt_") + (num < 10 ? "0" : "") + std::to_string(num);
-						CE::GestorAssets::Get().getSonido(key).setVolume(20.f);
-						CE::GestorAssets::Get().getSonido(key).play();
-
-						if (target.tieneComponente<CE::ITexto>())
-							target.getComponente<CE::ITexto>()->m_texto.setString(
-								"HP: " + std::to_string((int)stats->hp));
-
-						// Blood splash FX
-						static bool blood_loaded = false;
-						if (!blood_loaded)
+						// Apply damage
+						auto stats = target.getStats();
+						if (stats->hp > 0)
 						{
-							CE::GestorAssets::Get().agregarTextura("blood_splash",
-								ASSETS "/fx/BloodFXBatch1/BloodSplash/bloodsplash-atlas.png",
-								CE::Vector2D{0.f, 0.f}, CE::Vector2D{440.f, 279.f});
-							blood_loaded = true;
+							stats->hp = (stats->hp > bala->damage) ? stats->hp - bala->damage : 0;
+							
+							// Dropear municion al matar con bala
+							if (stats->hp == 0 && (std::rand() % 100) < 25) {
+								auto spawner = std::make_shared<Entidad>();
+								spawner->setPosicion(target.getTransformada()->posicion.x, target.getTransformada()->posicion.y);
+								spawner->addComponente(std::make_shared<IDelayedSpawn>(2.0f, IDropItem::Tipo::Municion));
+								game_pool.agregarPool(spawner);
+							}
+
+							// key random entre el 01 y el 31
+							int num = std::rand() % 31 + 1;
+							std::string key = std::string("zombie_hurt_") + (num < 10 ? "0" : "") + std::to_string(num);
+							CE::GestorAssets::Get().getSonido(key).setVolume(20.f);
+							CE::GestorAssets::Get().getSonido(key).play();
+
+							if (target.tieneComponente<CE::ITexto>())
+								target.getComponente<CE::ITexto>()->m_texto.setString(
+									"HP: " + std::to_string((int)stats->hp));
+
+							// Blood splash FX
+							static bool blood_loaded = false;
+							if (!blood_loaded)
+							{
+								CE::GestorAssets::Get().agregarTextura("blood_splash",
+									ASSETS "/fx/BloodFXBatch1/BloodSplash/bloodsplash-atlas.png",
+									CE::Vector2D{0.f, 0.f}, CE::Vector2D{440.f, 279.f});
+								blood_loaded = true;
+							}
+
+							auto sangre = std::make_shared<Entidad>();
+							sangre->addComponente(std::make_shared<CE::ISprite>(
+								CE::GestorAssets::Get().getTextura("blood_splash"), 110, 93, 1.f));
+							sangre->setPosicion(target.getTransformada()->posicion.x,
+												target.getTransformada()->posicion.y);
+							sangre->addComponente(std::make_shared<ITemporal>());
+
+							auto fsm_sangre = std::make_shared<BloodSplash>(CE::AnimClip{0, 11}, 0.03f);
+							auto mq = std::make_shared<IMaquinaEstado>();
+							mq->fsm = fsm_sangre;
+							sangre->addComponente(mq);
+							sangre->setFSM(fsm_sangre);
+							game_pool.agregarPool(sangre);
 						}
-
-						auto sangre = std::make_shared<Entidad>();
-						sangre->addComponente(std::make_shared<CE::ISprite>(
-							CE::GestorAssets::Get().getTextura("blood_splash"), 110, 93, 1.f));
-						sangre->setPosicion(target.getTransformada()->posicion.x,
-											target.getTransformada()->posicion.y);
-						sangre->addComponente(std::make_shared<ITemporal>());
-
-						auto fsm_sangre = std::make_shared<BloodSplash>(CE::AnimClip{0, 11}, 0.03f);
-						auto mq = std::make_shared<IMaquinaEstado>();
-						mq->fsm = fsm_sangre;
-						sangre->addComponente(mq);
-						sangre->setFSM(fsm_sangre);
-						game_pool.agregarPool(sangre);
+						break;   // each bullet hits only one target per frame
 					}
-					break;   // each bullet hits only one target per frame
+				}
+				else if (!target.tieneComponente<IDropItem>())
+				{
+					// Solid obstacles like walls (have IBoundingBox but neither ITarget nor IDropItem)
+					if (SistemaColAABBMid(*bala_ptr, target, false))
+					{
+						bala->activa = false;
+						bala_ptr->getStats()->hp = 0;
+						break;   // each bullet hits only one wall / target per frame
+					}
 				}
 			}
 		}
