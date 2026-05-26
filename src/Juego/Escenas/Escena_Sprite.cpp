@@ -23,7 +23,7 @@ namespace IVJ {
 		CE::Escena{}, jugador_ref{pref}, cuerpo{std::make_shared<Entidad>()} {}
 
 	void Escena_Sprite::onInit() {
-		CE::GestorCamaras::Get().setCamaraActiva(2);
+		CE::GestorCamaras::Get().setCamaraActiva(1);
 		CE::GestorCamaras::Get().getCamaraActiva().lockEnObjeto(jugador_ref);
 		CE::GestorCamaras::Get().getCamaraActiva().setViewSize(800.f, 450.f);
 
@@ -57,11 +57,11 @@ namespace IVJ {
 
 		cargarSonidos();
 
-		CE::GestorAssets::Get().agregarMusica("musica_fondo", ASSETS "/music/phonkslowed.mp3");
+		CE::GestorAssets::Get().agregarMusica("musica_fondo", ASSETS "/music/levelmusic.mp3");
 		// reproducir musica de fondo (loop)
 		CE::GestorAssets::Get().getMusica("musica_fondo").play();
 		CE::GestorAssets::Get().getMusica("musica_fondo").setLooping(true);
-		CE::GestorAssets::Get().getMusica("musica_fondo").setVolume(20.f);
+		CE::GestorAssets::Get().getMusica("musica_fondo").setVolume(100.f);
 
 		// Cargar texturas
 		CE::GestorAssets::Get().agregarTextura("pies", ASSETS "/sprites/Top_Down_Survivor/feet/survivor-feet-atlas.png",

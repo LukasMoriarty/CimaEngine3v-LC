@@ -64,35 +64,20 @@ namespace IVJ {
             obj.getTransformada()->velocidad = {0.f, 0.f};
         }
 
-        if (auto arma = obj.getComponente<IArmaMelee>()) {
-            arma->atacando = true;
+        if (obj.getComponente<IArmaMelee>()) {
+            obj.getComponente<IArmaMelee>()->atacando = true;
         }
     }
 
     void AtacarZombie::onSalir(const Entidad& obj) {
-        if (auto arma = obj.getComponente<IArmaMelee>()) {
-            arma->atacando = false;
+        if (obj.tieneComponente<IArmaMelee>()) {
+            obj.getComponente<IArmaMelee>()->atacando = false;
         }
     }
 
     void AtacarZombie::onUpdate(const Entidad &obj, float dt) {
         (void) obj;
         if (!sprite) return;
-
-#if DEBUG
-    	if (obj.tieneComponente<CE::ITransform>()) {
-    		auto trans = obj.getTransformada();
-    		// Offset de 40.f hacia adelante basado en el ángulo del zombie
-    		CE::Vector2D centro_hitbox{
-    			trans->posicion.x + std::sin(trans->angulo) * 40.f,
-				trans->posicion.y - std::cos(trans->angulo) * 40.f
-			};
-            if (auto arma = obj.getComponente<IArmaMelee>()) {
-                arma->hitbox_debug.setPosition({centro_hitbox.x, centro_hitbox.y});
-            }
-    	}
-#endif
-
 
         // Forzar velocidad 0 cada frame de ataque por si acaso
         if (obj.tieneComponente<CE::ITransform>()) {
