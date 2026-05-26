@@ -19,6 +19,7 @@
 #include <memory>
 
 #include "Juego/Maquinas/Zombie/AtacarZombie.hpp"
+#include "Motor/Primitivos/GestorEscenas.hpp"
 
 namespace IVJ {
 	Escena_Sprite::Escena_Sprite(std::shared_ptr<Entidad> &pref) :
@@ -46,6 +47,8 @@ namespace IVJ {
 		registrarBotones(sf::Keyboard::Scancode::Q, "anterior_arma");
 		registrarBotones(sf::Keyboard::Scancode::E, "siguiente_arma");
 		registrarBotones(sf::Keyboard::Scancode::R, "recargar");
+		registrarBotones(sf::Keyboard::Scancode::Escape, "pausa");
+		registrarBotones(sf::Keyboard::Scancode::Enter,  "confirmar");
 
 		// Tilemap
 		tiles_layers.push_back(TileMap());
@@ -63,7 +66,11 @@ namespace IVJ {
 		// reproducir musica de fondo (loop)
 		CE::GestorAssets::Get().getMusica("musica_fondo").play();
 		CE::GestorAssets::Get().getMusica("musica_fondo").setLooping(true);
-		CE::GestorAssets::Get().getMusica("musica_fondo").setVolume(100.f);
+		CE::GestorAssets::Get().getMusica("musica_fondo").setVolume(50.f);
+
+		CE::GestorAssets::Get().agregarMusica("musica_pausa", ASSETS "/music/pausemusic.mp3");
+		CE::GestorAssets::Get().getMusica("musica_pausa").setLooping(true);
+		CE::GestorAssets::Get().getMusica("musica_pausa").setVolume(50.f);
 
 		// Cargar texturas
 		CE::GestorAssets::Get().agregarTextura("pies", ASSETS "/sprites/Top_Down_Survivor/feet/survivor-feet-atlas.png",
@@ -211,9 +218,14 @@ namespace IVJ {
 		inicializar = false;
 	}
 
-	void Escena_Sprite::onFinal() { CE::GestorCamaras::Get().setCamaraActiva(0); }
+	void Escena_Sprite::onFinal() {
+		CE::GestorCamaras::Get().setCamaraActiva(0);
+		CE::GestorAssets::Get().getMusica("musica_fondo").stop();
+	}
 
 	void Escena_Sprite::onUpdate(float dt) {
+		if (en_pausa) return;
+
 		if (jugador_muerto) return;
 
 		if (jugador_ref->getStats()->hp <= 0) {
@@ -565,55 +577,74 @@ namespace IVJ {
 		if (stats->timer_damage_shader > 0.f) {
 			stats->timer_damage_shader -= dt;
 		}
-		/*
-		//lab11 prefab - Colisión de balas contra zombies (objetos con ITarget)
-		for (auto &bala : jugador_ref->getComponente<IEmisor>()->getPool().getPool())
-		{
-			for (auto &obj : objetos.getPool())
-			{
-				// Verificar si el objeto tiene componente ITarget (es un zombie)
-				if (obj->tieneComponente<ITarget>())
-				{
-					if (SistemaColAABBMid(*bala, *obj, true))
-					{
-						((Entidad &)*bala).setFSM(std::make_shared<BalasBoom>(0.33f));
-						bala->getComponente<IMaquinaEstado>()->congelar = true;
-						// daño una sola vez
-						bala->getTransformada()->velocidad = CE::Vector2D{0.f, 0.f};
-						if (obj->getStats()->congelar == false)
-						{
-							float mitigar = obj->getStats()->def / 255.f;
-							obj->getStats()->hp -= (mitigar * bala->getStats()->str);
-							obj->getStats()->congelar = true;
-						}
-					}
-
-					if (bala->getComponente<CE::ITimer>()->frame_actual >= bala->getComponente<CE::ITimer>()->frame_maximo)
-					{
-						obj->getStats()->congelar = false;
-					}
-
-					// Aplicar shader si el objeto tiene uno
-					if (obj->tieneComponente<CE::IShader>())
-					{
-						static float acum_tiempo = 0;
-						acum_tiempo += dt;
-						obj->getComponente<CE::IShader>()->setEscalar("dt", &acum_tiempo);
-					}
-				}
-			}
-		}
-		// lab9 borra toda entidad que esta en el pool que hp sea <=0
-		objetos.borrarPool();
-		*/
 	}
 
-	void Escena_Sprite::onInputs(const CE::Botones &accion) {
-		auto ctrl = jugador_ref->getComponente<CE::IControl>();
-		if (!ctrl)
-			return;
-
+	void Escena_Sprite::onInputs(const CE::Botones& accion)
+	{
 		bool pressed = (accion.getTipo() == CE::Botones::TipoAccion::OnPress);
+
+		if (accion.getNombre() == "pausa" && pressed)
+		{
+			if (!jugador_muerto) // no abrir pausa en game over
+			{
+				en_pausa     = !en_pausa;
+				opcion_pausa = 0;
+
+				if (en_pausa)
+				{
+					CE::GestorAssets::Get().getMusica("musica_fondo").pause();
+					CE::GestorAssets::Get().getMusica("musica_pausa").play();
+				}
+				else
+				{
+					CE::GestorAssets::Get().getMusica("musica_pausa").stop();
+					CE::GestorAssets::Get().getMusica("musica_fondo").play();
+				}
+			}
+			return;
+		}
+
+		if (accion.getNombre() == "confirmar" && pressed)
+		{
+			// Game Over → reintentar
+			if (jugador_muerto)
+			{
+				resetJuego();
+				return;
+			}
+
+			// Pausa → navegar menú
+			if (en_pausa)
+			{
+				CE::GestorAssets::Get().getMusica("musica_pausa").stop();
+				if (opcion_pausa == 0)          // Continuar
+				{
+					CE::GestorAssets::Get().getMusica("musica_fondo").play();
+					en_pausa = false;
+				}
+				else                            // Salir a menú
+				{
+					en_pausa = false;
+					CE::GestorAssets::Get().getMusica("musica_fondo").stop();
+					CE::GestorEscenas::Get().cambiarEscena("Menu");
+				}
+				return;
+			}
+		}
+
+		if (en_pausa && pressed)
+		{
+			if (accion.getNombre() == "arriba")
+				opcion_pausa = 0;
+			if (accion.getNombre() == "abajo")
+				opcion_pausa = 1;
+			return;
+		}
+
+		if (en_pausa || jugador_muerto) return;
+
+		auto ctrl = jugador_ref->getComponente<CE::IControl>();
+		if (!ctrl) return;
 
 		if (accion.getNombre() == "arriba")
 			ctrl->arr = pressed;
@@ -626,15 +657,12 @@ namespace IVJ {
 		else if (accion.getNombre() == "atacar") {
 			ctrl->acc = pressed;
 			jugador_ref->getComponente<IEmisor>()->crearParticula();
-			// Nota: el ataque melee se procesa en onUpdate por el sistema de ataque,
-			// no aquí, para que el timing de la hitbox se controle desde la FSM
 		}
 		else if (accion.getNombre() == "correr")
 			ctrl->run = pressed;
 		else if (accion.getNombre() == "recargar")
-			ctrl->sacc = pressed;	// mapear boton de recarga a control.sacc
+			ctrl->sacc = pressed;
 
-		// cambio de armas usando teclas Q y E
 		if (pressed)
 		{
 			if (auto inv = jugador_ref->getComponente<IInventario>()) {
@@ -650,9 +678,6 @@ namespace IVJ {
 				}
 			}
 		}
-
-
-		// Nota: el control del cuerpo se sincroniza al inicio de onUpdate
 	}
 
 	void Escena_Sprite::onRender() {
@@ -775,15 +800,57 @@ namespace IVJ {
 			CE::Render::Get().AddToDraw(*hud_texto);
 		}
 
-		if (jugador_muerto) {
-			mensaje_pantalla->setString("GAME OVER\nLograste la Ronda: " + std::to_string(ronda_actual) + 
-										"\nPuntaje Total: " + std::to_string(puntaje_total));
-			mensaje_pantalla->setPosition({1920.f / 2.f - 250.f, 1080.f / 2.f - 100.f});
+		if (jugador_muerto)
+		{
+			mensaje_pantalla->setString(
+				"GAME OVER\n"
+				"Ronda alcanzada: " + std::to_string(ronda_actual) + "\n"
+				"Puntaje total:   " + std::to_string(puntaje_total) + "\n\n"
+				"Reintentar  (presiona Enter)");
+			mensaje_pantalla->setCharacterSize(48);
+			mensaje_pantalla->setFillColor(sf::Color::Yellow);
+			// Centrar aproximado en 1920×1080
+			mensaje_pantalla->setPosition({1920.f / 2.f - 380.f, 1080.f / 2.f - 140.f});
 			CE::Render::Get().AddToDraw(*mensaje_pantalla);
-		} 
-		else if (zombies_matados_ronda >= zombies_ronda_total) {
-			//mensaje_pantalla->setString("Ronda " + std::to_string(ronda_actual) + " terminada");
+		}
+		else if (zombies_matados_ronda >= zombies_ronda_total)
+		{
+			// Mensaje de ronda completada (ya existía, lo dejamos)
 			mensaje_pantalla->setPosition({1920.f / 2.f - 300.f, 1080.f / 2.f - 100.f});
+			CE::Render::Get().AddToDraw(*mensaje_pantalla);
+		}
+
+		if (en_pausa)
+		{
+			// Fondo semitransparente
+			sf::RectangleShape fondo_pausa{{600.f, 300.f}};
+			fondo_pausa.setFillColor({0, 0, 0, 180});
+			fondo_pausa.setOutlineColor(sf::Color::White);
+			fondo_pausa.setOutlineThickness(2.f);
+			fondo_pausa.setPosition({1920.f / 2.f - 300.f, 1080.f / 2.f - 150.f});
+			CE::Render::Get().AddToDraw(fondo_pausa);
+
+			// Título
+			mensaje_pantalla->setCharacterSize(56);
+			mensaje_pantalla->setFillColor(sf::Color::White);
+			mensaje_pantalla->setString("PAUSA");
+			mensaje_pantalla->setPosition({1920.f / 2.f - 80.f, 1080.f / 2.f - 130.f});
+			CE::Render::Get().AddToDraw(*mensaje_pantalla);
+
+			// Opciones
+			const sf::Color color_sel  = sf::Color::Yellow;
+			const sf::Color color_norm = sf::Color(180, 180, 180);
+
+			mensaje_pantalla->setCharacterSize(38);
+
+			mensaje_pantalla->setString(opcion_pausa == 0 ? "> Continuar" : "  Continuar");
+			mensaje_pantalla->setFillColor(opcion_pausa == 0 ? color_sel : color_norm);
+			mensaje_pantalla->setPosition({1920.f / 2.f - 200.f, 1080.f / 2.f - 30.f});
+			CE::Render::Get().AddToDraw(*mensaje_pantalla);
+
+			mensaje_pantalla->setString(opcion_pausa == 1 ? "> Salir (Menu)" : "  Salir (Menu)");
+			mensaje_pantalla->setFillColor(opcion_pausa == 1 ? color_sel : color_norm);
+			mensaje_pantalla->setPosition({1920.f / 2.f - 200.f, 1080.f / 2.f + 30.f});
 			CE::Render::Get().AddToDraw(*mensaje_pantalla);
 		}
 
@@ -874,4 +941,63 @@ namespace IVJ {
 
 	}
 
+	void Escena_Sprite::resetJuego()
+	{
+		jugador_ref->getStats()->hp     = 200;
+		jugador_ref->getStats()->hp_max = 200;
+
+		jugador_ref->setPosicion(1750.f, 1750.f);
+		cuerpo->getTransformada()->posicion = jugador_ref->getTransformada()->posicion;
+
+		if (auto pistola = cuerpo->getComponente<IVJ::IPistola>())
+		{
+			pistola->balas_cargador     = pistola->balas_max_cargador; // 8
+			pistola->balas_reserva      = 32;
+			pistola->recargando         = false;
+			pistola->disparando         = false;
+			pistola->timer_disparo      = 0.f;
+			pistola->timer_recarga      = 0.f;
+			pistola->gatillo_liberado   = true;
+		}
+
+		ronda_actual              = 1;
+		zombies_ronda_total       = 4;
+		zombies_por_generar_ronda = 4;
+		zombies_matados_ronda     = 0;
+		puntaje_total             = 0;
+		tiempo_espera_ronda       = 0.f;
+
+		jugador_muerto = false;
+		en_pausa       = false;
+		opcion_pausa   = 0;
+		fog_tiempo     = 0.f;
+
+		auto& pool = objetos.getPool();
+		pool.erase(
+			std::remove_if(pool.begin(), pool.end(),
+				[](const std::shared_ptr<CE::Objeto>& e) {
+					// Eliminar todo menos paredes estáticas
+					bool es_pared = e->tieneComponente<CE::IBoundingBox>()
+					             && !e->tieneComponente<IVJ::ITarget>()
+					             && !e->tieneComponente<IVJ::IBala>()
+					             && !e->tieneComponente<IVJ::IDropItem>()
+					             && !e->tieneComponente<IVJ::IFloatingText>()
+					             && !e->tieneComponente<IVJ::IDelayedSpawn>()
+					             && !e->tieneComponente<CE::ISprite>(); // paredes no tienen sprite
+					return !es_pared;
+				}),
+			pool.end());
+
+		for (auto& spawn : m_spawn_pool.getPool())
+		{
+			if (auto resp = spawn->getComponente<CE::IRespawn>())
+			{
+				resp->timer_maximo = 120;
+				resp->timer_actual = 0;
+			}
+		}
+
+		// ── FSM del cuerpo de vuelta a idle ───────────────────────────────────
+		actualizarArmaEquipada();
+	}
 } // namespace IVJ

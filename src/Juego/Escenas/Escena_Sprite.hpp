@@ -35,50 +35,33 @@ namespace IVJ
 			int zombies_matados_ronda{0};
 			int puntaje_total{0};
 			float tiempo_espera_ronda{0.f};
+
 			bool jugador_muerto{false};
+			bool en_pausa{false};
+			int  opcion_pausa{0}; // 0 = Continuar, 1 = Salir
 
 			std::unique_ptr<sf::Text> mensaje_pantalla;
+			std::unique_ptr<sf::Text> hud_texto;
 
-			/// Pies del jugador — tiene el sprite atlas de pies y su propio FSM.
 			std::shared_ptr<Entidad> &jugador_ref;
+			std::shared_ptr<Entidad>  cuerpo;
 
-			/// Cuerpo del jugador — tiene el sprite atlas de knife y su propio FSM.
-			/// Siempre se posiciona encima de jugador_ref (misma posición).
-			std::shared_ptr<Entidad> cuerpo;
-
-			// Pool para gestionar las zonas de spawn de enemigos (reserve capacity)
 			CE::Pool m_spawn_pool{50};
-
-			// Clips de animación de zombie para pasar al sistema de spawn
 			std::map<std::string, CE::AnimClip> clips_zombie;
 
-			// Player outline uniforms
-			sf::Glsl::Vec4 zombie_outline_color{1.f, 0.f, 0.f, 1.f};
-			sf::Vector2f zombie_tex_size{384.f, 384.f};
+			// shaders / fog
+			sf::Glsl::Vec4      zombie_outline_color{1.f, 0.f, 0.f, 1.f};
+			sf::Vector2f        zombie_tex_size{384.f, 384.f};
+			sf::Shader          fog_shader;
+			sf::RectangleShape  fog_rect;
+			sf::Texture         fog_tex;
+			float               fog_tiempo{0.0f};
 
-			// Fog effect
-			sf::Shader fog_shader;
-			sf::RectangleShape fog_rect;
-			sf::Texture fog_tex;
-			float fog_tiempo{0.0f};
-
-			// ── Attack constants ──────────────────────────────────────────────
-			/**
-			 * @brief Radius (in world units) of the melee attack hitbox.
-			 *
-			 * Tune this single value to adjust reach without hunting for
-			 * magic numbers scattered across the update loop.
-			 * The hitbox is centred ATTACK_HITBOX_RADIUS pixels ahead of the
-			 * player along the mouse direction.
-			 */
 			static constexpr float ATTACK_HITBOX_RADIUS = 48.f;
-
-			// ── Attack runtime state ──────────────────────────────────────────
-			bool ataque_procesado{false};
-			sf::CircleShape ataque_hitbox;
-			std::unordered_set<CE::Objeto *> objs_golpeados;
-
-			//elementos del sistema de inventario y HUD
-			std::unique_ptr<sf::Text> hud_texto;
+			bool               ataque_procesado{false};
+			sf::CircleShape    ataque_hitbox;
+			std::unordered_set<CE::Objeto*> objs_golpeados;
+		
+			void resetJuego();
 	};
 } // namespace IVJ

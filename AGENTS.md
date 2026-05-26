@@ -22,9 +22,9 @@ cmake --build . --target CimaEngine3v -- -j 8
 
 ## Entry Point & Game Loop Flow
 
-**File**: `src/Main/main.cpp` - Initializes `Motor` with `MotorConfig` and game layer `Juego`.
+**File**: [main.cpp](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Main/main.cpp) - Initializes `Motor` with `MotorConfig` and game layer `Juego`.
 
-**Motor::OnRun()** cycle (`src/Motor/Motor.cpp`):
+**[Motor::OnRun()](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Motor.cpp#L25-L50)** cycle:
 1. `OnInit()` - Initialize game layer and render system
 2. Loop:
    - `OnEventFrame()` - Poll SFML window events → InputBuffer
@@ -35,22 +35,22 @@ cmake --build . --target CimaEngine3v -- -j 8
 
 ## Component System (ECS Pattern)
 
-**Base component**: `CE::IComponentes` (`src/Motor/Componentes/IComponentes.hpp`) - all game components inherit this.
+**Base component**: [IComponentes](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Componentes/IComponentes.hpp#L25) - all game components inherit this.
 
-**Core components** (in `src/Motor/Componentes/`):
-- `ITransform`: posición, velocidad, angulo, pos_prev
-- `IControl`: arr, abj, izq, der, run, jmp, acc, sacc (8 booleans)
-- `IStats`: hp, hp_max, str, def, agi, congelar
-- `ISprite`: m_sprite (sf::Sprite), width, height, escala
-- `IShader`: m_shader, uniform map with type erasure (void*)
-- `IBoundingBox`: tam (Vector2D), mitad (Vector2D)
-- `IRespawn`: timer_actual/maximo, curr_spawn, max_spawn, width, height, prefab
-- `IPaths`: puntos (Bezier), addCurva(), id_curva, frame counters
-- `ITimer`: frame_actual, frame_maximo
-- `ITexto`: m_texto (sf::Text)
-- `INombre`: nombre (string)
+**Core components** (in [IComponentes.hpp](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Componentes/IComponentes.hpp)):
+- [ITransform](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Componentes/IComponentes.hpp#L69): posicion, velocidad, angulo, pos_prev
+- [IControl](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Componentes/IComponentes.hpp#L382): arr, abj, izq, der, run, jmp, acc, sacc (8 booleans)
+- [IStats](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Componentes/IComponentes.hpp#L148): hp, hp_max, str, def, agi, congelar, timer_damage_shader
+- [ISprite](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Componentes/IComponentes.hpp#L215): m_sprite (sf::Sprite), width, height, escala
+- [IShader](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Componentes/IComponentes.hpp#L269): m_shader, uniform map with type erasure (void*)
+- [IBoundingBox](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Componentes/IComponentes.hpp#L440): tam (Vector2D), mitad (Vector2D)
+- [IRespawn](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Componentes/IComponentes.hpp#L468): timer_actual/maximo, curr_spawn, max_spawn, width, height, prefab
+- [IPaths](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Componentes/IComponentes.hpp#L527): puntos (Bezier), addCurva(), id_curva, frame counters
+- [ITimer](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Componentes/IComponentes.hpp#L108): frame_actual, frac_actual, frame_maximo
+- [ITexto](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Componentes/IComponentes.hpp#L180): m_texto (sf::Text)
+- [INombre](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Componentes/IComponentes.hpp#L35): nombre (string)
 
-**Objects**: `CE::Objeto` (`src/Motor/Primitivos/Objetos.hpp`) extends `sf::Drawable` + `sf::Transformable`. Stores components with `addComponente<T>()` / `getComponente<T>()` using RTTI (dynamic_cast). `IVJ::Entidad` extends `CE::Objeto` for game-specific behavior.
+**Objects**: [Objeto](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Primitivos/Objetos.hpp) extends `sf::Drawable` + `sf::Transformable`. Stores components with `addComponente<T>()` / `getComponente<T>()` using RTTI (dynamic_cast). [Entidad](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Juego/objetos/Entidad.hpp) extends `CE::Objeto` for game-specific behavior.
 
 **Key pattern**: Attach components at runtime, query by type. Enables composition-based design without inheritance chains.
 
@@ -58,14 +58,14 @@ cmake --build . --target CimaEngine3v -- -j 8
 
 All follow the same pattern - static `Get()` returns mutable instance, private constructor.
 
-- **`CE::Render`**: RenderWindow, RenderTexture (post-process), drawable queue. Call `Render::Get().GetTextura()` to draw to game surface. `DrawGameTexture()` stretches game output to window maintaining 16:9 aspect ratio with letterbox/pillarbox. `GetMouseGamePos()` returns mouse in game-space coordinates (1920×1080).
-- **`CE::GestorAssets`**: Cache for `sf::Font`, `sf::Texture`, `sf::Sound`, `sf::Music`. Load with `agregarFont(key, path)`, retrieve with `getFont(key)`.
-- **`CE::GestorEscenas`**: Scene registry + activation. Register with `registrarEscena(key, scene)`, switch with `cambiarEscena(key)`.
-- **`CE::GestorCamaras`**: Camera/viewport management. `setCamaraActiva(id)`, `getCamaraActiva()`, `agregarCamara(shared_ptr<Camara>)`.
+- **[Render](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Render/Render.hpp)**: RenderWindow, RenderTexture (post-process), drawable queue. Call `Render::Get().GetTextura()` to draw to game surface. `DrawGameTexture()` stretches game output to window maintaining 16:9 aspect ratio with letterbox/pillarbox. `GetMouseGamePos()` returns mouse in game-space coordinates (1920×1080).
+- **[GestorAssets](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Primitivos/GestorAssets.hpp)**: Cache for `sf::Font`, `sf::Texture`, `sf::Sound`, `sf::Music`. Load with `agregarFont(key, path)`, retrieve with `getFont(key)`.
+- **[GestorEscenas](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Primitivos/GestorEscenas.hpp)**: Scene registry + activation. Register with `registrarEscena(key, scene)`, switch with `cambiarEscena(key)`.
+- **[GestorCamaras](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Camaras/CamarasGestor.hpp)**: Camera/viewport management. `setCamaraActiva(id)`, `getCamaraActiva()`, `agregarCamara(shared_ptr<Camara>)`.
 
 ## Input Handling
 
-`CE::InputBuffer` (`src/Motor/Inputs/InputBuffer.hpp`) - circular queue of up to 32 SFML events. Motor collects events → buffer, Juego consumes via `OnInputs(InputBuffer&)`.
+[InputBuffer](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Inputs/InputBuffer.hpp) - circular queue of up to 32 SFML events. Motor collects events → buffer, Juego consumes via `OnInputs(InputBuffer&)`.
 
 `IControl` component tracks 8 directions + 4 action buttons (boolean flags). Game code calls `SistemaControl()` to update based on inputs.
 
@@ -77,111 +77,125 @@ Input patterns in `Escena_Sprite`:
 
 ## Key Game Systems (Sistemas)
 
-Located in `src/Juego/Sistemas/Sistemas.hpp` — namespace IVJ, marked `[[maybe_unused]]`:
+Located in [Sistemas.hpp](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Juego/Sistemas/Sistemas.hpp) — namespace IVJ, marked `[[maybe_unused]]`:
 
 **Movement & Physics**:
-- `SistemaControl(obj, dt)` — Map IControl flags to ITransform velocity
-- `SistemaMover(vector<Objeto>, dt)` — Apply velocity to position (simple)
-- `SistemaMover(shared_ptr<Objeto>, dt)` — Full mover: normalizes diagonal input, applies velocity, computes rotation from mouse position, handles run multiplier
+- `SistemaControl(obj, dt)` — Map IControl flags to ITransform velocity.
+- `SistemaMover(vector<Objeto>, dt)` — Apply velocity to position (simple).
+- `SistemaMover(shared_ptr<Objeto>, dt)` — Full mover: normalizes diagonal input, applies velocity, computes rotation from mouse position, handles run multiplier.
 
 **Collision**:
-- `SistemaColAABB(A, B, resolve)` — AABB overlap check. `resolve=true` resets `A.posicion = pos_prev`
-- `SistemaColAABBMid(A, B, resolve)` — Center-to-center overlap using half-extents
-- `checkRayoHit(npc, p1, p2)` — Ray vs AABB hit
+- `SistemaColAABB(A, B, resolve)` — AABB overlap check. `resolve=true` resets `A.posicion = pos_prev`.
+- `SistemaColAABBMid(A, B, resolve)` — Center-to-center overlap using half-extents.
+- `checkRayoHit(npc, p1, p2)` — Ray vs AABB hit.
 
 **AI & Navigation**:
-- `SistemaZombieSeguir(zombie, target_pos, obstacles, dt)` — Full zombie AI: range check, LOS verification, obstacle avoidance (±45° probes), rotation toward target/movement, velocity application
-- `checkLOS(p1, p2, obstacles, ignore)` — Slab-method ray vs AABB; returns false if any obstacle blocks the ray
-- `SistemaNPCLookTarget(obj, target)` — Rotate NPC to face target if in aggro range
+- `SistemaZombieSeguir(zombie, target_pos, obstacles, dt)` — Full zombie AI: range check, LOS verification, obstacle avoidance (±45° probes), rotation toward target/movement, velocity application.
+- `checkLOS(p1, p2, obstacles, ignore)` — Slab-method ray vs AABB; returns false if any obstacle blocks the ray.
+- `getBlockingObstacle(p1, p2, obstacles, ignore)` — Returns the blocking obstacle if checkLOS fails.
+- `SistemaNPCLookTarget(obj, target)` — Rotate NPC to face target if in aggro range.
 
 **Spawning & Paths**:
-- `SistemaSpawn(game_pool, spawn_zones, zombie_clips, player_target)` — Reads IRespawn from spawn_zones pool, creates Entidad zombies with full component setup (ISprite, FSM, IBoundingBox, IRangoAggro, IEntorno, ITarget, ITexto, IShader)
-- `SistemaPaths(vector<Objeto>)` — Bezier curve movement; changes shader when curve segment changes
+- `SistemaSpawn(game_pool, spawn_zones, zombie_clips, player_target, zombies_por_generar)` — Reads IRespawn from spawn_zones pool, creates Entidad zombies with full component setup (ISprite, FSM, IBoundingBox, IRangoAggro, IEntorno, ITarget, ITexto, IShader, and IZombieSpawnerRef linking back to the spawning zone).
+- `SistemaPaths(vector<Objeto>)` — Bezier curve movement; changes shader when curve segment changes.
 
-**Combat**:
-- `SistemaAtaqueMelee(atacante, game_pool)` — Computes hitbox center ahead of player using `sin/cos(angulo)`, circle overlap vs all ITarget entities, tracks hits in `objs_golpeados`, spawns BloodSplash FX, plays swing/slash SFX. Resets `swing_played` and `objs_golpeados` when `atacando == false`.
-- `SistemaDisparar(tirador, cuerpo, arma, game_pool, bala_tex)` — Spawns IBala bullet entity in direction of cuerpo's angle; calls `arma.iniciarDisparo()`
-- `SistemaActualizarBalas(game_pool, dt)` — Moves all IBala entities, tracks `distancia_viajada`, marks hp=0 when `rango_max` exceeded
-- `SistemaColBalas(game_pool)` — Detects IBala vs ITarget collisions, applies damage, spawns BloodSplash FX, deactivates bullet
+**Combat & Scoring**:
+- `SistemaAtaqueMelee(atacante, game_pool, puntaje, zombies_matados)` — Computes hitbox center ahead of player using `sin/cos(angulo)`, circle overlap vs all ITarget entities, tracks hits in `objs_golpeados`, spawns BloodSplash FX, plays swing/slash SFX. Resets `swing_played` and `objs_golpeados` when `atacando == false`. Award 100 points and increments zombie kill counter on zombie death. Spawns health pickup with 50% probability upon knife kill.
+- `SistemaDisparar(tirador, cuerpo, arma, game_pool, bala_tex)` — Spawns IBala bullet entity in direction of cuerpo's angle; calls `arma.iniciarDisparo()`.
+- `SistemaActualizarBalas(game_pool, dt)` — Moves all IBala entities, tracks `distancia_viajada`, marks hp=0 when `rango_max` exceeded.
+- `SistemaColBalas(game_pool, puntaje, zombies_matados)` — Detects IBala vs ITarget collisions, applies damage, spawns BloodSplash FX, deactivates bullet. Awards 50 points and increments zombie kill counter on zombie death. Spawns ammo pickup with 25% probability upon bullet kill.
 
 **Dialog & Interaction**:
-- `SistemaDialogos(dialogo, obj)` — Activates IDialogo component
-- `revisarDistanciaInteraccion(jugador, npc, dist_max)` — Distance check for NPC interaction range
+- `SistemaDialogos(dialogo, obj)` — Activates IDialogo component.
+- `revisarDistanciaInteraccion(jugador, npc, dist_max)` — Distance check for NPC interaction range.
 
 **Debug**:
-- `pintarLinea(p1, p2, color)` — Draws lerp-sampled line using tiny CircleShapes
+- `pintarLinea(p1, p2, color)` — Draws lerp-sampled line using tiny CircleShapes.
 
-**UNUSED / NOT NEEDED: Lab systems** (figures/movement):
-- `SistemaGirar`, `SistemaRectanguloMoverUpDown`, `SistemaTrianguloWave`, `SistemaCirculoMoverEnCirculos`
+**Lab systems**:
+- `SistemaGirar`, `SistemaRectanguloMoverUpDown`, `SistemaTrianguloWave`, `SistemaCirculoMoverEnCirculos`.
 
 ## Scene System
 
-**File**: `src/Motor/Primitivos/Escena.hpp` — Abstract base `Escena`.
+**File**: [Escena.hpp](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Motor/Primitivos/Escena.hpp) — Abstract base `Escena`.
 
 Required methods: `onInit()`, `onFinal()`, `onUpdate(float dt)`, `onRender()`, `onInputs(*)`. Contains `CE::Pool objetos` for entities and button→action mapping via `registrarBotones(scancode, "name")`.
 
 Concrete scenes in `src/Juego/Escenas/`:
-- `Escena_Menu` — Menu with music, option selection, scene transition
-- `Escena_Prueba` — Simple test scene with basic objects
-- `Escena_Sprite` — Main gameplay: player (feet+body split), zombies, tilemap, fog shader, melee combat, spawn zones
-- `Escena_Camara` — Camera demo scene
+- [Escena_Menu](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Juego/Escenas/Escena_Menu.hpp) — Main menu with music, option selection (Iniciar / Salir), scene transitions.
+- [Escena_Prueba](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Juego/Escenas/Escena_Prueba.hpp) — Simple test scene with basic objects.
+- [Escena_Sprite](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Juego/Escenas/Escena_Sprite.hpp) — Main gameplay: round systems, player (feet+body split), zombies, tilemap, fog shader, melee/gun combat, spawn zones, drops, HUD, pause overlay, and retry screens.
+- [Escena_Camara](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Juego/Escenas/Escena_Camara.hpp) — Camera demo scene showing different follow modes.
 
 ### Escena_Sprite architecture
 The player is split into two `Entidad` objects rendered in order (feet below, body above):
 - `jugador_ref` — feet sprite + IControl + IBoundingBox + IEmisor (bullet emitter) + FSM (IdlePies/MoverPies)
-- `cuerpo` — knife/gun sprite + IControl (synced from jugador_ref each frame) + IArmaMelee + FSM (IdleCuerpoKnife/MoverCuerpoKnife/AtacarCuerpoKnife)
+- `cuerpo` — knife/gun sprite + IControl (synced from jugador_ref each frame) + IArmaMelee + IPistola + IInventario + FSM (IdleCuerpoKnife/MoverCuerpoKnife/AtacarCuerpoKnife or pistol equivalents)
 
 Tilemap layers: `floors.txt` (visual floor) + `walls_colisiones.txt` (visual walls + collision boxes + spawn zones).
 Fog shader (`fog.frag`) uses lamp position, radius, softness, noise params to create darkness effect around player.
 
 ## Game-Specific Components (IJComponentes)
 
-Located in `src/Juego/Componentes/IJComponentes.hpp` — extends `CE::IComponentes` for game logic:
+Located in [IJComponentes.hpp](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Juego/Componentes/IJComponentes.hpp) — extends `CE::IComponentes` for game logic:
 
 **FSM & AI**:
-- `IMaquinaEstado`: holds `shared_ptr<FSM>`, `congelar` flag (freeze prevents state transitions)
-- `ITarget`: pointer to target `CE::Vector2D* pos`; `setTarget(CE::Objeto&)`
-- `IRangoAggro`: detection radius, `sf::CircleShape marcador` (debug), `estaDentroRango(parent, target)` using Pythagoras
-- `IEntorno`: const reference to a pool vector (for LOS obstacle checking)
+- `IMaquinaEstado`: holds `shared_ptr<FSM>`, `congelar` flag (freeze prevents state transitions).
+- `ITarget`: pointer to target `CE::Vector2D* pos` and `CE::Objeto* target_obj`. `setTarget(CE::Objeto&)`.
+- `IRangoAggro`: detection radius, `sf::CircleShape marcador` (debug). `estaDentroRango(parent, target)` using Pythagoras.
+- `IEntorno`: const reference to a pool vector (for LOS obstacle checking).
 
 **Interaction & Dialog**:
-- `IInteractuable`: abstract base; `onInteractuar(CE::Objeto&)`, `interactuado` flag
-- `IIndicador`: visual indicator above NPCs (sprite + prueba.frag shader with blob texture and mask color). `IIndicador::clonar()` returns nullptr (sf::Shader is non-copyable)
-- `IDialogo`: dialog box with `wstring texto`, auto line-wrap via `agregarSaltoLinea(str, 76)`, renders black rect + sf::Text overlay
+- `IInteractuable`: abstract base; `onInteractuar(CE::Objeto&)`, `interactuado` flag.
+- `IIndicador`: visual indicator above NPCs (sprite + prueba.frag shader with blob texture and mask color). `IIndicador::clonar()` returns nullptr (sf::Shader is non-copyable).
+- `IDialogo`: dialog box with `wstring texto`, auto line-wrap via `agregarSaltoLinea(str, 76)`, renders black rect + sf::Text overlay.
 
 **Movement & Behavior**:
-- `IGirar`: angle + radius for orbital spinning
-- `IArribaAbajo`: minY, maxY, velocidad (bounces between limits)
-- `IWave`: amp, freq, phase (sinusoidal XY motion)
-- `ICirculos`: radio, velocidad (circular orbit)
+- `IGirar`: angle + radius for orbital spinning.
+- `IArribaAbajo`: minY, maxY, velocidad (bounces between limits).
+- `IWave`: amp, freq, phase (sinusoidal XY motion).
+- `ICirculos`: radio, velocidad (circular orbit).
+- `ITriangulo`: triangle visual helper component.
 
 **Combat**:
-- `IArmaMelee`: radio (hitbox radius), offset_adelante, damage, `atacando` flag, `swing_played` flag, `objs_golpeados` (unordered_set<CE::Objeto*> to prevent multi-hit), `hitbox_debug` (CircleShape)
-- `IRayo`: start/end points with magnitude, direction reference
-- `IBala`: damage, rango_max, distancia_viajada, `CE::Objeto* origen` (to avoid self-hit), `activa` flag
-- `IPistola`: balas_cargador/max_cargador/reserva, cooldown_disparo, timer_disparo, tiempo_recarga, timer_recarga, `disparando`, `recargando` flags. Methods: `puedeDisparar()`, `iniciarDisparo()`, `iniciarRecarga()`, `onUpdate(dt)`
+- `IArmaMelee`: radio (hitbox radius), offset_adelante, damage, `atacando` flag, `swing_played` flag, `objs_golpeados` (unordered_set to prevent multi-hit), `hitbox_debug` (CircleShape).
+- `IRayo`: start/end points with magnitude, direction reference.
+- `IBala`: damage, rango_max, distancia_viajada, `CE::Objeto* origen` (to avoid self-hit), `activa` flag.
+- `IPistola`: balas_cargador/max_cargador/reserva, cooldown_disparo, timer_disparo, tiempo_recarga, timer_recarga, `disparando`, `recargando` flags. Methods: `puedeDisparar()`, `iniciarDisparo()`, `iniciarRecarga()`, `onUpdate(dt)`.
 
 **Inventory**:
-- `IItem`: tipo (Cuchillo/Pistola/Rifle/Escopeta), nombre, key_textura, json_anims, sprite dimensions, escala — data needed to hot-swap the body FSM/sprite when equipping
-- `IInventario`: `vector<shared_ptr<IItem>>` items, idx_activo, `agregarItem()`, `getItemActivo()`, `ciclarSiguiente()`, `ciclarAnterior()`
+- `IItem`: tipo (Cuchillo/Pistola/Rifle/Escopeta), nombre, key_textura, json_anims, sprite dimensions, escala — data needed to hot-swap the body FSM/sprite when equipping.
+- `IInventario`: `vector<shared_ptr<IItem>>` items, idx_activo, `agregarItem()`, `getItemActivo()`, `ciclarSiguiente()`, `ciclarAnterior()`.
 
 **Particle & Temporary Effects**:
-- `IEmisor`: particle emitter — references parent entity and prefab; `crearParticula()` spawns copies with rotation/velocity matching parent angle (8-direction detection using rounded atan2 values); internal Pool tracks living particles
-- `ITemporal`: marker component — set `done = true` when effect finishes (signal scene to remove object from pool)
-- `ICTimer`: frame-based timer (curr_frame, max_frame)
-- `IEstadoEpidemia`: epidemic simulation states (Normal/Enfermo/Recuperacion/Inmune/Muerto), timers, probabilities, grid position (fila, columna), `infectar()`, `puedeSerInfectado()`
+- `IEmisor`: particle emitter — references parent entity and prefab; `crearParticula()` spawns copies with rotation/velocity matching parent angle (8-direction detection using rounded atan2 values); internal Pool tracks living particles.
+- `ITemporal`: marker component — set `done = true` when effect finishes (signals scene to remove object from pool).
+- `ICTimer`: frame-based timer (curr_frame, max_frame).
+- `IEstadoEpidemia`: epidemic simulation states (Normal/Enfermo/Recuperacion/Inmune/Muerto), timers, probabilities, grid position (fila, columna), `infectar()`, `puedeSerInfectado()`.
+
+**Drops, HUD, and Links**:
+- `IDropItem`: Represents health or ammo drops picked up by collision.
+- `IDelayedSpawn`: Delays drop spawning (e.g., 2.0s delay before drop becomes visible and collectible).
+- `IFloatingText`: Fades out text (e.g., "+50 HP", "+16 Municion") drifting upwards.
+- `IZombieSpawnerRef`: Links zombie entities back to their spawn zone so that spawner cooldown triggers upon zombie death.
 
 ## FSM Architecture
 
-**Base class**: `src/Juego/Maquinas/FSM.hpp`
+**Base class**: [FSM.hpp](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Juego/Maquinas/FSM.hpp)
 - `virtual FSM* onInputs(const CE::IControl&)` — returns new FSM state or nullptr
 - `virtual FSM* onInputs(const CE::IControl&, float mouse_nx, float mouse_ny)` — default delegates to above
 - `virtual void onEntrar/onSalir/onUpdate(const Entidad&, float dt)`
 - `std::string nombre` — used by `Entidad::inputFSM()` to dispatch to correct overload
 
 **Specialized bases**:
-- `FSMBoss` — `onInputs(Entidad& parent, CE::Vector2D& target)` for boss AI
-- `FSMZombie` — `onInputs(Entidad& self, CE::Vector2D& target)` for zombie AI; `inputFSM()` detects "Zombie" in nombre
+- [FSMBoss](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Juego/Maquinas/FSMBoss.hpp) — `onInputs(Entidad& parent, CE::Vector2D& target)` for boss AI
+- [FSMZombie](file:///Users/lukas/CLionProjects/CimaEngine3v-LC/src/Juego/Maquinas/FSMZombie.hpp) — `onInputs(Entidad& self, CE::Vector2D& target)` for zombie AI; `inputFSM()` detects "Zombie" in nombre. Contains the `ZombieConst` parameters:
+  - `RANGO_AGGRO` = 10000.f
+  - `VELOCIDAD` = 250.f
+  - `DISTANCIA_ATAQUE` = 35.f
+  - `DISTANCIA_IDLE` = 250.f
+  - `FRAME_RATE_ATTACK` = 0.06f
+  - `FRAME_RATE_MOVE` = 0.03f
 
 **Dispatch in `Entidad::inputFSM()`**:
 1. nombre contains "Boss" → static_cast to FSMBoss, pass `*ITarget->pos`
@@ -189,28 +203,28 @@ Located in `src/Juego/Componentes/IJComponentes.hpp` — extends `CE::IComponent
 3. Otherwise → pass IControl + mouse_dir_x/y
 
 **Player feet FSMs** (`src/Juego/Maquinas/Pies/`):
-- `IdlePies(clip, rate)` — Shows frame 0. Transitions to MoverPies based on input + mouse direction (computes dot/perp products to choose walk vs strafe)
-- `MoverPies(clip, rate)` — Animates walk/strafe/run. Uses mouse direction to pick: walk {61,20}, strafe_left {21,20}, strafe_right {41,20}, or faster frame rate for run
+- `IdlePies(clip, rate)` — Shows frame 0. Transitions to MoverPies based on input + mouse direction (computes dot/perp products to choose walk vs strafe).
+- `MoverPies(clip, rate)` — Animates walk/strafe/run. Uses mouse direction to pick: walk {61,20}, strafe_left {21,20}, strafe_right {41,20}, or faster frame rate for run.
 
 **Player body FSMs** (`src/Juego/Maquinas/Cuerpo/`):
-- `IdleCuerpoKnife` → AtacarCuerpoKnife (acc) or MoverCuerpoKnife (movement)
-- `MoverCuerpoKnife` → IdleCuerpoKnife (no input) or AtacarCuerpoKnife (acc)
-- `AtacarCuerpoKnife` — One-shot attack animation {20,15}; sets `IArmaMelee::atacando=true`; exposes `shouldDealDamage()` / `markDamageDealt()` API for damage window timing
+- `IdleCuerpoKnife` → AtacarCuerpoKnife (acc) or MoverCuerpoKnife (movement).
+- `MoverCuerpoKnife` → IdleCuerpoKnife (no input) or AtacarCuerpoKnife (acc).
+- `AtacarCuerpoKnife` — One-shot attack animation {20,15}; sets `IArmaMelee::atacando=true`; exposes `shouldDealDamage()` / `markDamageDealt()` API for damage window timing.
 
 **Zombie FSMs** (`src/Juego/Maquinas/Zombie/`):
-- `IdleZombie` → MoverZombie if target in RANGO_AGGRO (250) AND checkLOS passes
-- `MoverZombie` → AtacarZombie if dist < DISTANCIA_ATAQUE (45), IdleZombie if dist > DISTANCIA_IDLE (250)
-- `AtacarZombie` — One-shot attack animation, forces velocity=0; returns to Idle/Mover after completion
+- `IdleZombie` → MoverZombie if target in RANGO_AGGRO (250) AND checkLOS passes.
+- `MoverZombie` → AtacarZombie if dist < DISTANCIA_ATAQUE (45), IdleZombie if dist > DISTANCIA_IDLE (250).
+- `AtacarZombie` — One-shot attack animation, forces velocity=0; returns to Idle/Mover after completion.
 
 **Pistol body FSMs** (`src/Juego/Maquinas/Pistola/`):
-- `IdleCuerpoPistola`, `MoverCuerpoPistola`, `DispararCuerpoPistola`, `RecargarCuerpoPistola`
-- Set/clear `IPistola::disparando` and `IPistola::recargando` in onEntrar/onSalir
+- `IdleCuerpoPistola`, `MoverCuerpoPistola`, `DispararCuerpoPistola`, `RecargarCuerpoPistola`.
+- Set/clear `IPistola::disparando` and `IPistola::recargando` in onEntrar/onSalir.
 
 **FX FSMs** (`src/Juego/Maquinas/FX/`):
-- `BloodSplash(clip, rate)` — One-shot animation; sets `ITemporal::done = true` when finished; used for melee hit particles
+- `BloodSplash(clip, rate)` — One-shot animation; sets `ITemporal::done = true` when finished; used for melee hit particles.
 
 **Boss FSMs** (`src/Juego/Maquinas/Bosses/`):
-- `IdleBoss` ↔ `AttackBoss` based on distance < 200
+- `IdleBoss` ↔ `AttackBoss` based on distance < 200.
 
 ## Rendering & GUI
 
@@ -330,46 +344,55 @@ Juego/
 
 Pattern: `IEmisor` spawns particles, `ITemporal::done` signals removal.
 
-1. Create prefab Entidad with ISprite + ITimer + IMaquinaEstado
-2. Parent entity gets `IEmisor(parent, prefab)` component
-3. `IEmisor::crearParticula()` copies prefab, sets direction from parent angle (8-direction via rounded atan2), assigns BalasIdle FSM, adds to internal pool
-4. BloodSplash FSM plays one-shot animation, sets `ITemporal::done = true`
-5. Scene's `onUpdate()` `std::erase_if` removes objects where `ITemporal::done == true`
+1. Create prefab Entidad with ISprite + ITimer + IMaquinaEstado.
+2. Parent entity gets `IEmisor(parent, prefab)` component.
+3. `IEmisor::crearParticula()` copies prefab, sets direction from parent angle (8-direction via rounded atan2), assigns BalasIdle FSM, adds to internal pool.
+4. BloodSplash FSM plays one-shot animation, sets `ITemporal::done = true`.
+5. Scene's `onUpdate()` `std::erase_if` removes objects where `ITemporal::done == true`.
 
-### Melee Combat System
+### Melee Combat & Score/Drops
 
-Scene calls `SistemaAtaqueMelee(*cuerpo, objetos)` every frame in `onUpdate()`.
+Scene calls `SistemaAtaqueMelee(*cuerpo, objetos, puntaje, zombies_matados)` every frame in `onUpdate()`.
 
-1. Check `IArmaMelee::atacando`; if false: clear `objs_golpeados` and `swing_played`, return
-2. Compute hitbox center: `{pos.x + sin(angle)*offset, pos.y - cos(angle)*offset}`
-3. Circle-circle overlap against all ITarget entities in pool (radius: arma.radio + 20)
-4. On hit: apply damage, insert to `objs_golpeados` (prevent re-hit), spawn BloodSplash entity in game_pool, update ITexto HP label
-5. Play slash SFX if hit, swing SFX if miss (both gated by `swing_played`)
-6. `AtacarCuerpoKnife` FSM sets `atacando = true` in onEntrar, `false` in onSalir
+1. Check `IArmaMelee::atacando`; if false: clear `objs_golpeados` and `swing_played`, return.
+2. Compute hitbox center: `{pos.x + sin(angle)*offset, pos.y - cos(angle)*offset}`.
+3. Circle-circle overlap against all ITarget entities in pool (radius: arma.radio + 20).
+4. On hit: apply damage, insert to `objs_golpeados` (prevent re-hit), spawn BloodSplash entity in game_pool, update ITexto HP label.
+5. Play slash SFX if hit, swing SFX if miss (gated by `swing_played`).
+6. If hit reduces HP to 0: increments `zombies_matados`, awards `puntaje += 100`, and has a 50% probability of dropping a `IDelayedSpawn` Health item.
 
-### Bullet System
+### Bullet Collision, Damage, and Ammo Drops
 
-**Spawn**: `SistemaDisparar(tirador, cuerpo, arma, game_pool, bala_tex)` — creates Entidad with IBala, ISprite, IBoundingBox; sets velocity in `sin/cos(cuerpo.angulo)` direction; stores `&tirador` as `IBala::origen` to avoid self-hit.
+Scene calls `SistemaColBalas(game_pool, puntaje, zombies_matados)` every frame in `onUpdate()`.
 
-**Update**: `SistemaActualizarBalas(game_pool, dt)` — moves IBala entities, accumulates `distancia_viajada`, marks hp=0 when `rango_max` exceeded, updates ISprite position/rotation.
+1. Collects active bullets. For each bullet vs ITarget entities:
+2. Checks collision using `SistemaColAABBMid()`.
+3. On hit: deactivates bullet, applies damage, plays hurt sound effects, spawns `BloodSplash` FX.
+4. If target HP drops to 0: increments `zombies_matados`, awards `puntaje += 50`, and has a 25% probability of spawning a `IDelayedSpawn` Ammo item.
 
-**Collision**: `SistemaColBalas(game_pool)` — checks all IBala vs all ITarget; on hit: apply `IBala::damage`, deactivate bullet, spawn BloodSplash FX.
+### Drops & Floating Texts
 
-**IPistola** state management called each frame via `arma.onUpdate(dt)`:
-- Decrements `timer_disparo` each frame
-- If `recargando`: decrements `timer_recarga`; on timeout: transfers `min(needed, reserva)` bullets to cargador
-- `puedeDisparar()` = `!recargando && balas_cargador > 0 && timer_disparo <= 0`
-- `iniciarDisparo()` decrements balas_cargador, resets timer_disparo
-- `iniciarRecarga()` sets recargando=true, resets timer_recarga
+When a drop item is triggered (via `IDelayedSpawn` countdown ending):
+1. Spawn `IDropItem` (either `Salud` or `Municion`) and display `[ + HP + ]` or `[ + AMMO + ]` on the map.
+2. When the player collides with it: item is marked `ITemporal::done = true` to purge.
+3. A floating text entity is created with `IFloatingText`, drifting upwards and fading out using delta time, displaying `+50 HP` or `+16 Municion`.
 
-### Zombie AI Overview
+### Zombie Spawners and Timers
 
-`SistemaZombieSeguir` implements three behaviors:
-1. **In range + LOS**: pursue player directly; if within DISTANCIA_ATAQUE, stop; else move at VELOCIDAD (150), with 30-unit forward probe obstacle avoidance (tries ±45°)
-2. **Lost LOS**: apply friction (velocity *= 0.9 until < 1), stops
-3. **Rotation**: if has LOS → face player; else if moving → face movement direction
+Each zombie spawned carries an `IZombieSpawnerRef`. When a zombie dies:
+1. The scene locates the linked spawner zone entity.
+2. Resets the spawner's `IRespawn` component timers (`timer_maximo = 120` (2s), `timer_actual = 0`) to trigger the next spawn under the round cap limits.
 
-LOS uses slab-method ray vs all IBoundingBox obstacles, ignoring self.
+### Pause Menu and Game Over Reset States
+
+`Escena_Sprite` manages game flow control:
+1. **Pause state**: Pressing `Escape` toggles `en_pausa`. This pauses `musica_fondo`, plays `musica_pausa`, and draws a semi-transparent black rectangle with option prompts (Continuar / Salir). Selection is triggered by Enter (`confirmar`).
+2. **Game Over / Reset**: If player HP is 0, the game enters `jugador_muerto`. Pressing Enter triggers `resetJuego()`, which:
+   - Restores player HP (200) and moves them back to (1750, 1750).
+   - Resets active weapon clips (8/32 ammo for pistols).
+   - Resets round status, kills, and score.
+   - Clears all spawned targets, drops, float texts, and bullets from the pool while preserving static walls.
+   - Resets spawn zone cooldowns.
 
 ## Common Editing Patterns
 
