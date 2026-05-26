@@ -18,6 +18,8 @@
 #include <cmath>
 #include <memory>
 
+#include "Juego/Maquinas/Zombie/AtacarZombie.hpp"
+
 namespace IVJ {
 	Escena_Sprite::Escena_Sprite(std::shared_ptr<Entidad> &pref) :
 		CE::Escena{}, jugador_ref{pref}, cuerpo{std::make_shared<Entidad>()} {}
@@ -511,9 +513,28 @@ namespace IVJ {
 
 			if (obj->tieneComponente<ITarget>()) {
 				auto &tpos = *obj->getComponente<ITarget>()->pos;
-				// SistemaNPCLookTarget(*obj, tpos); // Quitamos esto, ahora
-				// SistemaZombieSeguir maneja la mirada
 				SistemaZombieSeguir(*obj, tpos, pool, dt);
+
+				if (obj->tieneComponente<IMaquinaEstado>())
+				{
+					auto mq = obj->getComponente<IMaquinaEstado>();
+					if (mq->fsm)
+					{
+						auto* atk = dynamic_cast<AtacarZombie*>(mq->fsm.get());
+						if (atk && atk->shouldDealDamage())
+						{
+							auto target_stats = jugador_ref->getStats();
+							if (target_stats->hp > 0)
+							{
+								target_stats->hp = (target_stats->hp > 25)
+												 ? target_stats->hp - 25 : 0;
+								target_stats->timer_damage_shader = 1.0f;
+							}
+							atk->markDamageDealt();
+						}
+					}
+				}
+
 				// No colisionar balas como paredes sólidas contra el jugador
 				if (!obj->tieneComponente<IBala>())
 					SistemaColAABB(*obj, *jugador_ref, true);
@@ -657,17 +678,25 @@ namespace IVJ {
 		}
 
 #if DEBUG
-		// Render debug info for objects
 		for (auto &obj: objetos.getPool()) {
 			if (obj->tieneComponente<IRangoAggro>()) {
 				auto rango = obj->getComponente<IRangoAggro>();
 				rango->marcador.setPosition({obj->getTransformada()->posicion.x, obj->getTransformada()->posicion.y});
 				CE::Render::Get().AddToDraw(rango->marcador);
 			}
-			auto arma = cuerpo->getComponente<IArmaMelee>();
-			if (arma && arma->atacando) {
-				CE::Render::Get().AddToDraw(arma->hitbox_debug);
+			// Hitbox de melee de zombies atacando
+			if (obj->tieneComponente<IArmaMelee>()) {
+				auto arma_obj = obj->getComponente<IArmaMelee>();
+				if (arma_obj && arma_obj->atacando) {
+					CE::Render::Get().AddToDraw(arma_obj->hitbox_debug);
+				}
 			}
+		}
+		// Hitbox del cuerpo del jugador
+		{
+			auto arma = cuerpo->getComponente<IArmaMelee>();
+			if (arma && arma->atacando)
+				CE::Render::Get().AddToDraw(arma->hitbox_debug);
 		}
 		// Render debug info for spawn zones
 		for (auto &spawn_zone : m_spawn_pool.getPool()) {
