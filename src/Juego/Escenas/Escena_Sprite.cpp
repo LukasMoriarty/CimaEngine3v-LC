@@ -123,7 +123,7 @@ namespace IVJ {
 		bala_prefab->addComponente(bala_me);
 		auto emisor = std::make_shared<IEmisor>(*jugador_ref, *bala_prefab);
 		jugador_ref->addComponente(emisor);
-		
+
 		jugador_ref->getStats()->hp_max = 200;
 		jugador_ref->getStats()->hp = 200;
 		//fin lab11 prefab
@@ -224,8 +224,76 @@ namespace IVJ {
 	}
 
 	void Escena_Sprite::onUpdate(float dt) {
-		if (en_pausa) return;
 
+		// Botones:
+		constexpr unsigned int BTN_A      = 0;
+		constexpr unsigned int BTN_B      = 1;
+		constexpr unsigned int BTN_X      = 3;  // recargar  ← era 2, ahora es 3
+		constexpr unsigned int BTN_Y      = 4;              // ← era 3, ahora es 4
+		constexpr unsigned int BTN_LB     = 6;  // arma anterior  ← era 4, ahora es 6
+		constexpr unsigned int BTN_RB     = 7;  // arma siguiente ← era 5, ahora es 7
+		constexpr unsigned int BTN_BACK   = 10; // select     ← era 6, ahora es 10
+		constexpr unsigned int BTN_START  = 11; // pausa      ← era 7, ahora es 11
+
+		// Ejes del stick derecho:
+		constexpr auto AXIS_RSX = sf::Joystick::Axis::Z; // ← era Axis::U
+		constexpr auto AXIS_RSY = sf::Joystick::Axis::R; // ← era Axis::V
+		constexpr auto AXIS_LSX       = sf::Joystick::Axis::X;
+		constexpr auto AXIS_LSY       = sf::Joystick::Axis::Y;
+
+		constexpr auto AXIS_RT        = sf::Joystick::Axis::Z; // ← cambiar si diagnóstico indica otro
+		constexpr float DEADZONE      = 25.f;
+		constexpr float TRIGGER_UMBRAL = 50.f;
+
+		// ── Diagnóstico de gamepad (pon en true para identificar ejes/botones) ──
+		// Con el gamepad conectado, mueve cada palanca/gatillo y mira la consola.
+		// Cuando tengas el mapeo correcto, vuelve a poner en false.
+		constexpr bool GAMEPAD_DEBUG = true;
+		if constexpr (GAMEPAD_DEBUG) {
+			if (sf::Joystick::isConnected(0)) {
+				static int frame_debug = 0;
+				if (++frame_debug % 30 == 0) { // imprimir cada 30 frames
+					std::cout << "=== GAMEPAD DEBUG ===\n";
+					std::cout << "  Botones (" << sf::Joystick::getButtonCount(0) << " total): ";
+					for (unsigned int b = 0; b < sf::Joystick::getButtonCount(0); ++b)
+						if (sf::Joystick::isButtonPressed(0, b))
+							std::cout << "B" << b << " ";
+					std::cout << "\n";
+					const sf::Joystick::Axis ejes[] = {
+						sf::Joystick::Axis::X, sf::Joystick::Axis::Y,
+						sf::Joystick::Axis::Z, sf::Joystick::Axis::R,
+						sf::Joystick::Axis::U, sf::Joystick::Axis::V
+					};
+					const char* nombres[] = {"X","Y","Z","R","U","V", "PovX", "PovY"};
+					for (int i = 0; i < 6; ++i) {
+						float v = sf::Joystick::getAxisPosition(0, ejes[i]);
+						if (std::abs(v) > 5.f)
+							std::cout << "  Axis::" << nombres[i] << " = " << v << "\n";
+					}
+				}
+			}
+		}
+
+		// ── Start/pausa: DEBE ir antes del early-return de en_pausa ─────────────
+		// Si está aquí, funciona tanto para abrir como para cerrar la pausa.
+		if (sf::Joystick::isConnected(0)) {
+			static bool start_prev = false;
+			bool start_now = sf::Joystick::isButtonPressed(0, BTN_START);
+			if (start_now && !start_prev && !jugador_muerto) {
+				en_pausa     = !en_pausa;
+				opcion_pausa = 0;
+				if (en_pausa) {
+					CE::GestorAssets::Get().getMusica("musica_fondo").pause();
+					CE::GestorAssets::Get().getMusica("musica_pausa").play();
+				} else {
+					CE::GestorAssets::Get().getMusica("musica_pausa").stop();
+					CE::GestorAssets::Get().getMusica("musica_fondo").play();
+				}
+			}
+			start_prev = start_now;
+		}
+
+		if (en_pausa) return;
 		if (jugador_muerto) return;
 
 		if (jugador_ref->getStats()->hp <= 0) {
@@ -241,9 +309,6 @@ namespace IVJ {
 		auto ctrl_cuerpo = cuerpo->getComponente<CE::IControl>();
 
 		// Polling del teclado SIEMPRE cada frame (evita teclas pegadas).
-		// Usar Scancode (independiente del layout) y cubrir ambos mapeos
-		// (WASD + flechas) para que soltar una tecla mientras la otra sigue
-		// presionada no deje el flag pegado en true.
 		if (ctrl_pies)
 		{
 			ctrl_pies->arr = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::W) ||
@@ -257,43 +322,71 @@ namespace IVJ {
 			ctrl_pies->acc = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::Space);
 			ctrl_pies->run = sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::LControl);
 
-			// Gamepad: se combina (OR) con el estado del teclado
-			if (sf::Joystick::isConnected(0)) {
-				float x = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::X);
-				float y = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::Y);
-				constexpr float deadzone = 25.f;
-				ctrl_pies->der = ctrl_pies->der || (x > deadzone);
-				ctrl_pies->izq = ctrl_pies->izq || (x < -deadzone);
-				ctrl_pies->arr = ctrl_pies->arr || (y < -deadzone);
-				ctrl_pies->abj = ctrl_pies->abj || (y > deadzone);
-				ctrl_pies->acc = ctrl_pies->acc || sf::Joystick::isButtonPressed(0, 10);
-			}
-
-				if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
 				ctrl_pies->acc = true;
+
+			// ── Gamepad Xbox ──────────────────────────────────────────────────────
+			if (sf::Joystick::isConnected(0)) {
+				// Palanca izquierda: movimiento
+				float lx = sf::Joystick::getAxisPosition(0, AXIS_LSX);
+				float ly = sf::Joystick::getAxisPosition(0, AXIS_LSY);
+				ctrl_pies->der = ctrl_pies->der || (lx >  DEADZONE);
+				ctrl_pies->izq = ctrl_pies->izq || (lx < -DEADZONE);
+				ctrl_pies->arr = ctrl_pies->arr || (ly < -DEADZONE);
+				ctrl_pies->abj = ctrl_pies->abj || (ly >  DEADZONE);
+
+				// RT: atacar
+				float rt = sf::Joystick::getAxisPosition(0, AXIS_RT);
+				ctrl_pies->acc = ctrl_pies->acc || (rt > TRIGGER_UMBRAL);
+
+				// X: recargar
+				ctrl_pies->sacc = sf::Joystick::isButtonPressed(0, BTN_X);
+
+				// LB / RB: ciclar armas (flanco de bajada)
+				static bool lb_prev = false, rb_prev = false;
+				bool lb_now = sf::Joystick::isButtonPressed(0, BTN_LB);
+				bool rb_now = sf::Joystick::isButtonPressed(0, BTN_RB);
+				if (auto inv = jugador_ref->getComponente<IInventario>()) {
+					if (lb_now && !lb_prev) { inv->ciclarAnterior(); actualizarArmaEquipada(); }
+					if (rb_now && !rb_prev) { inv->ciclarSiguiente(); actualizarArmaEquipada(); }
+				}
+				lb_prev = lb_now;
+				rb_prev = rb_now;
 			}
 		}
 
 		if (ctrl_pies && ctrl_cuerpo)
 			*ctrl_cuerpo = *ctrl_pies;
 
-		// 2a. Calcular dirección normalizada hacia el mouse para FSM de animación
-		auto mp = CE::Render::Get().GetMouseGamePos();
-		sf::Vector2f wPos = CE::Render::Get().GetTextura().mapPixelToCoords(
-				sf::Vector2i((int) mp.x, (int) mp.y), CE::GestorCamaras::Get().getCamaraActiva().getView());
-
+		// 2a. Dirección de apuntado: palanca derecha si supera la deadzone, si no mouse
 		auto &pos = jugador_ref->getTransformada()->posicion;
-		float dx = wPos.x - pos.x;
-		float dy = wPos.y - pos.y;
-		float dist = std::sqrt(dx * dx + dy * dy);
-		float mouse_nx = 0.f, mouse_ny = 0.f;
-		if (dist > 0.f) {
-			mouse_nx = dx / dist;
-			mouse_ny = dy / dist;
+		float aim_nx = 0.f, aim_ny = 0.f;
+		bool uso_stick_derecho = false;
+
+		if (sf::Joystick::isConnected(0)) {
+			float rx   = sf::Joystick::getAxisPosition(0, AXIS_RSX);
+			float ry   = sf::Joystick::getAxisPosition(0, AXIS_RSY);
+			float rmag = std::sqrt(rx * rx + ry * ry);
+			if (rmag > DEADZONE) {
+				aim_nx = rx / rmag;
+				aim_ny = ry / rmag;
+				uso_stick_derecho = true;
+			}
 		}
-		// Pasar la dirección del mouse al jugador para que el FSM la use
-		jugador_ref->setMouseDirection(mouse_nx, mouse_ny);
-		cuerpo->setMouseDirection(mouse_nx, mouse_ny);
+
+		if (!uso_stick_derecho) {
+			auto mp = CE::Render::Get().GetMouseGamePos();
+			sf::Vector2f wPos = CE::Render::Get().GetTextura().mapPixelToCoords(
+					sf::Vector2i((int)mp.x, (int)mp.y),
+					CE::GestorCamaras::Get().getCamaraActiva().getView());
+			float dx   = wPos.x - pos.x;
+			float dy   = wPos.y - pos.y;
+			float dist = std::sqrt(dx * dx + dy * dy);
+			if (dist > 0.f) { aim_nx = dx / dist; aim_ny = dy / dist; }
+		}
+
+		jugador_ref->setMouseDirection(aim_nx, aim_ny);
+		cuerpo->setMouseDirection(aim_nx, aim_ny);
 
 		// 2. Procesar transiciones de FSM
 		jugador_ref->inputFSM();
@@ -316,6 +409,17 @@ namespace IVJ {
 		// 6. Combate, disparo e inventario
         auto inv = jugador_ref->getComponente<IInventario>();
         IItem* item_activo = inv ? inv->getItemActivo() : nullptr;
+
+		// Flanco de RT/Mouse para IEmisor (el teclado lo maneja onInputs con Space)
+		{
+			static bool acc_prev = false;
+			bool acc_now = ctrl_pies && ctrl_pies->acc;
+			if (acc_now && !acc_prev) {
+				if (auto emisor = jugador_ref->getComponente<IEmisor>())
+					emisor->crearParticula();
+			}
+			acc_prev = acc_now;
+		}
 
         if (item_activo)
         {
